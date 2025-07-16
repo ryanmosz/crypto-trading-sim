@@ -29,7 +29,15 @@ public static class UserManager
     {
         CurrentUser = null;
         CurrentValue = 0;
-        SceneManager.LoadScene("Login");
+        // Try loading by name first, then by index
+        try 
+        {
+            SceneManager.LoadScene("Login");
+        }
+        catch
+        {
+            SceneManager.LoadScene(0); // Fallback to scene 0
+        }
     }
     
     public static string GetPerformanceString()

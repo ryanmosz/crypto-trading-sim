@@ -16,7 +16,8 @@ public class MainScreenManager : MonoBehaviour
         if (string.IsNullOrEmpty(UserManager.CurrentUser))
         {
             // No user logged in, go back to login
-            UserManager.Logout();
+            Debug.Log("No user logged in! Redirecting to Login scene...");
+            SceneManager.LoadScene(0); // Load Login scene (should be scene 0)
             return;
         }
         
