@@ -45,10 +45,15 @@ Follow `UNITY_SETUP.md` for detailed steps:
 ```
 Planning:     ████████████████████ 100% ✅
 Scripts:      ████████████████████ 100% ✅
-Unity Setup:  ████░░░░░░░░░░░░░░░░  20% 🚧
-Scene Build:  ░░░░░░░░░░░░░░░░░░░░   0% ⏳
+Unity Setup:  ████████████████████ 100% ✅
+Scene Build:  ████░░░░░░░░░░░░░░░░  20% 🚧
 Testing:      ░░░░░░░░░░░░░░░░░░░░   0% ⏳
 ```
+
+## 🎮 Unity is Now Open!
+1. **First**: Import TextMeshPro when prompted
+2. **Follow**: `UNITY_QUICK_SETUP.md` for step-by-step instructions
+3. **Goal**: Two scenes (Login & Main) with user switching
 
 ## 🎯 Today's Goal
 Ship a working WebGL build with:
