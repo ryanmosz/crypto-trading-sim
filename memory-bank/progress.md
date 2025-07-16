@@ -22,11 +22,11 @@
 ### 🚧 In Progress
 
 #### Milestone 0: Login Screen with Test Users
-- [ ] Unity Hub installation
-- [ ] Unity 2022.3 LTS download
-- [ ] Unity project creation
+- [x] Unity Hub installation ✅
+- [x] Unity 2022.3.62f1 LTS with WebGL ✅
+- [x] Unity project creation ✅
 - [ ] Login screen with Alice & Bob buttons
-- [ ] Simple user state management
+- [x] Simple user state management (scripts ready) ✅
 - [ ] First WebGL build
 
 ### 📅 Upcoming Milestones
