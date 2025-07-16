@@ -42,15 +42,18 @@
 ## Current Focus
 
 ### Immediate Next Steps
-1. **Install Unity Hub** - First step in quick start guide
-2. **Create Unity Project** - Following planning/01-QUICK-START.md
-3. **Build Welcome Screen** - Milestone 0 target
+1. **Install Unity Editor** - In Unity Hub, install 2022.3 LTS with WebGL
+2. **Create Unity Project** - 2D template in this directory
+3. **Build Login & Main Scenes** - Using prepared scripts
 
-### Today's Goals (if continuing)
-- [ ] Unity Hub installed
+### Today's Progress
+- [x] Unity Hub installed ✅
+- [x] Unity scripts prepared ✅
 - [ ] Unity 2022.3 LTS with WebGL downloaded
-- [ ] First project created
-- [ ] Welcome screen visible in browser
+- [ ] Unity project created
+- [ ] Login scene built
+- [ ] Main scene built
+- [ ] WebGL build tested
 
 ## Key Decisions Made
 
