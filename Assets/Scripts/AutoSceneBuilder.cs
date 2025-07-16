@@ -40,7 +40,7 @@ public class AutoSceneBuilder : MonoBehaviour
         eventSystem.AddComponent<UnityEngine.EventSystems.EventSystem>();
         eventSystem.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
         
-        // Black Background
+        // Animated Background
         GameObject bg = new GameObject("Background");
         bg.transform.SetParent(canvas.transform, false);
         RectTransform bgRect = bg.AddComponent<RectTransform>();
@@ -50,8 +50,9 @@ public class AutoSceneBuilder : MonoBehaviour
         bgRect.anchoredPosition = Vector2.zero;
         Image bgImage = bg.AddComponent<Image>();
         bgImage.color = Color.black;
+        bg.AddComponent<AnimatedBackground>(); // Add subtle animation
         
-        // Title
+        // Title with cool effects
         GameObject titleGO = new GameObject("TitleText");
         titleGO.transform.SetParent(canvas.transform, false);
         RectTransform titleRect = titleGO.AddComponent<RectTransform>();
@@ -62,14 +63,17 @@ public class AutoSceneBuilder : MonoBehaviour
         titleText.fontSize = 72;
         titleText.color = Color.white;
         titleText.alignment = TextAlignmentOptions.Center;
+        CoolUIEffects.ApplyTitleEffect(titleText); // Add gradient and glow
         
-        // Alice Button
+        // Alice Button with cool effects
         GameObject aliceBtn = CreateButton(canvas.transform, "AliceButton", 
             "Alice\n$10M → $12M (+20%)", new Vector2(-250, 0), Color.cyan);
+        CoolUIEffects.ApplyCoolButtonEffect(aliceBtn, Color.cyan);
         
-        // Bob Button  
+        // Bob Button with cool effects
         GameObject bobBtn = CreateButton(canvas.transform, "BobButton",
             "Bob\n$10M → $8M (-20%)", new Vector2(250, 0), Color.magenta);
+        CoolUIEffects.ApplyCoolButtonEffect(bobBtn, Color.magenta);
         
         // Add LoginManager
         GameObject manager = new GameObject("LoginManager");
@@ -125,10 +129,11 @@ public class AutoSceneBuilder : MonoBehaviour
             "Strategy: ", new Vector2(0, -50), 24);
         allocationGO.GetComponent<TextMeshProUGUI>().color = Color.gray;
         
-        // Logout Button
+        // Logout Button with cool effects
         GameObject logoutBtn = CreateButton(canvas.transform, "LogoutButton",
             "Logout", new Vector2(0, -150), Color.white);
         logoutBtn.GetComponent<RectTransform>().sizeDelta = new Vector2(200, 60);
+        CoolUIEffects.ApplyCoolButtonEffect(logoutBtn, Color.white);
         
         // Add MainScreenManager
         GameObject manager = new GameObject("MainScreenManager");
@@ -152,9 +157,16 @@ public class AutoSceneBuilder : MonoBehaviour
         rect.sizeDelta = new Vector2(400, 150);
         
         Image image = buttonGO.AddComponent<Image>();
-        image.color = new Color(0, 0, 0, 0.2f);
+        image.color = new Color(0, 0, 0, 0.6f); // Darker for better contrast
         
         Button button = buttonGO.AddComponent<Button>();
+        
+        // Set button transition to color tint
+        ColorBlock colors = button.colors;
+        colors.normalColor = Color.white;
+        colors.highlightedColor = new Color(1.2f, 1.2f, 1.2f, 1f);
+        colors.pressedColor = new Color(0.8f, 0.8f, 0.8f, 1f);
+        button.colors = colors;
         
         GameObject textGO = new GameObject("Text (TMP)");
         textGO.transform.SetParent(buttonGO.transform, false);
