@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Trading Sim - Mockup</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .screen {
+            display: none;
+            text-align: center;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        h1 {
+            font-size: 72px;
+            margin: 50px 0;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+        }
+        
+        .button {
+            display: inline-block;
+            width: 400px;
+            padding: 40px;
+            margin: 20px;
+            font-size: 24px;
+            border: 2px solid;
+            cursor: pointer;
+            transition: transform 0.2s;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .button:hover {
+            transform: scale(1.05);
+        }
+        
+        .button.alice {
+            border-color: cyan;
+            color: cyan;
+            box-shadow: 0 0 20px cyan;
+        }
+        
+        .button.bob {
+            border-color: magenta;
+            color: magenta;
+            box-shadow: 0 0 20px magenta;
+        }
+        
+        .portfolio-info {
+            font-size: 36px;
+            margin: 30px 0;
+        }
+        
+        .allocation {
+            font-size: 18px;
+            color: #888;
+            margin: 20px 0;
+        }
+        
+        .logout-btn {
+            margin-top: 50px;
+            padding: 15px 40px;
+            font-size: 20px;
+            background: transparent;
+            color: white;
+            border: 1px solid white;
+            cursor: pointer;
+        }
+        
+        .performance-positive {
+            color: #00ff00;
+        }
+        
+        .performance-negative {
+            color: #ff0066;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="screen active">
+        <h1>Crypto Trading Sim</h1>
+        <div class="button alice" onclick="login('alice')">
+            Alice<br>
+            <span style="font-size: 18px;">$10M → $12M (+20%)</span>
+        </div>
+        <div class="button bob" onclick="login('bob')">
+            Bob<br>
+            <span style="font-size: 18px;">$10M → $8M (-20%)</span>
+        </div>
+    </div>
+    
+    <!-- Main Screen -->
+    <div id="mainScreen" class="screen">
+        <h2 id="welcomeText" style="font-size: 48px;">Welcome!</h2>
+        <div id="portfolioInfo" class="portfolio-info"></div>
+        <div id="allocationInfo" class="allocation"></div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+    
+    <script>
+        function login(user) {
+            document.getElementById('loginScreen').classList.remove('active');
+            document.getElementById('mainScreen').classList.add('active');
+            
+            const welcomeText = document.getElementById('welcomeText');
+            const portfolioInfo = document.getElementById('portfolioInfo');
+            const allocationInfo = document.getElementById('allocationInfo');
+            
+            if (user === 'alice') {
+                welcomeText.textContent = 'Welcome, Alice!';
+                portfolioInfo.innerHTML = 'Portfolio: $12.0M<br>' +
+                    '<span class="performance-positive">$10M → $12M (+20%)</span>';
+                allocationInfo.textContent = 'Strategy: BTC:40 ETH:30 SOL:20 BNB:10 XRP:0';
+            } else {
+                welcomeText.textContent = 'Welcome, Bob!';
+                portfolioInfo.innerHTML = 'Portfolio: $8.0M<br>' +
+                    '<span class="performance-negative">$10M → $8M (-20%)</span>';
+                allocationInfo.textContent = 'Strategy: BTC:10 ETH:10 SOL:10 BNB:10 XRP:60';
+            }
+        }
+        
+        function logout() {
+            document.getElementById('mainScreen').classList.remove('active');
+            document.getElementById('loginScreen').classList.add('active');
+        }
+    </script>
+</body>
+</html> 
