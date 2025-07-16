@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  unity-builder:
+    build: .
+    volumes:
+      - .:/project
+      - unity-cache:/root/.cache/unity3d
+      - unity-config:/root/.config/unity3d
+      - unity-library:/project/Library
+      - unity-temp:/project/Temp
+    environment:
+      - UNITY_LICENSE_CONTENT
+    env_file:
+      - .env
+    command: ./build.sh
+
+  web-server:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./builds/WebGL:/usr/share/nginx/html:ro
+    depends_on:
+      - unity-builder
+    command: |
+      sh -c "
+        echo 'server {
+          listen 80;
+          server_name localhost;
+          root /usr/share/nginx/html;
+          
+          location / {
+            try_files \$$uri \$$uri/ /index.html;
+            add_header Cross-Origin-Embedder-Policy \"require-corp\";
+            add_header Cross-Origin-Opener-Policy \"same-origin\";
+          }
+          
+          types {
+            application/wasm wasm;
+            application/javascript js;
+            text/html html htm;
+            text/css css;
+          }
+          
+          gzip on;
+          gzip_types text/plain application/javascript text/css application/wasm;
+        }' > /etc/nginx/conf.d/default.conf &&
+        nginx -g 'daemon off;'
+      "
+
+volumes:
+  unity-cache:
+  unity-config:
+  unity-library:
+  unity-temp: 
