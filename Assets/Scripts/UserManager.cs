@@ -14,14 +14,14 @@ public static class UserManager
     public static void LoginAsAlice()
     {
         CurrentUser = "Alice";
-        CurrentValue = 12000000f; // +20% from smart BTC/ETH focus
+        CurrentValue = 10000000f; // Starting value - no trades yet
         SceneManager.LoadScene("Main");
     }
     
     public static void LoginAsBob()
     {
         CurrentUser = "Bob";
-        CurrentValue = 8000000f; // -20% from risky XRP bet
+        CurrentValue = 10000000f; // Starting value - no trades yet
         SceneManager.LoadScene("Main");
     }
     
@@ -42,6 +42,11 @@ public static class UserManager
     
     public static string GetPerformanceString()
     {
+        if (CurrentValue == StartingValue)
+        {
+            return $"${StartingValue / 1000000f:F0}M (Starting)";
+        }
+        
         float change = CurrentValue - StartingValue;
         float percentage = (change / StartingValue) * 100f;
         string sign = percentage >= 0 ? "+" : "";

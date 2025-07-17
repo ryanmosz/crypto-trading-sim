@@ -83,14 +83,14 @@ public class AutoSceneBuilder : MonoBehaviour
         CoolUIEffects.ApplyTitleEffect(titleText); // Add gradient and glow
         
         // Alice Button with cool effects
-        GameObject aliceBtn = CreateButton(canvas.transform, "AliceButton", 
-            "Alice\n$10M → $12M (+20%)", new Vector2(-250, 0), Color.cyan);
-        CoolUIEffects.ApplyCoolButtonEffect(aliceBtn, Color.cyan);
+        GameObject aliceBtn = CreateButton(canvas.transform, "AliceButton",
+            "Alice\n$10M (Starting)", new Vector2(-250, 0), Color.cyan);
+        CoolUIEffects.ApplyGlowingButtonEffect(aliceBtn, Color.cyan);
         
         // Bob Button with cool effects
         GameObject bobBtn = CreateButton(canvas.transform, "BobButton",
-            "Bob\n$10M → $8M (-20%)", new Vector2(250, 0), Color.magenta);
-        CoolUIEffects.ApplyCoolButtonEffect(bobBtn, Color.magenta);
+            "Bob\n$10M (Starting)", new Vector2(250, 0), Color.magenta);
+        CoolUIEffects.ApplyGlowingButtonEffect(bobBtn, Color.magenta);
         
         // Add LoginManager
         GameObject manager = new GameObject("LoginManager");

@@ -48,21 +48,19 @@ A gamified trading simulator that:
 
 ## MVP Approach: Test Users
 
-For the initial release, we're using two pre-configured test users to demonstrate the core value proposition:
+### Test Users for MVP
 
-- **Alice**: Started with $10M → Now has $12M (+20%)
-  - Smart allocation: BTC (40), ETH (30), SOL (20), BNB (10), XRP (0)
-  - Shows successful conservative strategy
+Two pre-configured users demonstrate the concept:
+
+- **Alice**: Started with $10M (Current demo shows initial state)
+  - Plans to allocate: BTC (40%), ETH (30%), SOL (20%), BNB (10%), XRP (0%)
+  - Conservative, blue-chip focused strategy
   
-- **Bob**: Started with $10M → Now has $8M (-20%)
-  - Risky allocation: BTC (10), ETH (10), SOL (10), BNB (10), XRP (60)
-  - Shows consequences of poor diversification
+- **Bob**: Started with $10M (Current demo shows initial state)
+  - Plans to allocate: XRP (60%), BTC (10%), ETH (10%), SOL (10%), BNB (10%)
+  - High-risk, high-reward approach
 
-This approach:
-- Requires no backend or authentication
-- Instantly demonstrates how choices impact outcomes
-- Perfect for demos and user testing
-- Can be built in 2 hours
+The demo begins at the start of a 24-hour trading period, showing how different allocation strategies could lead to vastly different outcomes.
 
 ## Future Vision
 

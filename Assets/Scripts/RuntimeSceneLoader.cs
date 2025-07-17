@@ -46,11 +46,20 @@ public class RuntimeSceneLoader : MonoBehaviour
     public static void CreateLoginSceneRuntime()
     {
         // Clear current scene
-        foreach (GameObject obj in FindObjectsOfType<GameObject>())
+        foreach (GameObject obj in Object.FindObjectsOfType<GameObject>())
         {
-            if (obj != instance.gameObject)
-                Destroy(obj);
+            if (obj.transform.parent == null) // Only destroy root objects
+                Object.Destroy(obj);
         }
+        
+        // Create Camera
+        GameObject cameraObj = new GameObject("Main Camera");
+        Camera camera = cameraObj.AddComponent<Camera>();
+        camera.clearFlags = CameraClearFlags.SolidColor;
+        camera.backgroundColor = Color.black;
+        cameraObj.AddComponent<AudioListener>();
+        cameraObj.tag = "MainCamera";
+        cameraObj.transform.position = new Vector3(0, 0, -10);
         
         // Create Canvas
         GameObject canvasGO = new GameObject("Canvas");
@@ -72,23 +81,22 @@ public class RuntimeSceneLoader : MonoBehaviour
             new Vector2(0, 200), 72, Color.white);
         CoolUIEffects.ApplyTitleEffect(titleTextComponent);
         
-        // Alice Button with cool effects
-        var aliceBtn = CreateButton(canvas.transform, "AliceButton", 
-            "Alice\n$10M → $12M (+20%)", new Vector2(-250, 0), Color.cyan);
-        CoolUIEffects.ApplyCoolButtonEffect(aliceBtn.gameObject, Color.cyan);
-        aliceBtn.onClick.AddListener(() => {
+        // User Buttons
+        var aliceBtn = CreateButton(canvas.transform, "AliceButton",
+            "Alice\n$10M (Starting)", new Vector2(-250, 0), Color.cyan);
+        aliceBtn.GetComponent<Button>().onClick.AddListener(() => {
             UserManager.LoginAsAlice();
-            CreateMainSceneRuntime();
+            // Don't load scene here, UserManager does it
         });
+        CoolUIEffects.ApplyGlowingButtonEffect(aliceBtn, Color.cyan);
         
-        // Bob Button with cool effects
         var bobBtn = CreateButton(canvas.transform, "BobButton",
-            "Bob\n$10M → $8M (-20%)", new Vector2(250, 0), Color.magenta);
-        CoolUIEffects.ApplyCoolButtonEffect(bobBtn.gameObject, Color.magenta);
-        bobBtn.onClick.AddListener(() => {
+            "Bob\n$10M (Starting)", new Vector2(250, 0), Color.magenta);
+        bobBtn.GetComponent<Button>().onClick.AddListener(() => {
             UserManager.LoginAsBob();
-            CreateMainSceneRuntime();
+            // Don't load scene here, UserManager does it
         });
+        CoolUIEffects.ApplyGlowingButtonEffect(bobBtn, Color.magenta);
     }
     
     public static void CreateMainSceneRuntime()
@@ -99,6 +107,15 @@ public class RuntimeSceneLoader : MonoBehaviour
             if (obj != instance.gameObject)
                 Destroy(obj);
         }
+        
+        // Create Camera
+        GameObject cameraObj = new GameObject("Main Camera");
+        Camera camera = cameraObj.AddComponent<Camera>();
+        camera.clearFlags = CameraClearFlags.SolidColor;
+        camera.backgroundColor = Color.black;
+        cameraObj.AddComponent<AudioListener>();
+        cameraObj.tag = "MainCamera";
+        cameraObj.transform.position = new Vector3(0, 0, -10);
         
         // Create Canvas
         GameObject canvasGO = new GameObject("Canvas");

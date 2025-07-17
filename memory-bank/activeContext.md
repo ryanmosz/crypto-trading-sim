@@ -39,6 +39,14 @@
 - Easy switching between users for testing different scenarios
 - Updated bare minimum plan to include this approach
 
+## Test Users (Pre-configured)
+
+For the initial demo/MVP, we have two test users that start at the beginning of a trading period:
+- Alice: $10M (Starting) - Planning smart BTC/ETH allocation
+- Bob: $10M (Starting) - Planning risky XRP-heavy strategy
+
+Both users begin with identical portfolios. The demo will show how their different investment strategies could lead to different outcomes once the 24-hour trading period completes.
+
 ## Current Focus
 
 ### Immediate Next Steps
