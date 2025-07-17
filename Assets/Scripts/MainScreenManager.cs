@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class MainScreenManager : MonoBehaviour
 {
@@ -12,6 +13,12 @@ public class MainScreenManager : MonoBehaviour
     
     void Start()
     {
+        // Ensure we have a camera
+        if (!gameObject.GetComponent<RuntimeCameraChecker>())
+        {
+            gameObject.AddComponent<RuntimeCameraChecker>();
+        }
+        
         // Check if user is logged in
         if (string.IsNullOrEmpty(UserManager.CurrentUser))
         {

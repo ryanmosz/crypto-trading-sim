@@ -10,22 +10,39 @@ using UnityEditor.SceneManagement;
 public class AutoSceneBuilder : MonoBehaviour
 {
 #if UNITY_EDITOR
-    [MenuItem("Tools/Build Crypto Sim Scenes")]
-    public static void BuildScenes()
+    
+    static void EnsureCamera(Scene scene)
     {
-        // Create Login Scene
-        CreateLoginScene();
+        // Check if scene already has a camera
+        GameObject[] rootObjects = scene.GetRootGameObjects();
+        foreach (var obj in rootObjects)
+        {
+            if (obj.GetComponentInChildren<Camera>() != null)
+                return; // Camera already exists
+        }
         
-        // Create Main Scene
-        CreateMainScene();
+        // Create Main Camera
+        GameObject cameraObj = new GameObject("Main Camera");
+        Camera camera = cameraObj.AddComponent<Camera>();
+        camera.clearFlags = CameraClearFlags.SolidColor;
+        camera.backgroundColor = Color.black;
+        camera.orthographic = false;
+        camera.fieldOfView = 60;
+        cameraObj.AddComponent<AudioListener>();
+        cameraObj.tag = "MainCamera";
+        cameraObj.transform.position = new Vector3(0, 0, -10);
         
-        Debug.Log("Scenes created! Don't forget to add them to Build Settings.");
+        Debug.Log("Added Main Camera to scene");
     }
     
-    static void CreateLoginScene()
+    [MenuItem("Tools/Build Scenes/Build Login Scene")]
+    static void BuildLoginScene()
     {
         // Create new scene
-        var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+        Scene scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
+        
+        // Ensure camera exists
+        EnsureCamera(scene);
         
         // Create Canvas
         GameObject canvasGO = new GameObject("Canvas");
@@ -88,10 +105,14 @@ public class AutoSceneBuilder : MonoBehaviour
         EditorSceneManager.SaveScene(scene, "Assets/Scenes/Login.unity");
     }
     
-    static void CreateMainScene()
+    [MenuItem("Tools/Build Scenes/Build Main Scene")]
+    static void BuildMainScene()
     {
         // Create new scene
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+        
+        // Ensure camera exists
+        EnsureCamera(scene);
         
         // Create Canvas (same as login)
         GameObject canvasGO = new GameObject("Canvas");
@@ -201,6 +222,23 @@ public class AutoSceneBuilder : MonoBehaviour
         tmpText.alignment = TextAlignmentOptions.Center;
         
         return textGO;
+    }
+
+    [MenuItem("Tools/Quick Fixes/Add Camera to Current Scene")]
+    static void AddCameraToCurrentScene()
+    {
+        Scene currentScene = EditorSceneManager.GetActiveScene();
+        EnsureCamera(currentScene);
+        EditorSceneManager.SaveScene(currentScene);
+        Debug.Log("Camera added to current scene!");
+    }
+
+    [MenuItem("Tools/Build Scenes/Build All Scenes")]
+    static void BuildAllScenes()
+    {
+        BuildLoginScene();
+        BuildMainScene();
+        Debug.Log("All scenes built successfully!");
     }
 #endif
 } 
