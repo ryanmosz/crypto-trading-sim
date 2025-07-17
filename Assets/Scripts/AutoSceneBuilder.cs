@@ -85,12 +85,12 @@ public class AutoSceneBuilder : MonoBehaviour
         // Alice Button with cool effects
         GameObject aliceBtn = CreateButton(canvas.transform, "AliceButton",
             "Alice\n$10M (Starting)", new Vector2(-250, 0), Color.cyan);
-        CoolUIEffects.ApplyGlowingButtonEffect(aliceBtn, Color.cyan);
+        CoolUIEffects.ApplyCoolButtonEffect(aliceBtn, Color.cyan);
         
         // Bob Button with cool effects
         GameObject bobBtn = CreateButton(canvas.transform, "BobButton",
             "Bob\n$10M (Starting)", new Vector2(250, 0), Color.magenta);
-        CoolUIEffects.ApplyGlowingButtonEffect(bobBtn, Color.magenta);
+        CoolUIEffects.ApplyCoolButtonEffect(bobBtn, Color.magenta);
         
         // Add LoginManager
         GameObject manager = new GameObject("LoginManager");

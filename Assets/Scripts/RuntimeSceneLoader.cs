@@ -88,7 +88,7 @@ public class RuntimeSceneLoader : MonoBehaviour
             UserManager.LoginAsAlice();
             // Don't load scene here, UserManager does it
         });
-        CoolUIEffects.ApplyGlowingButtonEffect(aliceBtn, Color.cyan);
+        CoolUIEffects.ApplyCoolButtonEffect(aliceBtn, Color.cyan);
         
         var bobBtn = CreateButton(canvas.transform, "BobButton",
             "Bob\n$10M (Starting)", new Vector2(250, 0), Color.magenta);
@@ -96,7 +96,7 @@ public class RuntimeSceneLoader : MonoBehaviour
             UserManager.LoginAsBob();
             // Don't load scene here, UserManager does it
         });
-        CoolUIEffects.ApplyGlowingButtonEffect(bobBtn, Color.magenta);
+        CoolUIEffects.ApplyCoolButtonEffect(bobBtn, Color.magenta);
     }
     
     public static void CreateMainSceneRuntime()
