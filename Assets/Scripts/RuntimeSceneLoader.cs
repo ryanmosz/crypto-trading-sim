@@ -84,19 +84,19 @@ public class RuntimeSceneLoader : MonoBehaviour
         // User Buttons
         var aliceBtn = CreateButton(canvas.transform, "AliceButton",
             "Alice\n$10M (Starting)", new Vector2(-250, 0), Color.cyan);
-        aliceBtn.GetComponent<Button>().onClick.AddListener(() => {
+        aliceBtn.onClick.AddListener(() => {
             UserManager.LoginAsAlice();
             // Don't load scene here, UserManager does it
         });
-        CoolUIEffects.ApplyCoolButtonEffect(aliceBtn, Color.cyan);
+        CoolUIEffects.ApplyCoolButtonEffect(aliceBtn.gameObject, Color.cyan);
         
         var bobBtn = CreateButton(canvas.transform, "BobButton",
             "Bob\n$10M (Starting)", new Vector2(250, 0), Color.magenta);
-        bobBtn.GetComponent<Button>().onClick.AddListener(() => {
+        bobBtn.onClick.AddListener(() => {
             UserManager.LoginAsBob();
             // Don't load scene here, UserManager does it
         });
-        CoolUIEffects.ApplyCoolButtonEffect(bobBtn, Color.magenta);
+        CoolUIEffects.ApplyCoolButtonEffect(bobBtn.gameObject, Color.magenta);
     }
     
     public static void CreateMainSceneRuntime()
