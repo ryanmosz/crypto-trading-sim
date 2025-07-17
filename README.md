@@ -2,6 +2,10 @@
 
 Unity WebGL game. Start with $10M, pick cryptos, compete.
 
+## About
+
+A cryptocurrency trading simulator where players invest virtual money across BTC, ETH, BNB, SOL, and XRP. Built with Unity 2022.3 for web browsers.
+
 ## Setup
 
 1. Unity 2022.3.62f1
