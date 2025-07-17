@@ -93,4 +93,4 @@ yarn-error.log*
 # Temporary files
 *.log
 *.tmp
-*.cache 
+*.cache .DS_Store
