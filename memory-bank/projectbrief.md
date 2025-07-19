@@ -2,10 +2,10 @@
 
 ## Core Requirements
 
-**Project Type**: Unity WebGL cryptocurrency trading game  
+**Project Type**: Phaser.js cryptocurrency trading game  
 **Duration**: 7-day MVP development  
-**Platform**: Web browser (WebGL)  
-**Engine**: Unity 2022.3 LTS  
+**Platform**: Web browser  
+**Framework**: Phaser 3  
 
 ## Game Concept
 
@@ -21,7 +21,7 @@ Players start with $10 million virtual money and compete to build the best crypt
 
 ## Technical Stack
 
-- **Frontend**: Unity 2022.3 LTS with WebGL build
+- **Frontend**: Phaser 3 (JavaScript game framework)
 - **Backend**: Node.js on Vercel (serverless)
 - **API**: CoinGecko free tier for price data
 - **Database**: Simple JSON storage (upgradeable)
@@ -37,4 +37,4 @@ Players start with $10 million virtual money and compete to build the best crypt
 
 ## Project Philosophy
 
-"Ship something playable every single day" - Each development milestone produces a working WebGL build that can be tested in a browser. 
+"Ship something playable every single day" - Each development milestone produces a working web build that can be tested immediately in a browser. 

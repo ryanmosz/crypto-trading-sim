@@ -1,273 +1,306 @@
-# 🛠️ Complete Setup Guide
+# 📋 Complete Setup Guide
 
-## Overview
-This guide covers everything you need for Unity WebGL development, including optional Docker setup for consistent builds.
+This guide covers the complete development environment setup for the Crypto Trading Simulator using Phaser 3.
 
-## Required Software
+## Prerequisites
 
-### Core Requirements
-- **Unity Hub** - Manages Unity installations
-- **Unity 2022.3 LTS** - Long-term stable version
-- **WebGL Build Support** - Required module
-- **Visual Studio Code** - Recommended editor
-- **Git** - Version control
+### Required Software
+- **Node.js** (v16+ recommended) - [Download](https://nodejs.org/)
+- **Code Editor** - VS Code recommended - [Download](https://code.visualstudio.com/)
+- **Git** - Version control - [Download](https://git-scm.com/)
+- **Web Browser** - Chrome/Firefox with DevTools
 
-### Optional Tools
-- **Docker Desktop** - For containerized builds
-- **Node.js 18+** - For backend development
-- **Chrome DevTools** - For debugging
+### Recommended VS Code Extensions
+- Live Server - For local development
+- JavaScript (ES6) code snippets
+- Prettier - Code formatter
+- ESLint - JavaScript linter
+- Phaser 3 Snippets (optional)
 
-## Installation Steps
+## Project Setup
 
-### 1. Unity Setup
+### 1. Create Project Structure
 ```bash
-# Install Unity Hub
-brew install --cask unity-hub
+# Create project directory
+mkdir crypto-trading-sim
+cd crypto-trading-sim
 
-# Or download from
-open https://unity.com/download
-```
-
-In Unity Hub:
-1. Sign in with Unity ID
-2. Installs → Install Editor
-3. Select 2022.3 LTS
-4. Add Modules:
-   - ✅ WebGL Build Support
-   - ✅ Mac Build Support (if on Mac)
-   - Optional: Documentation, VS Code Editor
-
-### 2. Development Environment
-
-#### VS Code Extensions
-```bash
-# Install VS Code
-brew install --cask visual-studio-code
-
-# Recommended extensions
-code --install-extension ms-dotnettools.csharp
-code --install-extension unity.unity-debug
-code --install-extension visualstudioexptteam.vscodeintellicode
-```
-
-#### Git Configuration
-```bash
-# Set up Git
-git config --global user.name "Your Name"
-git config --global user.email "your@email.com"
-
-# Initialize repository
+# Initialize git
 git init
-cp /path/to/project/.gitignore .
-git add . && git commit -m "Initial Unity project"
+
+# Create initial structure
+mkdir -p src/{scenes,assets/{images,audio},utils}
+mkdir -p public
 ```
 
-### 3. Unity Project Settings
-
-#### Build Settings
-1. File → Build Settings
-2. Select WebGL → Switch Platform
-3. Player Settings:
-   ```
-   Company Name: YourCompany
-   Product Name: Crypto Trading Sim
-   Version: 0.1.0
-   
-   WebGL Settings:
-   - Template: Minimal
-   - Compression: Gzip
-   - Memory Size: 256 MB
-   ```
-
-#### Graphics Settings
-Edit → Project Settings → Graphics:
-- Color Space: Linear
-- Tier Settings: Low (for WebGL)
-
-#### Quality Settings
-Edit → Project Settings → Quality:
-- Create "WebGL" preset
-- Shadows: Disabled
-- Anti-aliasing: 2x
-
-## Docker Setup (Optional)
-
-### Why Docker?
-- Consistent builds across team
-- CI/CD ready
-- No "works on my machine" issues
-- Automated Unity licensing
-
-### Docker Installation
+### 2. Initialize npm Project
 ```bash
-# Install Docker Desktop
-brew install --cask docker
+# Initialize package.json
+npm init -y
 
-# Verify installation
-docker --version
-docker-compose --version
+# Install Phaser
+npm install phaser
+
+# Install development dependencies
+npm install --save-dev webpack webpack-cli webpack-dev-server
+npm install --save-dev html-webpack-plugin copy-webpack-plugin
+npm install --save-dev @babel/core @babel/preset-env babel-loader
 ```
 
-### Unity License for Docker
+### 3. Create Configuration Files
 
-1. Generate activation file:
-```bash
-/Applications/Unity/Unity.app/Contents/MacOS/Unity \
-  -quit -batchmode -createManualActivationFile
+#### webpack.config.js
+```javascript
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+
+module.exports = {
+  entry: './src/index.js',
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: 'bundle.js',
+  },
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env']
+          }
+        }
+      }
+    ]
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: './public/index.html'
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'src/assets', to: 'assets' }
+      ]
+    })
+  ],
+  devServer: {
+    static: './dist',
+    hot: true,
+    open: true
+  }
+};
 ```
 
-2. Upload `Unity_v20XX.X.XX.alf` to https://license.unity3d.com/manual
-
-3. Save license to `.env`:
-```bash
-echo "UNITY_LICENSE_CONTENT=$(cat Unity_lic.ulf | base64)" > .env
+#### package.json scripts
+```json
+{
+  "scripts": {
+    "start": "webpack serve --mode development",
+    "build": "webpack --mode production",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
 ```
 
-### Docker Commands
-```bash
-# Build with Docker
-docker-compose up unity-builder
+### 4. Create Initial Files
 
-# Run local server
-docker-compose up web-server
-
-# Full build and serve
-docker-compose up
+#### public/index.html
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Trading Simulator</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        #game-container {
+            width: 100%;
+            max-width: 800px;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container"></div>
+</body>
+</html>
 ```
 
-## Project Structure
+#### src/index.js
+```javascript
+import Phaser from 'phaser';
+import BootScene from './scenes/BootScene';
+import MenuScene from './scenes/MenuScene';
 
-### Folder Organization
-```
-Project Root/
-├── Assets/              # Unity assets
-│   ├── Scripts/        # C# code
-│   │   ├── Managers/   # Singletons
-│   │   ├── UI/         # UI components
-│   │   ├── Data/       # Data models
-│   │   └── Utils/      # Helpers
-│   ├── Prefabs/        # Reusable objects
-│   ├── Materials/      # Shaders/materials
-│   ├── Scenes/         # Game scenes
-│   └── UI/             # UI assets
-├── builds/             # Build output
-├── planning/           # Documentation
-├── backend/            # API server
-└── memory-bank/        # Agent memory
+const config = {
+    type: Phaser.AUTO,
+    parent: 'game-container',
+    width: 800,
+    height: 600,
+    backgroundColor: '#000000',
+    scene: [BootScene, MenuScene]
+};
+
+const game = new Phaser.Game(config);
 ```
 
-### Essential Files
-- `.gitignore` - Unity-specific ignores
-- `.editorconfig` - Code formatting
-- `Dockerfile` - Build container
-- `docker-compose.yml` - Services
-- `build.sh` - Build script
+### 5. Git Configuration
+
+#### .gitignore
+```
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment files
+.env
+.env.local
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Testing
+coverage/
+```
 
 ## Development Workflow
 
-### Daily Routine
-1. **Start Docker** (optional)
-   ```bash
-   docker-compose up -d
-   ```
+### Starting Development
+```bash
+# Install dependencies
+npm install
 
-2. **Open Unity Project**
-   ```bash
-   open -a "Unity Hub"
-   ```
+# Start dev server
+npm start
+# Opens browser at http://localhost:8080
+```
 
-3. **Make Changes**
-   - Edit in VS Code
-   - Test in Unity Editor
-   - Build to WebGL
+### Building for Production
+```bash
+# Create production build
+npm run build
+# Output in dist/ folder
+```
 
-4. **Test Locally**
-   ```bash
-   cd builds/WebGL
-   python3 -m http.server 8000
-   # Open http://localhost:8000
-   ```
+### Project Structure
+```
+crypto-trading-sim/
+├── src/
+│   ├── index.js          # Entry point
+│   ├── scenes/           # Phaser scenes
+│   │   ├── BootScene.js  # Asset loading
+│   │   ├── MenuScene.js  # Main menu
+│   │   └── GameScene.js  # Game logic
+│   ├── assets/           # Images, audio
+│   └── utils/            # Helper functions
+├── public/
+│   └── index.html        # HTML template
+├── dist/                 # Build output
+├── package.json
+├── webpack.config.js
+└── .gitignore
+```
 
-5. **Commit Changes**
-   ```bash
-   git add -A
-   git commit -m "feat: description"
-   git tag v0.X
-   ```
+## API Integration
 
-## Performance Guidelines
+### CoinGecko Setup
+```javascript
+// src/utils/api.js
+const COINGECKO_API = 'https://api.coingecko.com/api/v3';
 
-### Texture Settings
-- Max Size: 1024x1024
-- Compression: Normal
-- Generate Mipmaps: ✓
+export async function getCryptoPrices() {
+    const ids = 'bitcoin,ethereum,binancecoin,solana,ripple';
+    const url = `${COINGECKO_API}/simple/price?ids=${ids}&vs_currencies=usd`;
+    
+    try {
+        const response = await fetch(url);
+        return await response.json();
+    } catch (error) {
+        console.error('API Error:', error);
+        return null;
+    }
+}
+```
 
-### Build Optimization
-- Strip Engine Code: ✓
-- Optimize Mesh Data: ✓
-- IL2CPP Code Generation: Faster
+## Deployment Options
 
-### WebGL Specific
-- Avoid threading (use coroutines)
-- Minimize texture memory
-- Batch draw calls
-- Profile in browser
+### 1. GitHub Pages
+```bash
+# Install gh-pages
+npm install --save-dev gh-pages
+
+# Add to package.json
+"scripts": {
+  "deploy": "npm run build && gh-pages -d dist"
+}
+
+# Deploy
+npm run deploy
+```
+
+### 2. Vercel
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel --prod
+```
+
+### 3. Netlify
+- Drag and drop `dist/` folder to Netlify
+- Or connect GitHub repo with auto-deploy
 
 ## Troubleshooting
 
 ### Common Issues
 
-**Unity Hub won't open**
-```bash
-rm -rf ~/Library/Application\ Support/UnityHub
-brew reinstall unity-hub
-```
+1. **Module not found errors**
+   ```bash
+   rm -rf node_modules package-lock.json
+   npm install
+   ```
 
-**WebGL build fails**
-- Check WebGL module installed
-- Clear Library folder
-- Increase memory in Player Settings
+2. **Port already in use**
+   - Change port in webpack.config.js
+   - Or kill process using the port
 
-**Docker license error**
-- Regenerate .alf file
-- Check .env file exists
-- Verify base64 encoding
+3. **Assets not loading**
+   - Check file paths are correct
+   - Ensure CopyWebpackPlugin is configured
 
-**CORS errors**
-- Use proper web server (not file://)
-- Configure backend CORS headers
-
-## Quick Reference
-
-### Build Shortcuts
-- `Cmd+Shift+B` - Build Settings
-- `Cmd+B` - Build
-- `Cmd+P` - Play/Stop
-
-### Testing URLs
-- Local: http://localhost:8000
-- Docker: http://localhost:8080
-- API: http://localhost:3000
-
-### File Paths
-- Scenes: `Assets/Scenes/`
-- Scripts: `Assets/Scripts/`
-- Builds: `builds/WebGL/`
-
-## Ready Checklist
-
-- [ ] Unity Hub installed
-- [ ] Unity 2022.3 LTS with WebGL
-- [ ] VS Code with extensions
-- [ ] Git repository initialized
-- [ ] Project settings configured
-- [ ] Can build to WebGL
-- [ ] Can run locally
-- [ ] (Optional) Docker working
+4. **CORS errors with API**
+   - Use proxy in development
+   - Ensure API allows origin in production
 
 ## Next Steps
 
-✅ Setup complete! Now you can:
-1. Follow [phase1-foundation.md](phase1-foundation.md) to start building
-2. Reference [troubleshooting.md](troubleshooting.md) if you hit issues
-3. Check [07-MASTER-PHASES.md](07-MASTER-PHASES.md) for the full roadmap 
+1. ✅ Complete this setup
+2. 📖 Read [phase1-foundation.md](phase1-foundation.md)
+3. 🚀 Start building!
+
+---
+
+*For quick first screen setup, see [quick-start.md](quick-start.md)* 

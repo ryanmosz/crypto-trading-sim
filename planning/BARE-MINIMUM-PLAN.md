@@ -1,134 +1,225 @@
-# 🚀 BARE MINIMUM PLAN - Ship in 2 Hours
+# 🚨 BARE MINIMUM PLAN - Ship in 2 Hours
 
-## Goal: Get ANYTHING on screen ASAP
+This is the absolute fastest path to shipping something playable. Cut everything non-essential.
 
-After reviewing the full plan, here's what we can CUT to ship immediately:
+## What We're Building
+A login screen with 2 test users that shows different results. That's it. Ship it.
 
-### ❌ What We're CUTTING (for now)
-- ~~4 screens~~ → Just 1 screen
-- ~~Navigation system~~ → No navigation needed
-- ~~Allocation system~~ → Skip it
-- ~~Dashboard~~ → Not needed
-- ~~Live prices~~ → Nope
-- ~~API integration~~ → Definitely not
-- ~~Backend/Multiplayer~~ → Way too much
-- ~~Polish~~ → Ship ugly, fix later
+## Stack (Simplified)
+- **Frontend**: Phaser 3 (just one HTML file if needed!)
+- **Data**: Hardcoded
+- **Backend**: None
+- **Deployment**: GitHub Pages (free, instant)
 
-### ✅ What We're KEEPING (bare minimum)
-1. Unity project that builds to WebGL
-2. Login screen with 2 pre-baked test users
-3. Main screen that shows which user is logged in
-4. Basic user switching for demo purposes
+## Hour 1: Build It
 
-## The 2-Hour Plan
-
-### Hour 1: Unity Setup (60 min)
+### 0-15 min: Setup
 ```bash
-# 1. Install Unity Hub
-brew install --cask unity-hub
-
-# 2. Install Unity 2022.3 LTS with WebGL
-# 3. Create new 2D project
-# 4. Switch to WebGL platform
+mkdir crypto-sim && cd crypto-sim
+npm init -y
+npm install phaser
+mkdir src
 ```
 
-### Hour 2: Build Login + Main Screen (60 min)
-
-#### Scene 1: Login Screen (20 min)
-1. **Create Canvas** (5 min)
-   - GameObject → UI → Canvas
-   - Black background
-   - Add Title: "CRYPTO TRADING SIM"
-
-2. **Add Test User Buttons** (15 min)
-   ```
-   TestUser 1: "Alice ($10M → $12M)"
-   TestUser 2: "Bob ($10M → $8M)"
-   ```
-   - Two big buttons
-   - OnClick → Load Main Scene with user data
-
-#### Scene 2: Main Screen (20 min)
-1. **Show Current User** (10 min)
-   - "Welcome, [Username]!"
-   - "Portfolio Value: $[Amount]"
-
-2. **Add Logout Button** (10 min)
-   - Returns to login screen
-   - Can switch users easily
-
-#### Simple User Manager (10 min)
-```csharp
-public static class UserManager
-{
-    public static string CurrentUser;
-    public static float StartingValue = 10000000; // Both start with $10M
-    public static float CurrentValue;
-    
-    public static void LoginAsAlice()
-    {
-        CurrentUser = "Alice";
-        CurrentValue = 12000000; // +20% from smart BTC/ETH focus
-        SceneManager.LoadScene("Main");
+### 15-45 min: Create Game
+```javascript
+// src/game.js
+class LoginScene extends Phaser.Scene {
+    create() {
+        this.cameras.main.setBackgroundColor('#000000');
+        
+        // Title
+        this.add.text(400, 100, 'Crypto Trading Sim', {
+            fontSize: '48px',
+            color: '#00ffff'
+        }).setOrigin(0.5);
+        
+        // Alice button
+        this.createButton(400, 250, 'Alice (+20%)', () => {
+            this.showResult('Alice', 12000000, '#00ff00');
+        });
+        
+        // Bob button
+        this.createButton(400, 350, 'Bob (-20%)', () => {
+            this.showResult('Bob', 8000000, '#ff0000');
+        });
     }
     
-    public static void LoginAsBob()
-    {
-        CurrentUser = "Bob";
-        CurrentValue = 8000000; // -20% from risky XRP bet
-        SceneManager.LoadScene("Main");
+    createButton(x, y, text, callback) {
+        const btn = this.add.rectangle(x, y, 250, 60, 0x00ffff, 0.3)
+            .setInteractive()
+            .on('pointerdown', callback);
+            
+        this.add.text(x, y, text, {
+            fontSize: '24px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+    }
+    
+    showResult(user, value, color) {
+        this.scene.start('ResultScene', { user, value, color });
     }
 }
+
+class ResultScene extends Phaser.Scene {
+    create(data) {
+        this.cameras.main.setBackgroundColor('#000000');
+        
+        const profit = ((data.value / 10000000) - 1) * 100;
+        
+        this.add.text(400, 200, `${data.user}'s Portfolio`, {
+            fontSize: '36px',
+            color: '#00ffff'
+        }).setOrigin(0.5);
+        
+        this.add.text(400, 300, `$${(data.value/1000000).toFixed(1)}M`, {
+            fontSize: '64px',
+            color: data.color
+        }).setOrigin(0.5);
+        
+        this.add.text(400, 380, `${profit > 0 ? '+' : ''}${profit}%`, {
+            fontSize: '32px',
+            color: data.color
+        }).setOrigin(0.5);
+        
+        // Back button
+        const backBtn = this.add.rectangle(400, 500, 150, 40, 0xff1493, 0.3)
+            .setInteractive()
+            .on('pointerdown', () => this.scene.start('LoginScene'));
+            
+        this.add.text(400, 500, 'Back', {
+            fontSize: '20px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+    }
+}
+
+// Initialize game
+const config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    scene: [LoginScene, ResultScene]
+};
+
+new Phaser.Game(config);
 ```
 
-3. **Build & Deploy** (10 min)
-   - Add both scenes to Build Settings
-   - Build to WebGL
-   - Test user switching
-   - Ship it! 🎉
-
-## That's It!
-
-### What You Get
-- ✅ Working Unity WebGL game
-- ✅ Login screen with 2 test users
-- ✅ User switching for demos
-- ✅ Basic state management
-- ✅ Foundation for everything else
-
-### Why Test Users are Perfect for MVP
-- **No backend needed** - Everything hardcoded
-- **Easy demos** - Switch between Alice and Bob instantly
-- **Different states** - Show different portfolio values
-- **Real enough** - Feels like a real app
-- **Fast to build** - Just buttons and text
-
-### What's Next (LATER)
-Once this works, THEN add:
-- Real authentication (Phase 4)
-- Allocation system (Phase 2)
-- Dashboard with live data (Phase 3)
-- Actual portfolio differences
-- Everything else...
-
-## Why This Works
-
-1. **Proves the pipeline**: Unity → WebGL → Browser
-2. **Something to show**: Not just plans
-3. **Momentum**: Ship first, improve later
-4. **Foundation**: Everything builds on this
-
-## Literally Just Do This
-
-```
-1. Install Unity Hub
-2. Create project
-3. Add text and button
-4. Build to WebGL
-5. Open in browser
-6. Screenshot it
-7. Commit it
-8. You shipped! 🚀
+### 45-60 min: Create HTML
+```html
+<!-- index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crypto Trading Simulator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        #game-container {
+            max-width: 800px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container"></div>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
+    <script src="src/game.js"></script>
+</body>
+</html>
 ```
 
-Everything else can wait. Ship THIS first. 
+## Hour 2: Ship It
+
+### 0-15 min: Test
+```bash
+# Quick test locally
+npx http-server -o
+# Or just open index.html in browser
+```
+
+### 15-45 min: Deploy to GitHub Pages
+```bash
+# Initialize git
+git init
+git add .
+git commit -m "Initial game"
+
+# Create GitHub repo (use GitHub UI or CLI)
+gh repo create crypto-sim --public --source=.
+git push -u origin main
+
+# Enable GitHub Pages
+# Go to Settings → Pages → Source: main branch
+# Your game is live at: https://[username].github.io/crypto-sim
+```
+
+### 45-60 min: Polish (If Time)
+- Add hover effects
+- Add sound on click
+- Add transition animation
+- Update README
+
+## What You've Shipped
+
+✅ Working game at public URL  
+✅ Two different user experiences  
+✅ Visual feedback (colors for profit/loss)  
+✅ Playable on mobile  
+✅ Zero backend complexity  
+
+## What We Cut (Add Later)
+
+❌ Real crypto allocation  
+❌ Actual price data  
+❌ Multiple screens  
+❌ User accounts  
+❌ Multiplayer  
+❌ Backend API  
+
+## One-Line Deploy Options
+
+### Option 1: Surge.sh
+```bash
+npm install -g surge
+surge . crypto-trading-sim.surge.sh
+```
+
+### Option 2: Netlify Drop
+1. Zip your folder
+2. Drag to https://app.netlify.com/drop
+3. Instant URL
+
+### Option 3: Vercel
+```bash
+npm i -g vercel
+vercel --prod
+```
+
+## Success Metrics
+
+- **Build Time**: < 1 hour
+- **Deploy Time**: < 15 minutes  
+- **Code Lines**: < 100
+- **Features**: Just enough
+- **Fun**: Surprisingly yes
+
+## Next Steps After Shipping
+
+1. Share the link
+2. Get feedback
+3. Add ONE feature
+4. Ship again
+5. Repeat
+
+---
+
+**Remember**: Perfect is the enemy of shipped. This plan gets you from zero to playable game URL in 2 hours. Everything else can wait. 

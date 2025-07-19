@@ -1,48 +1,107 @@
-# 🚀 Quick Start - First Screen in 5 Minutes
+# 🚀 5-Minute Quick Start Guide
 
-## Goal: See your game running in a browser FAST!
+Get your first Phaser screen running in 5 minutes!
 
-### Step 1: Install Unity Hub (2 minutes)
+## Prerequisites
+- Node.js installed
+- Text editor (VS Code recommended)
+- Web browser
+
+## Step 1: Setup (2 min)
 ```bash
-# Download Unity Hub for Mac
-open https://unity.com/download
+# Create project
+mkdir crypto-sim && cd crypto-sim
+npm init -y
+npm install phaser
 
-# Or use homebrew
-brew install --cask unity-hub
+# Create files
+mkdir src
+touch src/index.js
+touch index.html
 ```
 
-### Step 2: Install Unity (while reading next steps)
-1. Open Unity Hub
-2. Go to Installs → Install Editor
-3. Choose Unity 2022.3 LTS (latest LTS)
-4. Select WebGL Build Support (CRITICAL!)
-5. Let it download in background
+## Step 2: HTML File (1 min)
+Create `index.html`:
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crypto Sim</title>
+    <style>
+        body { margin: 0; background: #000; }
+    </style>
+</head>
+<body>
+    <script src="node_modules/phaser/dist/phaser.min.js"></script>
+    <script src="src/index.js"></script>
+</body>
+</html>
+```
 
-### Step 3: Create Your First Project (2 minutes)
-1. In Unity Hub: New Project
-2. Template: 2D Core
-3. Project Name: CryptoTradingSim
-4. Create Project
+## Step 3: Game Code (1 min)
+Create `src/index.js`:
+```javascript
+class GameScene extends Phaser.Scene {
+    create() {
+        // Gradient background
+        const graphics = this.add.graphics();
+        graphics.fillGradientStyle(0x00ffff, 0x00ffff, 0xff1493, 0xff1493);
+        graphics.fillRect(0, 0, 800, 600);
+        
+        // Title
+        this.add.text(400, 200, 'CRYPTO TRADING SIM', {
+            fontSize: '48px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        // Start button
+        const button = this.add.rectangle(400, 400, 200, 60, 0x00ffff)
+            .setInteractive()
+            .on('pointerdown', () => {
+                this.cameras.main.flash(500);
+            });
+            
+        this.add.text(400, 400, 'START', {
+            fontSize: '32px',
+            color: '#000000'
+        }).setOrigin(0.5);
+    }
+}
 
-### Step 4: Quick Scene Setup (1 minute)
-1. File → Build Settings → WebGL → Switch Platform
-2. GameObject → UI → Canvas
-3. Right-click Canvas → UI → Text - TextMeshPro
-4. Import TMP Essentials when prompted
-5. Set Text: "CRYPTO TRADING SIM"
-6. Font Size: 72, Color: Cyan (#00FFFF)
+const config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    scene: GameScene
+};
 
-### Step 5: See It Live!
-1. File → Build And Run
-2. Wait for build (first time takes a few minutes)
-3. Browser opens with your game!
+new Phaser.Game(config);
+```
 
-## 🎉 Success! You now have:
-- ✅ Unity project created
-- ✅ WebGL build working
-- ✅ Game in browser
-- ✅ Ready for Phase 1
+## Step 4: Run It! (1 min)
+```bash
+# Simple way - open HTML file
+open index.html  # Mac
+# Or drag index.html to your browser
+
+# Better way - use local server
+npx http-server -o
+# Opens at http://localhost:8080
+```
+
+## 🎉 Done!
+
+You now have:
+- Working Phaser game
+- Gradient background
+- Interactive button
+- Ready to expand
 
 ## Next Steps
-→ Continue with [phase1-foundation.md](phase1-foundation.md) to build the full game
-→ Or see [setup-guide.md](setup-guide.md) for complete environment setup 
+1. Add more scenes
+2. Read [phase1-foundation.md](phase1-foundation.md)
+3. Build the full game!
+
+---
+
+*Need the 2-hour bare minimum version? Check [BARE-MINIMUM-PLAN.md](BARE-MINIMUM-PLAN.md)* 

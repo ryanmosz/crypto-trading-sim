@@ -1,0 +1,1077 @@
+// Game configuration
+const GAME_CONFIG = {
+    startingMoney: 10000000, // $10M
+    blockSize: 1000000, // $1M per allocation
+    cryptos: {
+        BTC: { name: 'Bitcoin', startPrice: 65000, color: 0xf7931a },
+        ETH: { name: 'Ethereum', startPrice: 3500, color: 0x627eea },
+        BNB: { name: 'Binance Coin', startPrice: 400, color: 0xf3ba2f },
+        SOL: { name: 'Solana', startPrice: 120, color: 0x00ffa3 },
+        XRP: { name: 'Ripple', startPrice: 0.75, color: 0x23292f }
+    }
+};
+
+// Enhanced scenario structure for modular time periods
+const MARCH_2020_SCENARIO = {
+    id: 'march_2020',
+    date: "March 12, 2020",
+    displayName: "March 12, 2020",
+    subtitle: "(24 hours)",
+    description: "COVID-19 Black Thursday",
+    duration: "24 hours",
+    defaultSimulationTime: 30, // seconds
+    speeds: {
+        regular: { label: "Regular Speed", multiplier: 1, time: 30 },
+        double: { label: "Double Speed", multiplier: 2, time: 15 }
+    },
+    dataGranularity: "hourly",
+    timeLabels: Array.from({length: 24}, (_, i) => `Hour ${i+1}`),
+    
+    // All cryptos available in 2020
+    availableCryptos: {
+        BTC: { available: true },
+        ETH: { available: true },
+        BNB: { available: true },
+        SOL: { available: true },
+        XRP: { available: true }
+    },
+    
+    prices: {
+        BTC: { 
+            start: 7911, 
+            hourly: [7911, 7650, 7200, 6800, 6200, 5800, 5400, 5200, 5000, 4900, 4857, 4900, 
+                     5100, 5300, 5200, 5100, 5000, 4950, 4900, 4880, 4860, 4857, 4850, 4857],
+            end: 4857 
+        },
+        ETH: { 
+            start: 194, 
+            hourly: [194, 185, 170, 155, 140, 125, 115, 110, 108, 109, 110, 112,
+                     115, 118, 116, 114, 112, 111, 110, 109, 110, 111, 110, 110],
+            end: 110 
+        },
+        BNB: { 
+            start: 13.50, 
+            hourly: [13.50, 13.00, 12.20, 11.50, 10.80, 10.20, 9.80, 9.50, 9.30, 9.20, 9.15, 9.20,
+                     9.40, 9.60, 9.50, 9.40, 9.30, 9.25, 9.20, 9.18, 9.16, 9.15, 9.14, 9.15],
+            end: 9.15 
+        },
+        SOL: { 
+            start: 0.85, // SOL didn't exist yet, using similar volatility
+            hourly: [0.85, 0.82, 0.77, 0.72, 0.66, 0.61, 0.57, 0.54, 0.52, 0.51, 0.50, 0.51,
+                     0.53, 0.55, 0.54, 0.53, 0.52, 0.51, 0.50, 0.50, 0.50, 0.50, 0.50, 0.50],
+            end: 0.50 
+        },
+        XRP: { 
+            start: 0.20, 
+            hourly: [0.20, 0.19, 0.17, 0.16, 0.14, 0.13, 0.12, 0.115, 0.11, 0.11, 0.11, 0.112,
+                     0.115, 0.118, 0.116, 0.114, 0.112, 0.111, 0.11, 0.11, 0.11, 0.11, 0.11, 0.11],
+            end: 0.11 
+        }
+    }
+};
+
+// May 19, 2021 China FUD crash
+const MAY_2021_SCENARIO = {
+    id: 'may_2021',
+    date: "May 19, 2021",
+    displayName: "May 19, 2021",
+    subtitle: "(24 hours)",
+    description: "Crypto Market Crash",
+    duration: "24 hours",
+    defaultSimulationTime: 30,
+    speeds: {
+        regular: { label: "Regular Speed", multiplier: 1, time: 30 },
+        double: { label: "Double Speed", multiplier: 2, time: 15 }
+    },
+    dataGranularity: "hourly",
+    timeLabels: Array.from({length: 24}, (_, i) => `Hour ${i+1}`),
+    
+    // All cryptos available in 2021
+    availableCryptos: {
+        BTC: { available: true },
+        ETH: { available: true },
+        BNB: { available: true },
+        SOL: { available: true },
+        XRP: { available: true }
+    },
+    
+    prices: {
+        BTC: { 
+            start: 43000, 
+            hourly: [43000, 42000, 40500, 38000, 35000, 33000, 31500, 30000, 29500, 30000, 30500, 31000,
+                     31500, 32000, 31800, 31600, 31400, 31200, 31000, 30800, 30600, 30500, 30400, 30000],
+            end: 30000 
+        },
+        ETH: { 
+            start: 3400, 
+            hourly: [3400, 3200, 3000, 2800, 2500, 2200, 2000, 1900, 1850, 1900, 1950, 2000,
+                     2050, 2100, 2080, 2060, 2040, 2020, 2000, 1980, 1960, 1950, 1940, 1900],
+            end: 1900 
+        },
+        BNB: { 
+            start: 600, 
+            hourly: [600, 570, 530, 480, 430, 380, 340, 310, 300, 305, 310, 315,
+                     320, 325, 322, 320, 318, 315, 312, 310, 308, 305, 303, 300],
+            end: 300 
+        },
+        SOL: { 
+            start: 55, 
+            hourly: [55, 52, 48, 44, 40, 36, 33, 30, 29, 29.5, 30, 30.5,
+                     31, 31.5, 31.3, 31.1, 30.9, 30.7, 30.5, 30.3, 30.1, 30, 29.9, 30],
+            end: 30 
+        },
+        XRP: { 
+            start: 1.50, 
+            hourly: [1.50, 1.42, 1.32, 1.20, 1.08, 0.98, 0.92, 0.90, 0.88, 0.89, 0.90, 0.91,
+                     0.92, 0.93, 0.925, 0.92, 0.915, 0.91, 0.905, 0.90, 0.895, 0.89, 0.885, 0.90],
+            end: 0.90 
+        }
+    }
+};
+
+// 2013 Bitcoin's first major bull run
+const YEAR_2013_SCENARIO = {
+    id: 'year_2013',
+    date: "2013",
+    displayName: "2013",
+    subtitle: "(Full Year)",
+    description: "Bitcoin's First Bull Run",
+    duration: "1 year",
+    defaultSimulationTime: 30,
+    speeds: {
+        regular: { label: "Regular Speed", multiplier: 1, time: 30 },
+        double: { label: "Double Speed", multiplier: 2, time: 15 }
+    },
+    dataGranularity: "monthly",
+    timeLabels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    
+    // Only early cryptos existed
+    availableCryptos: {
+        BTC: { available: true },
+        ETH: { available: false, reason: "Not created until 2015" },
+        BNB: { available: false, reason: "Not created until 2017" },
+        SOL: { available: false, reason: "Not created until 2020" },
+        XRP: { available: true }
+    },
+    
+    prices: {
+        BTC: {
+            start: 13,
+            monthly: [13, 20, 35, 100, 140, 110, 95, 120, 140, 180, 450, 1100],
+            end: 1100
+        },
+        XRP: {
+            start: 0.005,
+            monthly: [0.005, 0.006, 0.008, 0.015, 0.020, 0.014, 0.013, 0.015, 0.018, 0.025, 0.040, 0.06],
+            end: 0.06
+        },
+        // Unavailable cryptos still need price data structure
+        ETH: { start: 0, monthly: Array(12).fill(0), end: 0 },
+        BNB: { start: 0, monthly: Array(12).fill(0), end: 0 },
+        SOL: { start: 0, monthly: Array(12).fill(0), end: 0 }
+    }
+};
+
+// Store available scenarios
+const SCENARIOS = {
+    'march_2020': MARCH_2020_SCENARIO,
+    'may_2021': MAY_2021_SCENARIO,
+    'year_2013': YEAR_2013_SCENARIO
+};
+
+// Login Scene
+class LoginScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'LoginScene' });
+    }
+
+    create() {
+        // Hide loading div
+        document.getElementById('loading').style.display = 'none';
+        
+        // Black background
+        this.cameras.main.setBackgroundColor('#000000');
+        
+        // Title - white with cyan accent
+        this.add.text(450, 100, 'CRYPTO TRADER CHALLENGE', {
+            fontSize: '42px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        // Subtitle - white text
+        this.add.text(450, 150, 'Turn $10M into millions more!', {
+            fontSize: '20px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        // Test users
+        this.createUserButton('Alice', 'Conservative Trader', 250, () => {
+            this.scene.start('ScenarioSelectScene', { user: 'Alice' });
+        });
+        
+        this.createUserButton('Bob', 'Risk Taker', 350, () => {
+            this.scene.start('ScenarioSelectScene', { user: 'Bob' });
+        });
+        
+        // Quick play
+        this.createUserButton('Quick Play', 'Jump right in!', 450, () => {
+            this.scene.start('ScenarioSelectScene', { user: 'Player' });
+        });
+    }
+    
+    createUserButton(name, desc, y, callback) {
+        const button = this.add.rectangle(450, y, 400, 80, 0x000000, 1)
+            .setStrokeStyle(2, 0x666666)
+            .setInteractive({ useHandCursor: true })
+            .on('pointerover', () => {
+                button.setStrokeStyle(3, 0x00ffff);
+                button.setScale(1.05);
+            })
+            .on('pointerout', () => {
+                button.setStrokeStyle(2, 0x666666);
+                button.setScale(1);
+            })
+            .on('pointerdown', callback);
+            
+        this.add.text(450, y - 10, name, {
+            fontSize: '28px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        this.add.text(450, y + 15, desc, {
+            fontSize: '16px',
+            color: '#999999'
+        }).setOrigin(0.5);
+    }
+}
+
+// Scenario Selection Scene
+class ScenarioSelectScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'ScenarioSelectScene' });
+    }
+    
+    init(data) {
+        this.userName = data.user || 'Player';
+    }
+    
+    create() {
+        // Black background
+        this.cameras.main.setBackgroundColor('#000000');
+        
+        // Title
+        this.add.text(450, 100, 'SELECT TIME PERIOD', {
+            fontSize: '42px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        // Subtitle
+        this.add.text(450, 150, 'Choose a time period to trade through', {
+            fontSize: '20px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        // 2013 Full Year option
+        this.createScenarioButton(
+            SCENARIOS.year_2013.displayName,
+            SCENARIOS.year_2013.subtitle,
+            230,
+            'year_2013'
+        );
+        
+        // March 12, 2020 option
+        this.createScenarioButton(
+            SCENARIOS.march_2020.displayName,
+            SCENARIOS.march_2020.subtitle,
+            310,
+            'march_2020'
+        );
+        
+        // May 19, 2021 option
+        this.createScenarioButton(
+            SCENARIOS.may_2021.displayName,
+            SCENARIOS.may_2021.subtitle,
+            390,
+            'may_2021'
+        );
+        
+        // Back button
+        const backButton = this.add.rectangle(100, 550, 120, 40, 0x333333)
+            .setStrokeStyle(2, 0x666666)
+            .setInteractive({ useHandCursor: true })
+            .on('pointerover', () => backButton.setFillStyle(0x444444))
+            .on('pointerout', () => backButton.setFillStyle(0x333333))
+            .on('pointerdown', () => this.scene.start('LoginScene'));
+            
+        this.add.text(100, 550, 'BACK', {
+            fontSize: '18px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+    }
+    
+    createScenarioButton(dateText, subtitleText, y, scenarioKey) {
+        const button = this.add.rectangle(450, y, 400, 70, 0x111111)
+            .setStrokeStyle(2, 0x333333)
+            .setInteractive({ useHandCursor: true })
+            .on('pointerover', () => {
+                button.setStrokeStyle(2, 0x00ffff);
+                dateDisplay.setColor('#00ffff');
+                subtitleDisplay.setColor('#00ffff');
+            })
+            .on('pointerout', () => {
+                button.setStrokeStyle(2, 0x333333);
+                dateDisplay.setColor('#ffffff');
+                subtitleDisplay.setColor('#666666');
+            })
+            .on('pointerdown', () => {
+                this.scene.start('SimulationSpeedScene', { 
+                    user: this.userName,
+                    scenario: scenarioKey
+                });
+            });
+            
+        const dateDisplay = this.add.text(450, y - 10, dateText, {
+            fontSize: '26px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        const subtitleDisplay = this.add.text(450, y + 15, subtitleText, {
+            fontSize: '16px',
+            color: '#666666'
+        }).setOrigin(0.5);
+    }
+}
+
+// Simulation Speed Selection Scene
+class SimulationSpeedScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'SimulationSpeedScene' });
+    }
+    
+    init(data) {
+        this.userName = data.user;
+        this.scenarioKey = data.scenario;
+        this.scenario = SCENARIOS[this.scenarioKey];
+    }
+    
+    create() {
+        // Background
+        this.cameras.main.setBackgroundColor('#000000');
+        
+        // Title
+        this.add.text(450, 50, 'SIMULATION SPEED', {
+            fontSize: '32px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        // Scenario info
+        this.add.text(450, 100, `${this.scenario.displayName} - ${this.scenario.description}`, {
+            fontSize: '18px',
+            color: '#00ffff'
+        }).setOrigin(0.5);
+        
+        this.add.text(450, 130, 'Select how fast the simulation should play', {
+            fontSize: '16px',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
+        // Speed options
+        let yPos = 220;
+        Object.entries(this.scenario.speeds).forEach(([speedKey, speedConfig]) => {
+            this.createSpeedButton(speedKey, speedConfig, yPos);
+            yPos += 100;
+        });
+        
+        // Back button
+        const backButton = this.add.rectangle(100, 550, 120, 40, 0x333333)
+            .setStrokeStyle(2, 0x666666)
+            .setInteractive({ useHandCursor: true })
+            .on('pointerover', () => backButton.setFillStyle(0x444444))
+            .on('pointerout', () => backButton.setFillStyle(0x333333))
+            .on('pointerdown', () => this.scene.start('ScenarioSelectScene', { user: this.userName }));
+            
+        this.add.text(100, 550, 'BACK', {
+            fontSize: '18px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+    }
+    
+    createSpeedButton(speedKey, speedConfig, y) {
+        const button = this.add.rectangle(450, y, 400, 70, 0x111111)
+            .setStrokeStyle(2, 0x333333)
+            .setInteractive({ useHandCursor: true });
+            
+        const labelText = this.add.text(450, y - 10, speedConfig.label, {
+            fontSize: '24px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        const timeText = this.add.text(450, y + 15, `${speedConfig.time} seconds total`, {
+            fontSize: '16px',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
+        button
+            .on('pointerover', () => {
+                button.setStrokeStyle(2, 0x00ffff);
+                labelText.setColor('#00ffff');
+            })
+            .on('pointerout', () => {
+                button.setStrokeStyle(2, 0x333333);
+                labelText.setColor('#ffffff');
+            })
+            .on('pointerdown', () => {
+                this.scene.start('AllocationScene', {
+                    user: this.userName,
+                    scenario: this.scenarioKey,
+                    speed: speedKey,
+                    simulationTime: speedConfig.time
+                });
+            });
+    }
+}
+
+// Allocation Scene
+class AllocationScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'AllocationScene' });
+    }
+    
+    init(data) {
+        this.userName = data.user || 'Player';
+        this.scenarioKey = data.scenario || 'march_2020';
+        this.scenario = SCENARIOS[this.scenarioKey];
+        this.speed = data.speed || 'regular';
+        this.simulationTime = data.simulationTime || this.scenario.defaultSimulationTime;
+        this.allocations = {};
+        this.totalAllocated = 0;
+        
+        // Initialize all cryptos to 0
+        Object.keys(GAME_CONFIG.cryptos).forEach(symbol => {
+            this.allocations[symbol] = 0;
+        });
+    }
+    
+    create() {
+        this.cameras.main.setBackgroundColor('#000000');
+        
+        // Header - white text
+        this.add.text(450, 40, `${this.userName}'s Portfolio Allocation`, {
+            fontSize: '32px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        // Money remaining - white text
+        this.moneyText = this.add.text(450, 90, '', {
+            fontSize: '24px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        this.updateMoneyDisplay();
+        
+        // Timer (60 seconds)
+        this.timeLeft = 60;
+        this.timerText = this.add.text(800, 40, '', {
+            fontSize: '20px',
+            color: '#ffffff'
+        }).setOrigin(1, 0.5);
+        
+        this.time.addEvent({
+            delay: 1000,
+            callback: this.updateTimer,
+            callbackScope: this,
+            loop: true
+        });
+        
+        // Crypto allocation buttons
+        let yPos = 140;
+        Object.entries(GAME_CONFIG.cryptos).forEach(([symbol, crypto]) => {
+            this.createCryptoRow(symbol, crypto, yPos);
+            yPos += 80;
+        });
+        
+        // Lock in button - cyan accent when ready
+        this.lockButton = this.add.rectangle(450, 520, 200, 50, 0x333333, 1)
+            .setStrokeStyle(2, 0x666666)
+            .setInteractive({ useHandCursor: true })
+            .on('pointerdown', () => this.lockInAllocations());
+            
+        this.lockButtonText = this.add.text(450, 520, 'LOCK IN', {
+            fontSize: '24px',
+            fontFamily: 'Arial Black',
+            color: '#999999'
+        }).setOrigin(0.5);
+        
+        // Instructions - gray text
+        this.add.text(450, 560, 'Click [+] to allocate $1M blocks to each crypto', {
+            fontSize: '16px',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
+        // Back button
+        const backButton = this.add.rectangle(100, 550, 120, 40, 0x333333)
+            .setStrokeStyle(2, 0x666666)
+            .setInteractive({ useHandCursor: true })
+            .on('pointerover', () => backButton.setFillStyle(0x444444))
+            .on('pointerout', () => backButton.setFillStyle(0x333333))
+            .on('pointerdown', () => this.scene.start('ScenarioSelectScene', { user: this.userName }));
+            
+        this.add.text(100, 550, 'BACK', {
+            fontSize: '18px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+    }
+    
+    createCryptoRow(symbol, crypto, y) {
+        const isAvailable = this.scenario.availableCryptos[symbol].available;
+        const reason = this.scenario.availableCryptos[symbol].reason;
+        
+        // Crypto icon placeholder
+        const iconBg = this.add.circle(150, y, 25, isAvailable ? crypto.color : 0x333333);
+        this.add.text(150, y, symbol, {
+            fontSize: '16px',
+            fontFamily: 'Arial Black',
+            color: isAvailable ? '#ffffff' : '#666666'
+        }).setOrigin(0.5);
+        
+        // Crypto name
+        this.add.text(220, y, crypto.name, {
+            fontSize: '20px',
+            color: isAvailable ? '#ffffff' : '#666666'
+        }).setOrigin(0, 0.5);
+        
+        // If not available, show reason instead of price and controls
+        if (!isAvailable) {
+            this.add.text(380, y, reason, {
+                fontSize: '16px',
+                color: '#444444',
+                fontStyle: 'italic'
+            }).setOrigin(0, 0.5);
+            return;
+        }
+        
+        // Current price - gray (using historical start price)
+        const historicalPrice = this.scenario.prices[symbol].start;
+        this.add.text(400, y, `$${historicalPrice.toLocaleString()}`, {
+            fontSize: '18px',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
+        // Minus button - moved left
+        const minusBtn = this.add.text(470, y, '[-]', {
+            fontSize: '28px',
+            fontFamily: 'Arial Black',
+            color: '#666666'
+        }).setOrigin(0.5)
+        .setInteractive({ useHandCursor: true })
+        .on('pointerover', () => minusBtn.setColor('#ff1493'))
+        .on('pointerout', () => minusBtn.setColor('#666666'))
+        .on('pointerdown', () => {
+            if (this.allocations[symbol] > 0) {
+                this.allocations[symbol]--;
+                this.totalAllocated--;
+                this.updateAllocationDisplay(symbol, allocationText, false);
+            }
+        });
+        
+        // Plus button - next to minus
+        const plusBtn = this.add.text(520, y, '[+]', {
+            fontSize: '28px',
+            fontFamily: 'Arial Black',
+            color: '#666666'
+        }).setOrigin(0.5)
+        .setInteractive({ useHandCursor: true })
+        .on('pointerover', () => plusBtn.setColor('#00ffff'))
+        .on('pointerout', () => plusBtn.setColor('#666666'))
+        .on('pointerdown', () => {
+            if (this.totalAllocated < 10) {
+                this.allocations[symbol]++;
+                this.totalAllocated++;
+                this.updateAllocationDisplay(symbol, allocationText, true);
+            }
+        });
+        
+        // Allocation display - moved right of buttons
+        const allocationText = this.add.text(630, y, '$0', {
+            fontSize: '22px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        // Counter - gray
+        const counterText = this.add.text(750, y, '0/10', {
+            fontSize: '16px',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
+        // Store references
+        this[`${symbol}_allocationText`] = allocationText;
+        this[`${symbol}_counterText`] = counterText;
+    }
+    
+    updateAllocationDisplay(symbol, text, isAdding = null) {
+        const amount = this.allocations[symbol];
+        // Show actual USD value
+        const usdValue = amount * GAME_CONFIG.blockSize;
+        text.setText(`$${usdValue.toLocaleString()}`);
+        
+        // Flash the allocation text too
+        if (isAdding !== null) {
+            const flashColor = isAdding ? '#00ffff' : '#ff1493';
+            text.setColor(flashColor);
+            this.time.delayedCall(300, () => {
+                text.setColor('#ffffff');
+            });
+        }
+        
+        this[`${symbol}_counterText`].setText(`${amount}/10`);
+        this.updateMoneyDisplay(isAdding);
+        
+        // Update lock button appearance when fully allocated
+        if (this.totalAllocated === 10) {
+            this.lockButton.setFillStyle(0x00ffff, 0.8);
+            this.lockButton.setStrokeStyle(2, 0x00ffff);
+            this.lockButtonText.setColor('#000000');
+        } else {
+            this.lockButton.setFillStyle(0x333333, 1);
+            this.lockButton.setStrokeStyle(2, 0x666666);
+            this.lockButtonText.setColor('#999999');
+        }
+    }
+    
+    updateMoneyDisplay(isAdding = null) {
+        const remaining = 10 - this.totalAllocated;
+        const remainingUSD = remaining * GAME_CONFIG.blockSize;
+        this.moneyText.setText(`$${remainingUSD.toLocaleString()} remaining to allocate`);
+        
+        // Flash animation based on action
+        if (isAdding !== null) {
+            const flashColor = isAdding ? '#00ffff' : '#ff1493';
+            this.moneyText.setColor(flashColor);
+            
+            // Tween back to appropriate color
+            this.time.delayedCall(300, () => {
+                if (remaining === 0) {
+                    this.moneyText.setColor('#00ffff');
+                } else {
+                    this.moneyText.setColor('#ffffff');
+                }
+            });
+        } else {
+            // No animation, just set the color
+            if (remaining === 0) {
+                this.moneyText.setColor('#00ffff');
+            } else {
+                this.moneyText.setColor('#ffffff');
+            }
+        }
+    }
+    
+    updateTimer() {
+        this.timeLeft--;
+        const minutes = Math.floor(this.timeLeft / 60);
+        const seconds = this.timeLeft % 60;
+        this.timerText.setText(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+        
+        if (this.timeLeft <= 10) {
+            this.timerText.setColor('#ff1493');
+        }
+        
+        if (this.timeLeft <= 0) {
+            this.lockInAllocations();
+        }
+    }
+    
+    lockInAllocations() {
+        if (this.totalAllocated !== 10) {
+            // Flash warning
+            this.cameras.main.flash(500, 255, 20, 147);
+            return;
+        }
+        
+        // Start the simulation
+        this.scene.start('SimulationScene', {
+            user: this.userName,
+            allocations: this.allocations,
+            scenario: this.scenarioKey,
+            speed: this.speed,
+            simulationTime: this.simulationTime
+        });
+    }
+}
+
+// Simulation Scene
+class SimulationScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'SimulationScene' });
+    }
+    
+    init(data) {
+        this.userName = data.user;
+        this.allocations = data.allocations;
+        this.scenarioKey = data.scenario || 'march_2020';
+        this.scenario = SCENARIOS[this.scenarioKey];
+        this.speed = data.speed || 'regular';
+        this.simulationTime = data.simulationTime || this.scenario.defaultSimulationTime;
+        this.prices = {};
+        this.startingPrices = {};
+        this.dataIndex = 0;
+        this.maxDataPoints = this.scenario.dataGranularity === 'hourly' ? 24 : 12;
+        
+        // Initialize with historical starting prices
+        Object.entries(this.scenario.prices).forEach(([symbol, data]) => {
+            this.prices[symbol] = data.start;
+            this.startingPrices[symbol] = data.start;
+        });
+    }
+    
+    create() {
+        this.cameras.main.setBackgroundColor('#000000');
+        
+        // Header - white
+        this.add.text(450, 40, `${this.scenario.date} - Market Replay`, {
+            fontSize: '32px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        // Time progress
+        const initialTimeLabel = this.scenario.timeLabels[0];
+        this.timeText = this.add.text(450, 70, initialTimeLabel, {
+            fontSize: '18px',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
+        // Portfolio value - white
+        this.portfolioValueText = this.add.text(450, 110, '', {
+            fontSize: '36px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        this.profitText = this.add.text(450, 150, '', {
+            fontSize: '24px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        // Create crypto displays
+        let yPos = 200;
+        this.cryptoDisplays = {};
+        
+        Object.entries(GAME_CONFIG.cryptos).forEach(([symbol, crypto]) => {
+            if (this.allocations[symbol] > 0) {
+                this.createCryptoDisplay(symbol, crypto, yPos);
+                yPos += 60;
+            }
+        });
+        
+        // Skip button - gray
+        this.add.text(800, 550, '[Skip >>]', {
+            fontSize: '18px',
+            color: '#666666'
+        }).setOrigin(1, 0.5)
+        .setInteractive({ useHandCursor: true })
+        .on('pointerover', function() { this.setColor('#ffffff'); })
+        .on('pointerout', function() { this.setColor('#666666'); })
+        .on('pointerdown', () => this.showResults());
+        
+        // Start price updates using historical data
+        this.time.addEvent({
+            delay: (this.simulationTime * 1000) / this.maxDataPoints,
+            callback: this.updatePrices,
+            callbackScope: this,
+            loop: true
+        });
+        
+        this.updatePortfolioValue();
+    }
+    
+    createCryptoDisplay(symbol, crypto, y) {
+        const container = this.add.container(450, y);
+        
+        // Background
+        const bg = this.add.rectangle(0, 0, 700, 50, 0x111111)
+            .setStrokeStyle(1, crypto.color);
+        
+        // Symbol - white
+        const symbolText = this.add.text(-320, 0, symbol, {
+            fontSize: '20px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0, 0.5);
+        
+        // Allocation - gray
+        const allocationUSD = this.allocations[symbol] * GAME_CONFIG.blockSize;
+        const allocationText = this.add.text(-200, 0, `$${(allocationUSD/1000000).toFixed(1)}M`, {
+            fontSize: '18px',
+            color: '#666666'
+        }).setOrigin(0, 0.5);
+        
+        // Current price - white
+                        const priceText = this.add.text(0, 0, `$${this.scenario.prices[symbol].start.toLocaleString()}`, {
+            fontSize: '20px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        // Change percentage - starts gray
+        const changeText = this.add.text(200, 0, '+0.00%', {
+            fontSize: '20px',
+            fontFamily: 'Arial Black',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
+        container.add([bg, symbolText, allocationText, priceText, changeText]);
+        
+        this.cryptoDisplays[symbol] = {
+            container,
+            priceText,
+            changeText,
+            bg
+        };
+    }
+    
+    updatePrices() {
+        this.dataIndex++;
+        
+        if (this.dataIndex >= this.maxDataPoints) {
+            this.showResults();
+            return;
+        }
+        
+        // Update time display
+        this.timeText.setText(this.scenario.timeLabels[this.dataIndex]);
+        
+        // Update prices from historical data
+        Object.keys(this.prices).forEach(symbol => {
+            // Check if crypto is available
+            if (!this.scenario.availableCryptos[symbol].available) {
+                return;
+            }
+            
+            // Get the right data array (hourly or monthly)
+            const dataArray = this.scenario.dataGranularity === 'hourly' 
+                ? this.scenario.prices[symbol].hourly 
+                : this.scenario.prices[symbol].monthly;
+            const historicalPrice = dataArray[this.dataIndex];
+            this.prices[symbol] = historicalPrice;
+            
+            // Update display if allocated
+            if (this.allocations[symbol] > 0) {
+                const display = this.cryptoDisplays[symbol];
+                const percentChange = ((this.prices[symbol] / this.startingPrices[symbol]) - 1) * 100;
+                
+                display.priceText.setText(`$${this.prices[symbol].toLocaleString()}`);
+                display.changeText.setText(`${percentChange >= 0 ? '+' : ''}${percentChange.toFixed(2)}%`);
+                
+                // Use accent colors only for profit/loss
+                if (percentChange > 0) {
+                    display.changeText.setColor('#00ffff');
+                    display.bg.setStrokeStyle(2, 0x00ffff);
+                } else if (percentChange < 0) {
+                    display.changeText.setColor('#ff1493');
+                    display.bg.setStrokeStyle(2, 0xff1493);
+                }
+            }
+        });
+        
+        this.updatePortfolioValue();
+    }
+    
+    updatePortfolioValue() {
+        let totalValue = 0;
+        
+        Object.entries(this.allocations).forEach(([symbol, blocks]) => {
+            if (blocks > 0) {
+                const invested = blocks * GAME_CONFIG.blockSize;
+                const units = invested / this.startingPrices[symbol];
+                const currentValue = units * this.prices[symbol];
+                totalValue += currentValue;
+            }
+        });
+        
+        this.portfolioValueText.setText(`$${totalValue.toLocaleString()}`);
+        
+        const profit = totalValue - GAME_CONFIG.startingMoney;
+        const profitPercent = (profit / GAME_CONFIG.startingMoney) * 100;
+        
+        this.profitText.setText(`${profit >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%`);
+        // Use accent colors for profit/loss
+        this.profitText.setColor(profit >= 0 ? '#00ffff' : '#ff1493');
+    }
+    
+    showResults() {
+        // Calculate final value
+        let totalValue = 0;
+        const results = {};
+        
+        Object.entries(this.allocations).forEach(([symbol, blocks]) => {
+            if (blocks > 0) {
+                const invested = blocks * GAME_CONFIG.blockSize;
+                const units = invested / this.startingPrices[symbol];
+                const currentValue = units * this.prices[symbol];
+                totalValue += currentValue;
+                
+                results[symbol] = {
+                    invested,
+                    currentValue,
+                    change: ((currentValue / invested) - 1) * 100
+                };
+            }
+        });
+        
+        this.scene.start('ResultsScene', {
+            user: this.userName,
+            totalValue,
+            results,
+            allocations: this.allocations,
+            scenario: this.scenarioKey
+        });
+    }
+}
+
+// Results Scene
+class ResultsScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'ResultsScene' });
+    }
+    
+    init(data) {
+        this.userName = data.user;
+        this.totalValue = data.totalValue;
+        this.results = data.results;
+        this.allocations = data.allocations;
+        this.scenarioKey = data.scenario || 'march_2020';
+        this.scenario = SCENARIOS[this.scenarioKey];
+    }
+    
+    create() {
+        // Black background
+        this.cameras.main.setBackgroundColor('#000000');
+        
+        // Results header - white
+        const profit = this.totalValue - GAME_CONFIG.startingMoney;
+        const profitPercent = (profit / GAME_CONFIG.startingMoney) * 100;
+        const isWinner = profit > 0;
+        
+        this.add.text(450, 40, `${this.userName}'s Results - ${this.scenario.date}`, {
+            fontSize: '32px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        this.add.text(450, 70, this.scenario.description, {
+            fontSize: '16px',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
+        // Final value label - gray
+        this.add.text(450, 120, `Final Portfolio Value`, {
+            fontSize: '20px',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
+        // Value - white with accent
+        this.add.text(450, 160, `$${this.totalValue.toLocaleString()}`, {
+            fontSize: '48px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        // Percentage - accent color only
+        this.add.text(450, 210, `${profit >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%`, {
+            fontSize: '32px',
+            fontFamily: 'Arial Black',
+            color: isWinner ? '#00ffff' : '#ff1493'
+        }).setOrigin(0.5);
+        
+        // Performance breakdown - white header
+        let yPos = 280;
+        this.add.text(450, yPos, 'Performance Breakdown:', {
+            fontSize: '20px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        yPos += 40;
+        Object.entries(this.results).forEach(([symbol, data]) => {
+            const text = `${symbol}: $${(data.invested).toLocaleString()} → $${data.currentValue.toLocaleString()} (${data.change >= 0 ? '+' : ''}${data.change.toFixed(1)}%)`;
+            this.add.text(450, yPos, text, {
+                fontSize: '16px',
+                color: '#ffffff'
+            }).setOrigin(0.5);
+            yPos += 25;
+        });
+        
+        // Historical note
+        this.add.text(450, yPos + 20, "Historical data - this actually happened!", {
+            fontSize: '14px',
+            color: '#00ffff'
+        }).setOrigin(0.5);
+        
+        // Play again button - cyan accent
+        const playAgainBtn = this.add.rectangle(350, 500, 180, 50, 0x000000, 1)
+            .setStrokeStyle(2, 0x00ffff)
+            .setInteractive({ useHandCursor: true })
+            .on('pointerover', () => playAgainBtn.setFillStyle(0x00ffff, 0.2))
+            .on('pointerout', () => playAgainBtn.setFillStyle(0x000000, 1))
+            .on('pointerdown', () => this.scene.start('ScenarioSelectScene', { user: this.userName }));
+            
+        this.add.text(350, 500, 'PLAY AGAIN', {
+            fontSize: '20px',
+            fontFamily: 'Arial Black',
+            color: '#00ffff'
+        }).setOrigin(0.5);
+        
+        // New strategy button - pink accent
+        const newStrategyBtn = this.add.rectangle(550, 500, 180, 50, 0x000000, 1)
+            .setStrokeStyle(2, 0xff1493)
+            .setInteractive({ useHandCursor: true })
+            .on('pointerover', () => newStrategyBtn.setFillStyle(0xff1493, 0.2))
+            .on('pointerout', () => newStrategyBtn.setFillStyle(0x000000, 1))
+            .on('pointerdown', () => this.scene.start('AllocationScene', { 
+                user: this.userName,
+                scenario: this.scenarioKey
+            }));
+            
+        this.add.text(550, 500, 'TRY AGAIN', {
+            fontSize: '20px',
+            fontFamily: 'Arial Black',
+            color: '#ff1493'
+        }).setOrigin(0.5);
+        
+        // Fun message - white
+        const messages = isWinner ? 
+            ['You survived Black Thursday!', 'Better than most traders!', 'Risk management pro!'] :
+            ['Black Thursday got you!', 'Welcome to crypto volatility!', 'Try a defensive strategy!'];
+        const message = messages[Math.floor(Math.random() * messages.length)];
+        
+        this.add.text(450, 440, message, {
+            fontSize: '24px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+    }
+}
+
+// Game configuration
+const config = {
+    type: Phaser.AUTO,
+    parent: 'game-container',
+    width: 900,
+    height: 600,
+    scene: [LoginScene, ScenarioSelectScene, SimulationSpeedScene, AllocationScene, SimulationScene, ResultsScene],
+    scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+    }
+};
+
+// Start the game
+const game = new Phaser.Game(config);

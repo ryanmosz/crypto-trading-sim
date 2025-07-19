@@ -1,150 +1,422 @@
-# Phase 3: Live Data Integration Guide
+# 📈 Phase 3: Live Data Integration with CoinGecko
 
-## Overview
-**Duration**: 1-2 days (8 hours)  
-**Goal**: Live dashboard with real-time price updates and portfolio tracking
+Phase 3 adds real-time cryptocurrency price data using the CoinGecko API, creating a dynamic dashboard experience.
 
-## Prerequisites
-- [x] Phase 2 complete (allocation system working)
-- [x] Portfolio data saved in PlayerPrefs
-- [x] Basic understanding of coroutines
+## Phase Overview
 
-## Milestone 3: Mock Data Dashboard (4 hours)
+**Duration**: 1-2 days  
+**Goal**: Integrate CoinGecko API for live price updates  
+**Dependencies**: Phase 1 (screens), Phase 2 (allocation system)
 
-### Step 1: Dashboard Layout (45 min)
+## CoinGecko API Setup
 
-Create dashboard scene structure:
-```
-Canvas
-├── Header
-│   ├── Title ("PORTFOLIO PERFORMANCE")
-│   └── TimeRemaining ("23h 45m remaining")
-├── TotalValuePanel
-│   ├── TotalValue ("$10,000,000")
-│   └── ProfitLoss ("+$125,000 (+1.25%)")
-├── ScrollView
-│   └── Content
-│       └── [Portfolio Cards]
-└── EndGameButton (temporary)
-```
+### API Basics
+- **Free Tier**: 50 calls/minute (more than enough)
+- **No API Key Required**: For basic endpoints
+- **Rate Limiting**: Built-in retry logic recommended
 
-### Step 2: Mock Price Provider (45 min)
+### Key Endpoints We'll Use
+```javascript
+// Simple price endpoint - all we need!
+const PRICE_URL = 'https://api.coingecko.com/api/v3/simple/price';
 
-Create `Assets/Scripts/Managers/MockPriceProvider.cs` to simulate price movements:
-- Base prices for each crypto
-- Random walk algorithm (-2% to +2% per update)
-- Update every 2 seconds
-- Broadcast changes via events
-
-### Step 3: Dashboard Manager (1 hour)
-
-Create `Assets/Scripts/Managers/DashboardManager.cs`:
-- Load saved allocations
-- Calculate initial quantities based on $10M
-- Track portfolio performance
-- Update UI with price changes
-- Handle game timer (24 hours)
-
-### Step 4: Portfolio Cards (45 min)
-
-Create reusable portfolio card UI:
-- Show crypto symbol and name
-- Display current value
-- Show profit/loss percentage
-- Animate price changes
-- Color coding (green/red)
-
-### Milestone 3 Complete! ✅
-Test with mock data updating in real-time.
-
----
-
-## Milestone 4: Real API Integration (4 hours)
-
-### Step 1: CoinGecko Integration (1.5 hours)
-
-Create `Assets/Scripts/Managers/CoinGeckoAPI.cs`:
-```csharp
-// API endpoint: https://api.coingecko.com/api/v3/simple/price
-// Parameters: ids=bitcoin,ethereum,binancecoin,solana,ripple&vs_currencies=usd
-// Rate limit: 50 calls/minute (update every 30 seconds)
+// Our 5 cryptos
+const CRYPTO_IDS = {
+    BTC: 'bitcoin',
+    ETH: 'ethereum',
+    BNB: 'binancecoin',
+    SOL: 'solana',
+    XRP: 'ripple'
+};
 ```
 
-Key features:
-- UnityWebRequest for API calls
-- JSON parsing with Newtonsoft
-- Error handling and retries
-- Respect rate limits
+## Implementation Milestones
 
-### Step 2: Price Provider Interface (30 min)
+### Milestone 3: Mock Data Dashboard (4 hours)
+Build the dashboard UI with fake data first.
 
-Create swappable price providers:
-- `IPriceProvider` interface
-- Mock implementation
-- CoinGecko implementation
-- Easy switching between them
-
-### Step 3: Fallback System (45 min)
-
-Implement graceful degradation:
-- Check internet connectivity
-- Try CoinGecko first
-- Fall back to mock on failure
-- Show "Live" indicator when using real data
-
-### Step 4: Testing & Polish (1.5 hours)
-
-- Test with real API
-- Handle edge cases
-- Add loading states
-- Smooth animations
-- Cache last known prices
-
-### Milestone 4 Complete! ✅
-Real-time crypto prices in your game!
-
----
-
-## Implementation Details
-
-### Portfolio Value Calculation
-```
-Initial Investment = $10,000,000
-BTC Allocation = 40% = $4,000,000
-BTC Start Price = $45,000
-BTC Quantity = $4,000,000 / $45,000 = 88.89 BTC
-
-Current Value = Quantity × Current Price
-Profit/Loss = (Current Value - Initial Investment) / Initial Investment × 100
-```
-
-### API Response Format
-```json
-{
-  "bitcoin": { "usd": 45123.50 },
-  "ethereum": { "usd": 3245.80 },
-  "binancecoin": { "usd": 425.30 },
-  "solana": { "usd": 125.60 },
-  "ripple": { "usd": 0.68 }
+#### Dashboard Layout
+```javascript
+// src/scenes/DashboardScene.js
+export default class DashboardScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'DashboardScene' });
+        this.mockPrices = {
+            BTC: 45000,
+            ETH: 3000,
+            BNB: 400,
+            SOL: 100,
+            XRP: 0.75
+        };
+    }
+    
+    create() {
+        this.createBackground();
+        this.createHeader();
+        this.createPortfolioCards();
+        this.startMockUpdates();
+    }
+    
+    createPortfolioCards() {
+        const startY = 150;
+        const cardHeight = 80;
+        const spacing = 10;
+        
+        Object.keys(this.mockPrices).forEach((crypto, index) => {
+            const y = startY + (index * (cardHeight + spacing));
+            this.createCryptoCard(crypto, y);
+        });
+    }
+    
+    createCryptoCard(crypto, y) {
+        const container = this.add.container(400, y);
+        
+        // Card background
+        const bg = this.add.rectangle(0, 0, 700, 70, 0x1a1a1a)
+            .setStrokeStyle(2, 0x00ffff);
+        
+        // Crypto name
+        const name = this.add.text(-320, 0, crypto, {
+            fontSize: '28px',
+            color: '#00ffff'
+        }).setOrigin(0, 0.5);
+        
+        // Allocation
+        const allocation = this.add.text(-100, 0, '20 pts', {
+            fontSize: '24px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        // Price
+        const price = this.add.text(100, 0, `$${this.mockPrices[crypto]}`, {
+            fontSize: '24px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        // P&L
+        const pl = this.add.text(280, 0, '+12.5%', {
+            fontSize: '24px',
+            color: '#00ff00'
+        }).setOrigin(0.5);
+        
+        container.add([bg, name, allocation, price, pl]);
+        container.setData('priceText', price);
+        container.setData('plText', pl);
+        
+        return container;
+    }
+    
+    startMockUpdates() {
+        // Simulate price changes every 2 seconds
+        this.time.addEvent({
+            delay: 2000,
+            callback: this.updateMockPrices,
+            callbackScope: this,
+            loop: true
+        });
+    }
+    
+    updateMockPrices() {
+        // Random price movements (-2% to +2%)
+        Object.keys(this.mockPrices).forEach(crypto => {
+            const change = (Math.random() - 0.5) * 0.04;
+            this.mockPrices[crypto] *= (1 + change);
+        });
+        
+        // Update UI
+        this.updatePriceDisplays();
+    }
 }
 ```
 
-### Performance Optimization
-- Update UI only when prices change
-- Use object pooling for price animations
-- Batch API requests
-- Cache sprites and materials
+### Milestone 4: CoinGecko Integration (4 hours)
+Replace mock data with real CoinGecko API calls.
+
+#### API Service
+```javascript
+// src/services/CoinGeckoService.js
+export default class CoinGeckoService {
+    constructor() {
+        this.baseURL = 'https://api.coingecko.com/api/v3';
+        this.cache = new Map();
+        this.lastFetch = 0;
+        this.minInterval = 30000; // 30 seconds minimum
+    }
+    
+    async getPrices() {
+        // Rate limiting
+        const now = Date.now();
+        if (now - this.lastFetch < this.minInterval && this.cache.size > 0) {
+            return this.getCachedPrices();
+        }
+        
+        try {
+            const ids = 'bitcoin,ethereum,binancecoin,solana,ripple';
+            const url = `${this.baseURL}/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`;
+            
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('API Error');
+            
+            const data = await response.json();
+            this.lastFetch = now;
+            
+            // Transform to our format
+            const prices = {
+                BTC: data.bitcoin.usd,
+                ETH: data.ethereum.usd,
+                BNB: data.binancecoin.usd,
+                SOL: data.solana.usd,
+                XRP: data.ripple.usd
+            };
+            
+            // Cache the results
+            Object.entries(prices).forEach(([key, value]) => {
+                this.cache.set(key, value);
+            });
+            
+            return prices;
+            
+        } catch (error) {
+            console.error('CoinGecko API Error:', error);
+            return this.getCachedPrices() || this.getFallbackPrices();
+        }
+    }
+    
+    getCachedPrices() {
+        const prices = {};
+        this.cache.forEach((value, key) => {
+            prices[key] = value;
+        });
+        return prices;
+    }
+    
+    getFallbackPrices() {
+        // Emergency fallback prices
+        return {
+            BTC: 45000,
+            ETH: 3000,
+            BNB: 400,
+            SOL: 100,
+            XRP: 0.75
+        };
+    }
+}
+```
+
+#### Integration in Dashboard
+```javascript
+// src/scenes/DashboardScene.js
+import CoinGeckoService from '../services/CoinGeckoService';
+
+export default class DashboardScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'DashboardScene' });
+        this.api = new CoinGeckoService();
+    }
+    
+    async create() {
+        this.createBackground();
+        this.createHeader();
+        this.createLoadingIndicator();
+        
+        // Fetch initial prices
+        await this.fetchPrices();
+        
+        // Create cards after prices loaded
+        this.createPortfolioCards();
+        
+        // Start periodic updates
+        this.startPriceUpdates();
+    }
+    
+    async fetchPrices() {
+        this.showLoadingIndicator();
+        
+        try {
+            const prices = await this.api.getPrices();
+            this.currentPrices = prices;
+            this.calculatePortfolioValue();
+        } catch (error) {
+            console.error('Failed to fetch prices:', error);
+        }
+        
+        this.hideLoadingIndicator();
+    }
+    
+    startPriceUpdates() {
+        // Update every 30 seconds
+        this.time.addEvent({
+            delay: 30000,
+            callback: this.fetchPrices,
+            callbackScope: this,
+            loop: true
+        });
+    }
+    
+    calculatePortfolioValue() {
+        const allocation = this.registry.get('allocation') || {};
+        let totalValue = 0;
+        
+        Object.entries(allocation).forEach(([crypto, points]) => {
+            const price = this.currentPrices[crypto];
+            const value = (points / 100) * 10000000; // $10M starting
+            const units = value / price;
+            totalValue += units * price;
+        });
+        
+        this.updatePortfolioDisplay(totalValue);
+    }
+}
+```
+
+## Error Handling & Fallbacks
+
+### Network Issues
+```javascript
+// Graceful degradation
+async fetchWithRetry(url, retries = 3) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const response = await fetch(url);
+            if (response.ok) return response;
+            
+            // Wait before retry
+            await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+        } catch (error) {
+            if (i === retries - 1) throw error;
+        }
+    }
+}
+```
+
+### Offline Mode
+```javascript
+// Local storage caching
+savePricesToCache(prices) {
+    localStorage.setItem('cryptoPrices', JSON.stringify({
+        prices,
+        timestamp: Date.now()
+    }));
+}
+
+loadPricesFromCache() {
+    const cached = localStorage.getItem('cryptoPrices');
+    if (!cached) return null;
+    
+    const { prices, timestamp } = JSON.parse(cached);
+    const age = Date.now() - timestamp;
+    
+    // Use cache if less than 5 minutes old
+    if (age < 300000) return prices;
+    return null;
+}
+```
+
+## Visual Polish
+
+### Price Change Animations
+```javascript
+animatePriceChange(text, oldPrice, newPrice) {
+    const color = newPrice > oldPrice ? 0x00ff00 : 0xff0000;
+    
+    // Flash color
+    this.tweens.add({
+        targets: text,
+        tint: color,
+        duration: 500,
+        yoyo: true,
+        ease: 'Power2'
+    });
+    
+    // Smooth number transition
+    const dummy = { value: oldPrice };
+    this.tweens.add({
+        targets: dummy,
+        value: newPrice,
+        duration: 1000,
+        ease: 'Power1',
+        onUpdate: () => {
+            text.setText(`$${dummy.value.toFixed(2)}`);
+        }
+    });
+}
+```
+
+### Loading States
+```javascript
+createLoadingIndicator() {
+    this.loadingText = this.add.text(400, 300, 'Loading prices...', {
+        fontSize: '24px',
+        color: '#00ffff'
+    }).setOrigin(0.5).setAlpha(0);
+}
+
+showLoadingIndicator() {
+    this.tweens.add({
+        targets: this.loadingText,
+        alpha: 1,
+        duration: 300
+    });
+}
+```
 
 ## Testing Checklist
 
-- [ ] Mock prices update smoothly
-- [ ] Portfolio calculations correct
-- [ ] Timer counts down properly
-- [ ] API integration works
-- [ ] Fallback handles failures
-- [ ] No memory leaks
-- [ ] 60 FPS maintained
+### Mock Data Phase
+- [ ] Dashboard displays all 5 cryptos
+- [ ] Mock prices update every 2 seconds
+- [ ] P&L calculations correct
+- [ ] Visual feedback on updates
+- [ ] No errors in console
 
-## Next Phase
+### CoinGecko Integration
+- [ ] Real prices load on start
+- [ ] Updates every 30 seconds
+- [ ] Handles API errors gracefully
+- [ ] Falls back to cached data
+- [ ] Rate limiting works
+- [ ] Mobile data usage reasonable
 
-Ready for Phase 4? Open [phase4-multiplayer.md](phase4-multiplayer.md) to build the backend. 
+## Common Issues
+
+### CORS Errors
+```javascript
+// CoinGecko API supports CORS, but if issues:
+// 1. Use proxy in development
+// 2. Or use JSONP endpoint
+// 3. Or serverless function wrapper
+```
+
+### Rate Limiting
+```javascript
+// Track API calls
+class RateLimiter {
+    constructor(maxCalls, timeWindow) {
+        this.maxCalls = maxCalls;
+        this.timeWindow = timeWindow;
+        this.calls = [];
+    }
+    
+    canMakeCall() {
+        const now = Date.now();
+        this.calls = this.calls.filter(t => now - t < this.timeWindow);
+        return this.calls.length < this.maxCalls;
+    }
+    
+    recordCall() {
+        this.calls.push(Date.now());
+    }
+}
+```
+
+## Next Steps
+
+After completing Phase 3:
+1. Move to [phase4-multiplayer.md](phase4-multiplayer.md) for backend
+2. Or polish the dashboard further
+3. Add more detailed analytics
+4. Implement portfolio history
+
+---
+
+**Remember**: Start with mock data (Milestone 3) to get the UI right, then add CoinGecko integration. This approach ensures you always have something working. 

@@ -1,115 +1,74 @@
-# Tech Context - Development Environment
+# Tech Context - Development Stack
 
-## Unity Configuration
+## Core Technologies
 
-### Version
-- Unity 2022.3 LTS (Long Term Support)
-- WebGL Build Support module required
-- TextMeshPro package imported
+### Frontend Framework
+**Phaser 3** - JavaScript game framework
+- HTML5 Canvas/WebGL rendering
+- Built-in physics and input handling
+- Scene management system
+- Asset loading and caching
+- Cross-platform browser support
 
-### Project Settings
+### Language & Tools
+- **JavaScript ES6+** - Primary language
+- **Webpack** - Module bundling
+- **Babel** - JavaScript transpilation
+- **npm** - Package management
+
+### API Integration
+**CoinGecko API** (Confirmed)
+- Free tier: 50 calls/minute
+- No API key required for basic endpoints
+- Endpoints used:
+  - `/simple/price` - Real-time prices
+  - Includes 24hr change data
+- Rate limiting: 30-second minimum between calls
+
+### Backend (Phase 4)
+- **Node.js** - Runtime
+- **Vercel** - Serverless deployment
+- **JSON** - Initial data storage
+
+### Development Environment
+- **VS Code** - Primary editor
+- **Git** - Version control
+- **Chrome DevTools** - Debugging
+- **Local web server** - Development
+
+## Project Structure
 ```
-Player Settings:
-- Company: YourCompany
-- Product: Crypto Trading Sim
-- Version: 0.1.0
-- WebGL Memory: 256MB
-- Compression: Gzip
-- WebAssembly Streaming: Enabled
-
-Graphics:
-- Color Space: Linear
-- Rendering Path: Forward
-- Tier: Low (WebGL optimization)
-
-Quality:
-- Custom "WebGL" preset
-- Shadows: Disabled
-- Anti-aliasing: 2x
-- V-Sync: Every V Blank
-```
-
-## Development Tools
-
-### Required Software
-- Unity Hub (latest)
-- Visual Studio Code or preferred IDE
-- Git for version control
-- Docker Desktop for Mac
-- Node.js 18+ (for backend)
-- Chrome/Firefox for testing
-
-### VS Code Extensions
-- Unity Code Snippets
-- C# for Visual Studio Code
-- Unity Tools
-- GitLens
-
-## Dependencies
-
-### Unity Packages
-- TextMeshPro (built-in)
-- Unity UI (built-in)
-- Newtonsoft JSON (for API parsing)
-
-### External APIs
-- CoinGecko API (free tier)
-  - Rate limit: 50 calls/minute
-  - Endpoints: /simple/price
-  - No API key required
-
-### Backend Stack
-- Vercel serverless functions
-- Node.js runtime
-- Simple JSON file storage
-- CORS enabled for Unity WebGL
-
-## Build Pipeline
-
-### Docker Configuration
-- Base image: unityci/editor:ubuntu-2022.3.10f1-webgl-1.0
-- Automated Unity license activation
-- Cache volumes for faster builds
-- Nginx server for local testing
-
-### Build Process
-1. Docker runs build.sh
-2. Unity builds to WebGL
-3. Output to builds/WebGL/
-4. Nginx serves on port 8080
-
-## Development Constraints
-
-### WebGL Limitations
-- No threading (use coroutines)
-- Limited memory (optimize textures)
-- No native plugins
-- CORS restrictions for APIs
-- Larger build sizes than native
-
-### Performance Targets
-- Build size: < 20MB compressed
-- Load time: < 10 seconds
-- Frame rate: 60 FPS
-- Memory usage: < 256MB
-
-## File Structure
-
-```
-Project Root/
-├── Assets/          # Unity assets
-├── builds/          # Build outputs
-├── planning/        # Documentation
-├── research/        # Design docs
-├── memory-bank/     # Agent memory
-├── backend/         # API code
-└── Docker files     # Build automation
+crypto-trading-sim/
+├── src/
+│   ├── scenes/          # Phaser scenes
+│   ├── services/        # API services
+│   ├── utils/           # Helper functions
+│   └── index.js         # Entry point
+├── public/
+│   └── index.html       # HTML template
+├── dist/                # Build output
+├── package.json
+├── webpack.config.js
+└── .gitignore
 ```
 
-## Security Considerations
+## Key Technical Decisions
 
-- No sensitive data in client
-- API keys server-side only
-- HTTPS required for production
-- Input validation on all endpoints
-- Rate limiting on API calls 
+1. **Phaser over Unity** - Faster development, no build process, instant testing
+2. **CoinGecko API** - Reliable, free tier sufficient, good documentation
+3. **Webpack bundling** - Modern JavaScript development workflow
+4. **Responsive design** - Mobile-first approach
+5. **Progressive enhancement** - Works without backend initially
+
+## Development Workflow
+1. Code in VS Code
+2. Webpack dev server auto-reloads
+3. Test in browser immediately
+4. Build for production with webpack
+5. Deploy static files anywhere
+
+## Performance Targets
+- Load time: < 5 seconds
+- FPS: 60 on modern devices
+- Bundle size: < 2MB
+- API calls: Max 2/minute 

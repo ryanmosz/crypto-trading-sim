@@ -1,100 +1,41 @@
-# Active Context - Current State
+# Active Context - Crypto Trader Development
 
-## Session Date: July 16, 2025
+## Current State (January 18, 2025)
 
-## What Was Just Completed
+### What's Working
+- Complete game flow from login to results
+- Three historical scenarios:
+  - March 12, 2020 - COVID Black Thursday (24h)
+  - May 19, 2021 - China FUD crash (24h)
+  - 2013 - Bitcoin's first bull run (full year)
+- Simulation speed selection (Regular/Double speed)
+- Back button navigation on all screens
+- Money change animations (cyan/pink flashes)
+- Clean UI with no text overlaps
+- Modular scenario system supporting various timeframes
+- Historical accuracy (cryptos that didn't exist are grayed out)
 
-### Planning Phase Complete ✅
-- Created comprehensive planning documentation (8 documents)
-- Set up project infrastructure (Docker, Git, folders)
-- Established modular architecture approach
-- Defined 7-day sprint plan with daily milestones
+### Recent Changes
+- Added SimulationSpeedScene between scenario and allocation selection
+- Each scenario now supports multiple speed options:
+  - Regular Speed: Default timing
+  - Double Speed: Half the time
+- Enhanced scenario structure with `speeds` configuration
+- Updated scene flow to include speed selection
+- Passed speed data through entire scene chain
 
-### Project Structure Ready ✅
-- Unity-compatible folder hierarchy created
-- Docker environment configured for builds
-- Git configuration files in place
-- Build automation script ready
+### Current Focus
+Testing and refinement of the speed selection system. User is evaluating the flow and may want additional speed options or timing adjustments.
 
-### Memory Bank Initialized ✅
-- Created memory-bank folder structure
-- Documented project requirements
-- Captured technical decisions
-- Ready for agent handoff
+### Next Steps
+1. Consider adding more speed options (e.g., "Slow Motion" for educational play)
+2. Add more historical scenarios as discussed
+3. Consider showing simulation time remaining during play
+4. Add educational overlays for historical context
 
-### Planning Folder Reorganized ✅
-- Streamlined from 15 files to 11 files (including new bare minimum plan)
-- Centered all documentation around PHASES.md
-- Created phase-specific implementation guides
-- Consolidated redundant content
-- Removed files that said "what we could do" vs "what we will do"
-- Added BARE-MINIMUM-PLAN.md for 2-hour quick ship option
-
-### Test User Approach Added ✅
-- Login screen with 2 pre-baked test users (Alice & Bob)
-- Both start with $10M - showing how different choices lead to different outcomes
-- Alice: $10M → $12M (+20% from smart BTC/ETH allocation)
-- Bob: $10M → $8M (-20% from risky XRP-heavy strategy)
-- No backend needed - perfect for MVP and demos
-- Easy switching between users for testing different scenarios
-- Updated bare minimum plan to include this approach
-
-## Test Users (Pre-configured)
-
-For the initial demo/MVP, we have two test users that start at the beginning of a trading period:
-- Alice: $10M (Starting) - Planning smart BTC/ETH allocation
-- Bob: $10M (Starting) - Planning risky XRP-heavy strategy
-
-Both users begin with identical portfolios. The demo will show how their different investment strategies could lead to different outcomes once the 24-hour trading period completes.
-
-## Current Focus
-
-### Immediate Next Steps
-1. **Install Unity Editor** - In Unity Hub, install 2022.3 LTS with WebGL
-2. **Create Unity Project** - 2D template in this directory
-3. **Build Login & Main Scenes** - Using prepared scripts
-
-### Today's Progress
-- [x] Unity Hub installed ✅
-- [x] Unity scripts prepared ✅
-- [ ] Unity 2022.3 LTS with WebGL downloaded
-- [ ] Unity project created
-- [ ] Login scene built
-- [ ] Main scene built
-- [ ] WebGL build tested
-
-## Key Decisions Made
-
-1. **Technology**: Unity 2022.3 LTS with WebGL
-2. **Architecture**: Modular, independent features
-3. **Philosophy**: Ship playable build daily
-4. **Visual Style**: Black background, cyan-to-pink gradients
-5. **First Milestone**: Static welcome screen in 5 minutes
-
-## Important Context for Next Agent
-
-### Project Status
-- Planning: ✅ Complete
-- Infrastructure: ✅ Ready
-- Unity Setup: ⏳ Pending
-- First Screen: ⏳ Pending
-
-### Critical Files to Review
-1. `/planning/01-QUICK-START.md` - Start here
-2. `/planning/03-INCREMENTAL-BUILD-PLAN.md` - Understand milestones
-3. `/planning/05-DAILY-SPRINT-PLAN.md` - Daily execution
-
-### Known Constraints
-- Mac development environment
-- Unity must have WebGL module
-- Docker optional but recommended
-- CoinGecko API has rate limits
-
-## Next Agent Checklist
-
-When continuing this project:
-1. Read all memory-bank files first
-2. Check planning/00-START-HERE.md
-3. Follow quick start guide exactly
-4. Commit after each milestone
-5. Update this activeContext.md file 
+### Technical Details
+- Using Phaser 3.90.0
+- Simple file structure: `crypto-trader/public/`
+- Serving with Python http.server on port 8000
+- All game logic in single `game.js` file
+- Modular scenario system allows easy addition of new time periods 

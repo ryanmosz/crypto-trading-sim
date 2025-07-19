@@ -7,7 +7,7 @@ This is the central planning document for the Crypto Trading Simulator. All othe
 ## Minimum Viable Product Analysis
 
 ### Absolutely Essential (Can't cut)
-- Unity project with WebGL build
+- Phaser project with web deployment
 - At least ONE screen showing something
 - Basic interactivity (a button)
 
@@ -26,12 +26,12 @@ This is the central planning document for the Crypto Trading Simulator. All othe
 planning/
 ├── phases.md (this file - full plan)
 ├── BARE-MINIMUM-PLAN.md (2-hour quick ship)
-├── phase1-foundation.md (Unity setup & navigation implementation)
+├── phase1-foundation.md (Phaser setup & navigation implementation)
 ├── phase2-mechanics.md (Allocation system implementation)
-├── phase3-data.md (Dashboard & API implementation)
+├── phase3-data.md (Dashboard & CoinGecko API implementation)
 ├── phase4-multiplayer.md (Backend implementation)
 ├── phase5-polish.md (Polish & optimization tasks)
-├── setup-guide.md (Complete technical setup & Docker)
+├── setup-guide.md (Complete technical setup)
 ├── quick-start.md (5-minute first screen guide)
 └── troubleshooting.md (Common issues & solutions)
 ```
@@ -65,7 +65,6 @@ graph LR
 ### Deliverables
 - ✅ Master phases document
 - ✅ Phase-specific implementation guides
-- ✅ Docker environment
 - ✅ Git repository with .gitignore
 - ✅ Memory bank for agents
 - ✅ Folder structure
@@ -83,7 +82,7 @@ graph LR
 **📋 Implementation Guide**: [phase1-foundation.md](phase1-foundation.md)
 
 ### Objectives
-- Get Unity running with first visible output
+- Set up Phaser project with first visible output
 - Create login screen with test users
 - Create main game screens
 - Implement navigation between screens
@@ -96,11 +95,11 @@ graph LR
 > **Test Users for MVP**: Both start with $10M. Alice → $12M (+20%), Bob → $8M (-20%) - showing how different investment choices lead to different outcomes
 
 ### Deliverables
-- [ ] Unity project created
+- [ ] Phaser project created
 - [ ] Welcome screen with gradient
 - [ ] All 4 screens (empty but styled) *Can cut to 1 screen*
 - [ ] Scene navigation working *Can cut entirely*
-- [ ] First WebGL build deployed
+- [ ] First web build deployed
 
 ### Success Criteria
 - Can navigate through entire game flow *Or just one screen for MVP*
@@ -150,13 +149,13 @@ graph LR
 
 ### Objectives
 - Create live dashboard
-- Integrate real price data
+- Integrate CoinGecko API for real price data
 - Build portfolio tracking
 - Implement fallback systems
 
 ### Milestones
 - **Milestone 3**: Mock data dashboard (4 hours)
-- **Milestone 4**: Real API integration (4 hours)
+- **Milestone 4**: CoinGecko API integration (4 hours)
 
 ### Deliverables
 - [ ] Dashboard with portfolio cards
@@ -275,7 +274,7 @@ graph LR
 
 ## 🚀 Getting Started
 
-1. **New to Unity?** Start with [quick-start.md](quick-start.md) for a 5-minute first screen
+1. **New to Phaser?** Start with [quick-start.md](quick-start.md) for a 5-minute first screen
 2. **Setting up environment?** See [setup-guide.md](setup-guide.md) for complete setup
 3. **Ready to build?** Open [phase1-foundation.md](phase1-foundation.md) and begin
 4. **Hit an issue?** Check [troubleshooting.md](troubleshooting.md)
@@ -298,8 +297,8 @@ graph LR
 - Seasonal events
 
 ### Phase 10: Mobile Apps
-- iOS native app
-- Android native app
+- Progressive Web App (PWA)
+- Native mobile wrappers
 - Cross-platform play
 
 ---
