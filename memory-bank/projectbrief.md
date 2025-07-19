@@ -1,4 +1,31 @@
-# Project Brief - Crypto Trading Simulator
+# Project Brief: Crypto Trading Simulator
+
+## Overview
+A web-based cryptocurrency trading simulation game where players start with $10M virtual dollars and compete to maximize returns through strategic allocation across major cryptocurrencies.
+
+## Core Concept
+Players experience the volatility and excitement of crypto markets through:
+- Historical market simulations based on real data
+- Strategic portfolio allocation decisions
+- Time-pressured trading environments
+- Performance tracking and competition
+
+## Two-Mode Vision
+
+### Historical Mode - "Learn from the Past"
+- Travel to pivotal moments in crypto history
+- Experience authentic market movements with real data
+- Test strategies against actual market conditions
+- Learn without risking real money
+- Ultimate goal: Select ANY time period from crypto history
+
+### Live Mode - "Compete in Real-Time" (Future)
+- Create custom trading competitions
+- Invite friends to join games
+- Games run persistently on servers with unique IDs
+- Track progress and standings anytime
+- Social features: taunts, victories, rivalries
+- Flexible durations from 24-hour sprints to open-ended marathons
 
 ## Core Requirements
 
