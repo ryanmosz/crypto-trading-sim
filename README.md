@@ -6,6 +6,28 @@ Phaser.js web game. Start with $10M, pick cryptos, compete.
 ## About
 A cryptocurrency trading simulator where players invest virtual money across BTC, ETH, BNB, SOL, and XRP. Built with Phaser 3 for web browsers.
 
+## 🔮 Vision
+
+Our vision is to create two distinct and compelling ways to experience cryptocurrency trading:
+
+### 📚 Historical Mode - "Learn from the Past"
+Travel back in time to pivotal moments in crypto history. Currently featuring key dates like the 2020 COVID crash and 2013's first Bitcoin bull run, we're building toward a comprehensive historical playground where you can:
+- Select **any** time period from cryptocurrency's rich history
+- Experience authentic market movements with real historical data
+- Test strategies against actual market conditions
+- Learn what worked (and what didn't) without risking real money
+
+### 🎮 Live Mode - "Compete in Real-Time" *(Coming Soon)*
+The future of social crypto gaming, where players create custom trading competitions:
+- **Create Games**: Set your parameters - starting capital, available coins, game duration
+- **Invite Friends**: Send game invitations to other players
+- **Real Competition**: Once players join and lock in their portfolios, the game runs live on our servers
+- **Track Progress**: Each game gets a unique ID - check standings anytime, anywhere
+- **Social Features**: Send taunts, share victories, and build rivalries
+- **Flexible Duration**: Create quick 24-hour sprints or open-ended marathons that run indefinitely
+
+Whether you're learning from history or competing with friends in real-time, Crypto Trading Simulator makes the volatile world of cryptocurrency accessible, educational, and fun.
+
 ## 🎯 Game Features
 - Start with $10,000,000 virtual dollars
 - Allocate funds across 5 major cryptocurrencies
@@ -73,9 +95,10 @@ research/              # Game design research
 ## 📈 Current Status
 - ✅ Phase 0: Planning Complete
 - ✅ Phase 1: Core Game Working
-- 🚧 Phase 2: Adding more historical days
-- 📅 Phase 3: Live data integration
-- 📅 Phase 4: Multiplayer features
+- 🚧 Phase 2: Historical Mode - Adding more time periods
+- 📅 Phase 3: Historical Mode - Any date selection
+- 📅 Phase 4: Live Mode - Real-time competitions
+- 📅 Phase 5: Social features & persistent leaderboards
 
 ## 🤝 Contributing
 This is a learning project built during a development bootcamp. Feel free to fork and experiment!
