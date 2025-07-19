@@ -6,6 +6,7 @@ The game now supports multiple historical time periods with a flexible scenario 
 - Variable data granularity (hourly, monthly)
 - Period-appropriate cryptocurrency availability
 - Configurable simulation speeds
+- **NEW**: "Now" placeholder for future real-time trading
 
 ## Scenario Structure
 
@@ -93,6 +94,16 @@ speeds: {
     rapid: { label: "Rapid (15s)", multiplier: 4, time: 15 }
 }
 ```
+
+## Current Scenarios
+
+1. **"Now" (Placeholder)**
+   - Real-time trading stub
+   - Shows current static prices
+   - All cryptos available
+   - Will connect to live price feeds in future
+
+2. **March 12, 2020 - COVID Black Thursday**
 
 ## Future Enhancements
 

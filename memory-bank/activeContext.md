@@ -4,11 +4,13 @@
 
 ### What's Working
 - Complete game flow from login to results
-- Three historical scenarios:
+- Four scenario options:
+  - **Now** - Real-time trading (shows "Coming Soon" message)
   - March 12, 2020 - COVID Black Thursday (24h)
   - May 19, 2021 - China FUD crash (24h)
   - 2013 - Bitcoin's first bull run (full year)
-- Simulation speed selection (Regular/Double speed)
+- Simulation speed selection (Regular/Double speed) for historical scenarios
+- "Coming Soon" message displayed for "Now" scenario
 - Back button navigation on all screens
 - Money change animations (cyan/pink flashes)
 - Clean UI with no text overlaps

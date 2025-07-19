@@ -172,8 +172,58 @@ const YEAR_2013_SCENARIO = {
     }
 };
 
+// "Now" scenario - placeholder for real-time trading
+const NOW_SCENARIO = {
+    id: 'now',
+    date: "Live Trading",
+    displayName: "Now",
+    subtitle: "(Real-time)",
+    description: "Trade with current prices",
+    duration: "Real-time",
+    defaultSimulationTime: 30,
+    speeds: {
+        regular: { label: "Regular Speed", multiplier: 1, time: 30 },
+        double: { label: "Double Speed", multiplier: 2, time: 15 }
+    },
+    dataGranularity: "realtime",
+    timeLabels: ["Real-time"],
+    
+    // All current cryptos available
+    availableCryptos: ['BTC', 'ETH', 'BNB', 'SOL', 'XRP'],
+    
+    // Placeholder data - will be replaced with real-time data later
+    prices: {
+        BTC: { 
+            start: 65000,
+            hourly: [65000], // Placeholder
+            end: 65000
+        },
+        ETH: { 
+            start: 3500,
+            hourly: [3500], // Placeholder
+            end: 3500
+        },
+        BNB: { 
+            start: 400,
+            hourly: [400], // Placeholder
+            end: 400
+        },
+        SOL: { 
+            start: 120,
+            hourly: [120], // Placeholder
+            end: 120
+        },
+        XRP: { 
+            start: 0.75,
+            hourly: [0.75], // Placeholder
+            end: 0.75
+        }
+    }
+};
+
 // Store available scenarios
 const SCENARIOS = {
+    'now': NOW_SCENARIO,
     'march_2020': MARCH_2020_SCENARIO,
     'may_2021': MAY_2021_SCENARIO,
     'year_2013': YEAR_2013_SCENARIO
@@ -274,11 +324,19 @@ class ScenarioSelectScene extends Phaser.Scene {
             color: '#ffffff'
         }).setOrigin(0.5);
         
+        // Now - Real-time option
+        this.createScenarioButton(
+            SCENARIOS.now.displayName,
+            SCENARIOS.now.subtitle,
+            230,
+            'now'
+        );
+        
         // 2013 Full Year option
         this.createScenarioButton(
             SCENARIOS.year_2013.displayName,
             SCENARIOS.year_2013.subtitle,
-            230,
+            310,
             'year_2013'
         );
         
@@ -286,7 +344,7 @@ class ScenarioSelectScene extends Phaser.Scene {
         this.createScenarioButton(
             SCENARIOS.march_2020.displayName,
             SCENARIOS.march_2020.subtitle,
-            310,
+            390,
             'march_2020'
         );
         
@@ -294,7 +352,7 @@ class ScenarioSelectScene extends Phaser.Scene {
         this.createScenarioButton(
             SCENARIOS.may_2021.displayName,
             SCENARIOS.may_2021.subtitle,
-            390,
+            470,
             'may_2021'
         );
         
@@ -381,12 +439,30 @@ class SimulationSpeedScene extends Phaser.Scene {
             color: '#666666'
         }).setOrigin(0.5);
         
-        // Speed options
-        let yPos = 220;
-        Object.entries(this.scenario.speeds).forEach(([speedKey, speedConfig]) => {
-            this.createSpeedButton(speedKey, speedConfig, yPos);
-            yPos += 100;
-        });
+        // Check if this is the "Now" scenario
+        if (this.scenarioKey === 'now') {
+            // Coming Soon message for "Now" scenario
+            const comingSoonBox = this.add.rectangle(450, 300, 600, 200, 0x111111)
+                .setStrokeStyle(2, 0x333333);
+                
+            this.add.text(450, 280, 'COMING SOON', {
+                fontSize: '36px',
+                fontFamily: 'Arial Black',
+                color: '#666666'
+            }).setOrigin(0.5);
+            
+            this.add.text(450, 320, 'Real-time trading will be available in a future update', {
+                fontSize: '18px',
+                color: '#666666'
+            }).setOrigin(0.5);
+        } else {
+            // Speed options for other scenarios
+            let yPos = 220;
+            Object.entries(this.scenario.speeds).forEach(([speedKey, speedConfig]) => {
+                this.createSpeedButton(speedKey, speedConfig, yPos);
+                yPos += 100;
+            });
+        }
         
         // Back button
         const backButton = this.add.rectangle(100, 550, 120, 40, 0x333333)
