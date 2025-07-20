@@ -6,6 +6,7 @@
     <title>Test Now Mode Save</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../env.js"></script>
+    <script src="./config.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -77,13 +78,13 @@
             // Initialize Supabase - the CDN version exposes it as window.supabase
             const { createClient } = window.supabase;
             
-            // Get configuration from env.js
-            const url = window.ENV?.SUPABASE_URL;
-            const key = window.ENV?.SUPABASE_ANON_KEY;
+            // Get configuration from env.js or config.js
+            const url = window.ENV?.SUPABASE_URL || window.SUPABASE_URL;
+            const key = window.ENV?.SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY;
             
             if (!url || !key) {
                 document.getElementById('auth-status').innerHTML = 
-                    '<p class="error">❌ Missing Supabase configuration. Make sure env.js is properly configured.</p>';
+                    '<p class="error">❌ Missing Supabase configuration. Make sure env.js or config.js is properly configured.</p>';
                 return;
             }
             
