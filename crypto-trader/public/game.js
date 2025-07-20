@@ -1487,15 +1487,15 @@ class ResultsScene extends Phaser.Scene {
             color: '#00ffff'
         }).setOrigin(0.5);
         
-        // Fun message - white (moved down to avoid overlap with historical note)
+        // Fun message - blue/teal color at historical note position
         const messages = isWinner ? 
             ['You survived Black Thursday!', 'Better than most traders!', 'Risk management pro!'] :
             ['Black Thursday got you!', 'Welcome to crypto volatility!', 'Try a defensive strategy!'];
         const message = messages[Math.floor(Math.random() * messages.length)];
         
-        this.add.text(450, 420, message, {
+        this.add.text(450, yPos + 20, message, {
             fontSize: '24px',
-            color: '#ffffff'
+            color: '#00ffff'
         }).setOrigin(0.5);
         
         // Back to Dashboard button
