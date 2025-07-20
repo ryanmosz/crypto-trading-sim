@@ -1891,8 +1891,8 @@ class DashboardScene extends Phaser.Scene {
         // ===== DETAILS VIEW CONTENT =====
         
         // Title
-        const detailsTitle = this.add.text(450, 130, `Allocation Details`, {
-            fontSize: '28px',
+        const detailsTitle = this.add.text(390, 130, `Allocation Details`, {
+            fontSize: '24px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
         }).setOrigin(0.5).setVisible(false);
@@ -1901,29 +1901,29 @@ class DashboardScene extends Phaser.Scene {
         
         // Allocations
         let yPos = 170;
-        const allocHeader = this.add.text(450, yPos, 'Investment Performance:', {
-            fontSize: '20px',
+        const allocHeader = this.add.text(390, yPos, 'Investment Performance:', {
+            fontSize: '18px',
             color: '#00ffff'
         }).setOrigin(0.5).setVisible(false);
         detailsViewElements.push(allocHeader);
         modalElements.push(allocHeader);
         
         // Column headers
-        const startHeader = this.add.text(370, yPos + 30, 'Initial', {
-            fontSize: '14px',
+        const startHeader = this.add.text(320, yPos + 30, 'Initial', {
+            fontSize: '12px',
             color: '#666666'
         }).setOrigin(0.5).setVisible(false);
         detailsViewElements.push(startHeader);
         modalElements.push(startHeader);
         
-        const endHeader = this.add.text(530, yPos + 30, 'Final', {
-            fontSize: '14px',
+        const endHeader = this.add.text(470, yPos + 30, 'Final', {
+            fontSize: '12px',
             color: '#666666'
         }).setOrigin(0.5).setVisible(false);
         detailsViewElements.push(endHeader);
         modalElements.push(endHeader);
         
-        yPos += 60;
+        yPos += 50;  // Reduced from 60
         if (run.allocations) {
             // Calculate individual crypto performance
             const cryptoResults = {};
@@ -1956,13 +1956,18 @@ class DashboardScene extends Phaser.Scene {
             const actualProfit = actualFinalValue - GAME_CONFIG.startingMoney;
             const actualProfitPercent = (actualProfit / GAME_CONFIG.startingMoney) * 100;
             
+            // Calculate dynamic spacing based on number of cryptos
+            const numCryptos = Object.keys(cryptoResults).length;
+            const availableHeight = 280; // From y=220 to y=500 (leaving space for total)
+            const cryptoSpacing = Math.min(45, Math.floor(availableHeight / (numCryptos + 2))); // +2 for padding
+            
             // Display each crypto's performance
             Object.entries(cryptoResults).forEach(([symbol, data]) => {
                 const cryptoInfo = GAME_CONFIG.cryptos[symbol];
                 
                 // Crypto name
-                const allocText = this.add.text(230, yPos, `${symbol}:`, {
-                    fontSize: '16px',
+                const allocText = this.add.text(200, yPos, `${symbol}:`, {
+                    fontSize: '14px',
                     fontFamily: 'Arial Black',
                     color: '#ffffff'
                 }).setOrigin(0, 0.5).setVisible(false);
@@ -1970,54 +1975,54 @@ class DashboardScene extends Phaser.Scene {
                 modalElements.push(allocText);
                 
                 // Initial investment
-                const initialText = this.add.text(370, yPos, `$${data.initialInvestment.toLocaleString()}`, {
-                    fontSize: '16px',
+                const initialText = this.add.text(320, yPos, `$${data.initialInvestment.toLocaleString()}`, {
+                    fontSize: '14px',
                     color: '#666666'
                 }).setOrigin(0.5).setVisible(false);
                 detailsViewElements.push(initialText);
                 modalElements.push(initialText);
                 
                 // Arrow
-                const arrowText = this.add.text(450, yPos, `→`, {
-                    fontSize: '16px',
-                    color: '#ffffff'
+                const arrowText = this.add.text(390, yPos, `→`, {
+                    fontSize: '14px',
+                    color: '#666666'
                 }).setOrigin(0.5).setVisible(false);
                 detailsViewElements.push(arrowText);
                 modalElements.push(arrowText);
                 
                 // Final value
-                const finalText = this.add.text(530, yPos, `$${Math.round(data.finalValue).toLocaleString()}`, {
-                    fontSize: '16px',
+                const finalText = this.add.text(470, yPos, `$${Math.round(data.finalValue).toLocaleString()}`, {
+                    fontSize: '14px',
                     color: data.change >= 0 ? '#00ffff' : '#ff1493'
                 }).setOrigin(0.5).setVisible(false);
                 detailsViewElements.push(finalText);
                 modalElements.push(finalText);
                 
                 // Percentage change
-                const changeText = this.add.text(650, yPos, `(${data.change >= 0 ? '+' : ''}${data.change.toFixed(1)}%)`, {
-                    fontSize: '14px',
+                const changeText = this.add.text(580, yPos, `(${data.change >= 0 ? '+' : ''}${data.change.toFixed(1)}%)`, {
+                    fontSize: '12px',
                     color: data.change >= 0 ? '#00ffff' : '#ff1493'
-                }).setOrigin(1, 0.5).setVisible(false);
+                }).setOrigin(0.5).setVisible(false);
                 detailsViewElements.push(changeText);
                 modalElements.push(changeText);
                 
-                yPos += 30;
+                yPos += cryptoSpacing;
             });
             
             // Add total summary
-            yPos += 20;
+            yPos += 15;
             
             // Divider line
-            const divider = this.add.rectangle(450, yPos, 420, 1, 0x666666)
+            const divider = this.add.rectangle(390, yPos, 400, 1, 0x666666)
                 .setVisible(false);
             detailsViewElements.push(divider);
             modalElements.push(divider);
             
-            yPos += 20;
+            yPos += 15;
             
             // Total label
-            const totalLabel = this.add.text(230, yPos, 'TOTAL:', {
-                fontSize: '16px',
+            const totalLabel = this.add.text(200, yPos, 'TOTAL:', {
+                fontSize: '14px',
                 fontFamily: 'Arial Black',
                 color: '#ffffff'
             }).setOrigin(0, 0.5).setVisible(false);
@@ -2025,8 +2030,8 @@ class DashboardScene extends Phaser.Scene {
             modalElements.push(totalLabel);
             
             // Total initial
-            const totalInitial = this.add.text(370, yPos, `$${GAME_CONFIG.startingMoney.toLocaleString()}`, {
-                fontSize: '16px',
+            const totalInitial = this.add.text(320, yPos, `$${GAME_CONFIG.startingMoney.toLocaleString()}`, {
+                fontSize: '14px',
                 fontFamily: 'Arial Black',
                 color: '#666666'
             }).setOrigin(0.5).setVisible(false);
@@ -2034,16 +2039,16 @@ class DashboardScene extends Phaser.Scene {
             modalElements.push(totalInitial);
             
             // Total arrow
-            const totalArrow = this.add.text(450, yPos, `→`, {
-                fontSize: '16px',
+            const totalArrow = this.add.text(390, yPos, `→`, {
+                fontSize: '14px',
                 color: '#ffffff'
             }).setOrigin(0.5).setVisible(false);
             detailsViewElements.push(totalArrow);
             modalElements.push(totalArrow);
             
             // Total final
-            const totalFinal = this.add.text(530, yPos, `$${Math.round(actualFinalValue).toLocaleString()}`, {
-                fontSize: '16px',
+            const totalFinal = this.add.text(470, yPos, `$${Math.round(actualFinalValue).toLocaleString()}`, {
+                fontSize: '14px',
                 fontFamily: 'Arial Black',
                 color: actualProfit >= 0 ? '#00ffff' : '#ff1493'
             }).setOrigin(0.5).setVisible(false);
@@ -2051,18 +2056,18 @@ class DashboardScene extends Phaser.Scene {
             modalElements.push(totalFinal);
             
             // Total percentage
-            const totalPercent = this.add.text(650, yPos, `(${actualProfit >= 0 ? '+' : ''}${actualProfitPercent.toFixed(1)}%)`, {
-                fontSize: '14px',
+            const totalPercent = this.add.text(580, yPos, `(${actualProfit >= 0 ? '+' : ''}${actualProfitPercent.toFixed(1)}%)`, {
+                fontSize: '12px',
                 fontFamily: 'Arial Black',
                 color: actualProfit >= 0 ? '#00ffff' : '#ff1493'
-            }).setOrigin(1, 0.5).setVisible(false);
+            }).setOrigin(0.5).setVisible(false);
             detailsViewElements.push(totalPercent);
             modalElements.push(totalPercent);
             
             // Show warning if saved value doesn't match recalculated value
             if (Math.abs(run.final_value - actualFinalValue) > 1000) {
-                const warningText = this.add.text(450, yPos + 40, '⚠ Note: Values recalculated from historical data', {
-                    fontSize: '12px',
+                const warningText = this.add.text(390, yPos + 30, '⚠ Note: Values recalculated from historical data', {
+                    fontSize: '11px',
                     color: '#ff9900',
                     fontStyle: 'italic'
                 }).setOrigin(0.5).setVisible(false);
@@ -2072,15 +2077,15 @@ class DashboardScene extends Phaser.Scene {
         }
         
         // Back button (details view)
-        const backBtn = this.add.rectangle(450, 420, 100, 40, 0x333333)
+        const backBtn = this.add.rectangle(390, 480, 100, 35, 0x333333)
             .setStrokeStyle(2, 0x666666)
             .setInteractive({ useHandCursor: true })
             .setVisible(false);
         detailsViewElements.push(backBtn);
         modalElements.push(backBtn);
             
-        const backText = this.add.text(450, 420, 'BACK', {
-            fontSize: '18px',
+        const backText = this.add.text(390, 480, 'BACK', {
+            fontSize: '16px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
         }).setOrigin(0.5).setVisible(false);
