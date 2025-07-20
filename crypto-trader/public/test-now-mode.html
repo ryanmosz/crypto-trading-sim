@@ -76,10 +76,18 @@
         window.onload = function() {
             // Initialize Supabase - the CDN version exposes it as window.supabase
             const { createClient } = window.supabase;
-            supabase = createClient(
-                window.SUPABASE_CONFIG.url,
-                window.SUPABASE_CONFIG.anonKey
-            );
+            
+            // Get configuration from env.js
+            const url = window.ENV?.SUPABASE_URL;
+            const key = window.ENV?.SUPABASE_ANON_KEY;
+            
+            if (!url || !key) {
+                document.getElementById('auth-status').innerHTML = 
+                    '<p class="error">❌ Missing Supabase configuration. Make sure env.js is properly configured.</p>';
+                return;
+            }
+            
+            supabase = createClient(url, key);
             
             // Check auth once initialized
             checkAuth();
