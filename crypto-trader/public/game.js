@@ -2946,7 +2946,15 @@ class ActiveGameViewScene extends Phaser.Scene {
             color: '#ffffff'
         }).setOrigin(0.5);
         
-        this.add.text(450, 120, `Started: ${startedDate} | Ends: ${endsDate}`, {
+        // Calculate minutes ago for prices update
+        let pricesText = '';
+        if (this.gameData.last_updated) {
+            const lastUpdated = new Date(this.gameData.last_updated);
+            const minutesAgo = Math.floor((new Date() - lastUpdated) / 60000);
+            pricesText = ` | Prices updated ${minutesAgo} minutes ago`;
+        }
+        
+        this.add.text(450, 120, `Started: ${startedDate} | Ends: ${endsDate}${pricesText}`, {
             fontSize: '16px',
             color: '#666666'
         }).setOrigin(0.5);
@@ -3067,16 +3075,7 @@ class ActiveGameViewScene extends Phaser.Scene {
         // Performance History Chart
         this.createPerformanceChart(yPos + 50);
         
-        // Last updated
-        if (this.gameData.last_updated) {
-            const lastUpdated = new Date(this.gameData.last_updated);
-            const minutesAgo = Math.floor((new Date() - lastUpdated) / 60000);
-            
-            this.add.text(450, 480, `Prices updated ${minutesAgo} minutes ago`, {
-                fontSize: '14px',
-                color: '#666666'
-            }).setOrigin(0.5);
-        }
+
         
         // Back button
         const backButton = this.add.rectangle(450, 530, 200, 40, 0x333333)
