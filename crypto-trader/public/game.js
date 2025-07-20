@@ -8,48 +8,58 @@ class TutorialOverlay {
         this.elements = [];
     }
     
-    show(x, y, width, height, text, position = 'bottom') {
+    show(x, y, width, height, text, position = 'bottom', options = {}) {
         // Clean up any existing overlay
         this.hide();
         
-        // Create dark overlay with hole
+        // Create dark overlay
         this.overlay = this.scene.add.graphics();
         this.overlay.fillStyle(0x000000, 0.7);
         
         // Fill entire screen
         this.overlay.fillRect(0, 0, 900, 600);
         
-        // Create "hole" in overlay for spotlight effect
-        this.overlay.setBlendMode(Phaser.BlendModes.MULTIPLY);
-        
-        // Add highlight rectangle
-        const highlight = this.scene.add.rectangle(x, y, width + 20, height + 20, 0x00ffff, 0)
-            .setStrokeStyle(3, 0x00ffff);
+        // Create "hole" in overlay for spotlight effect (unless disabled)
+        if (!options.hideSpotlight) {
+            this.overlay.setBlendMode(Phaser.BlendModes.MULTIPLY);
+            
+            // Add highlight rectangle
+            const highlight = this.scene.add.rectangle(x, y, width + 20, height + 20, 0x00ffff, 0)
+                .setStrokeStyle(3, 0x00ffff);
+            this.elements.push(highlight);
+        }
         
         // Tutorial text box position
-        const textY = position === 'top' ? y - height/2 - 100 : y + height/2 + 80;
+        let textY;
+        if (position === 'center') {
+            textY = y;
+        } else if (position === 'top') {
+            textY = y - height/2 - 70;
+        } else {
+            textY = y + height/2 + 60;
+        }
         
-        // Background for text
-        const textBg = this.scene.add.rectangle(450, textY, 600, 80, 0x1a1a1a)
+        // Background for text - make it thinner and wider
+        const textBg = this.scene.add.rectangle(450, textY, 700, 60, 0x1a1a1a)
             .setStrokeStyle(2, 0x00ffff);
             
         // Tutorial text
-        const tutorialText = this.scene.add.text(450, textY - 10, text, {
+        const tutorialText = this.scene.add.text(450, textY - 5, text, {
             fontSize: '16px',
             color: '#ffffff',
             align: 'center',
-            wordWrap: { width: 580 }
+            wordWrap: { width: 680 }
         }).setOrigin(0.5);
         
         // Next button
-        const nextBtn = this.scene.add.text(750, textY + 25, 'NEXT →', {
+        const nextBtn = this.scene.add.text(750, textY + 20, 'NEXT →', {
             fontSize: '14px',
             color: '#00ffff'
         }).setOrigin(1, 0.5)
         .setInteractive({ useHandCursor: true });
         
         // Skip button
-        const skipBtn = this.scene.add.text(150, textY + 25, 'Skip Tutorial', {
+        const skipBtn = this.scene.add.text(150, textY + 20, 'Skip Tutorial', {
             fontSize: '14px',
             color: '#666666'
         }).setOrigin(0, 0.5)
@@ -80,9 +90,42 @@ class TutorialManager {
         this.steps = [
             {
                 scene: 'DashboardScene',
+                elementId: 'welcome',
+                x: 450, y: 300, w: 700, h: 60,
+                text: "Welcome to Crypto Trader Simulator! Let's take a quick tour of what you can do here.",
+                waitForClick: true,
+                position: 'center',
+                hideSpotlight: true
+            },
+            {
+                scene: 'DashboardScene',
+                elementId: 'newGameTab',
+                x: 289, y: 285, w: 350, h: 50,
+                text: "NEW GAME: Start trading through historical crypto events. Test your strategies against real market data!",
+                waitForClick: true,
+                position: 'top'
+            },
+            {
+                scene: 'DashboardScene',
+                elementId: 'activeGamesTab',
+                x: 636, y: 285, w: 350, h: 50,
+                text: "ACTIVE GAMES: Join multiplayer challenges or track your ongoing games that update with real prices!",
+                waitForClick: true,
+                position: 'top'
+            },
+            {
+                scene: 'DashboardScene',
+                elementId: 'leaderboard',
+                x: 636, y: 540, w: 250, h: 50,
+                text: "Check the LEADERBOARD to see top traders and compete with others!",
+                waitForClick: true,
+                position: 'top'
+            },
+            {
+                scene: 'DashboardScene',
                 elementId: 'playNewGame',
                 x: 450, y: 360, w: 400, h: 80,
-                text: "Welcome to Crypto Trader! Click 'START NEW GAME' to try trading cryptocurrencies through historical scenarios, test your strategies, and learn from market movements. Or explore the 'Active Games' tab to join ongoing multiplayer challenges!",
+                text: "Ready to start? Click 'START NEW GAME' to begin your trading journey!",
                 waitForClick: true,
                 position: 'top'
             },
@@ -189,7 +232,8 @@ class TutorialManager {
         // Show the overlay
         const { nextBtn, skipBtn } = this.overlay.show(
             step.x, step.y, step.w, step.h, 
-            step.text, step.position
+            step.text, step.position,
+            { hideSpotlight: step.hideSpotlight }
         );
         
         // Add button handlers
