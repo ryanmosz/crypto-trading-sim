@@ -314,8 +314,8 @@ class LoginScene extends Phaser.Scene {
             this.toggleText.setText("Don't have an account? Sign Up");
             this.authButton.textContent = 'SIGN IN';
             this.emailInput.value = 'adam@test.com';
-            this.passwordInput.value = 'password123';
-            this.handleTestAuth('adam@test.com', 'password123');
+            this.passwordInput.value = 'test12';
+            this.handleTestAuth('adam@test.com', 'test12');
         });
         
         // Beth test button
@@ -332,8 +332,8 @@ class LoginScene extends Phaser.Scene {
             this.toggleText.setText("Don't have an account? Sign Up");
             this.authButton.textContent = 'SIGN IN';
             this.emailInput.value = 'beth@test.com';
-            this.passwordInput.value = 'password123';
-            this.handleTestAuth('beth@test.com', 'password123');
+            this.passwordInput.value = 'test12';
+            this.handleTestAuth('beth@test.com', 'test12');
         });
     }
     
