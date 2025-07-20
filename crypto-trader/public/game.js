@@ -256,14 +256,14 @@ class LoginScene extends Phaser.Scene {
         this.cameras.main.setBackgroundColor('#000000');
         
         // Title - white with cyan accent
-        this.add.text(450, 100, 'CRYPTO TRADER CHALLENGE', {
+        this.add.text(450, 100, 'CRYPTO TRADER SIMULATOR', {
             fontSize: '42px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
         }).setOrigin(0.5);
         
         // Subtitle - white text
-        this.add.text(450, 150, 'Turn $10M into millions more!', {
+        this.add.text(450, 150, 'Like fantasy football for crypto!!', {
             fontSize: '20px',
             color: '#ffffff'
         }).setOrigin(0.5);
@@ -1489,7 +1489,7 @@ class DashboardScene extends Phaser.Scene {
         this.cameras.main.setBackgroundColor('#000000');
         
         // Header
-        this.add.text(450, 40, 'CRYPTO TRADER DASHBOARD', {
+        this.add.text(450, 40, 'CRYPTO TRADER SIMULATOR', {
             fontSize: '36px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
