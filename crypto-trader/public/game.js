@@ -614,6 +614,42 @@ const SCENARIOS = {
     'year_2013': YEAR_2013_SCENARIO
 };
 
+// Global auth instance
+window.gameAuth = null;
+
+// Helper function to create back/dashboard button
+function createBackButton(scene, x = 50, y = 550, text = 'BACK', destination = 'DashboardScene') {
+    const btn = scene.add.rectangle(x, y, 100, 40, 0x000000, 1)
+        .setStrokeStyle(2, 0x666666)
+        .setInteractive({ useHandCursor: true })
+        .setOrigin(0.5);
+        
+    const btnText = scene.add.text(x, y, text, {
+        fontSize: '16px',
+        fontFamily: 'Arial Black',
+        color: '#ffffff'
+    }).setOrigin(0.5);
+    
+    btn.on('pointerover', () => {
+        btn.setStrokeStyle(2, 0x00ffff);
+        btnText.setColor('#00ffff');
+    })
+    .on('pointerout', () => {
+        btn.setStrokeStyle(2, 0x666666);
+        btnText.setColor('#ffffff');
+    })
+    .on('pointerdown', () => {
+        scene.scene.start(destination, { user: scene.user });
+    });
+    
+    return { btn, btnText };
+}
+
+// Helper function to create dashboard button
+function createDashboardButton(scene, x = 850, y = 40) {
+    return createBackButton(scene, x, y, 'DASHBOARD', 'DashboardScene');
+}
+
 // Login Scene
 class LoginScene extends Phaser.Scene {
     constructor() {
@@ -2281,20 +2317,19 @@ class DashboardScene extends Phaser.Scene {
             
             if (gamesError) throw gamesError;
             
-            // Separate into single player (user's own) and multiplayer games
-            const myGames = allGames ? allGames.filter(g => !g.is_multiplayer && g.user_id === this.user.id) : [];
-            const multiplayerGames = allGames ? allGames.filter(g => g.is_multiplayer) : [];
+            // All games are multiplayer and joinable
+            const allMultiplayerGames = allGames || [];
             
-            // For multiplayer games, check which ones the user has joined
-            const multiplayerGameIds = multiplayerGames.map(g => g.id);
+            // Check which games the user has already joined
+            const gameIds = allMultiplayerGames.map(g => g.id);
             let userParticipations = {};
             
-            if (multiplayerGameIds.length > 0) {
+            if (gameIds.length > 0) {
                 const { data: participations } = await this.auth.supabase
                     .from('game_participants')
                     .select('game_id')
                     .eq('user_id', this.user.id)
-                    .in('game_id', multiplayerGameIds);
+                    .in('game_id', gameIds);
                     
                 if (participations) {
                     participations.forEach(p => {
@@ -2322,7 +2357,7 @@ class DashboardScene extends Phaser.Scene {
             
             loadingText.destroy();
             
-            const totalGames = (myGames?.length || 0) + (multiplayerGames?.length || 0);
+            const totalGames = allMultiplayerGames.length;
             
             if (totalGames === 0) {
                 const noGamesText = this.add.text(450, this.contentY + 60, 
@@ -2345,43 +2380,23 @@ class DashboardScene extends Phaser.Scene {
             
             let yPos = this.contentY + 40;
             
-            // Display user's single player games first
-            if (myGames && myGames.length > 0) {
-                const myGamesHeader = this.add.text(450, yPos, 'YOUR SOLO GAMES', {
-                    fontSize: '14px',
-                    color: '#00ffff',
-                    fontFamily: 'Arial Black'
-                }).setOrigin(0.5);
-                this.contentGroup.add(myGamesHeader);
-                yPos += 30;
-                
-                myGames.forEach(game => {
-                    this.createActiveGameDisplay(game, yPos, false, false); // not joinable, not multiplayer
-                    yPos += 70;
-                });
-            }
+            // Display ALL games as multiplayer
+            const gamesHeader = this.add.text(450, yPos, 'ACTIVE MULTIPLAYER GAMES', {
+                fontSize: '14px',
+                color: '#00ff00',
+                fontFamily: 'Arial Black'
+            }).setOrigin(0.5);
+            this.contentGroup.add(gamesHeader);
+            yPos += 30;
             
-            // Display ALL multiplayer games
-            if (multiplayerGames && multiplayerGames.length > 0) {
-                if (myGames && myGames.length > 0) {
-                    yPos += 20; // Extra spacing between sections
-                }
-                
-                const multiplayerHeader = this.add.text(450, yPos, 'MULTIPLAYER GAMES', {
-                    fontSize: '14px',
-                    color: '#00ff00',
-                    fontFamily: 'Arial Black'
-                }).setOrigin(0.5);
-                this.contentGroup.add(multiplayerHeader);
-                yPos += 30;
-                
-                multiplayerGames.forEach(game => {
-                    // Check if user has already joined this game
-                    const hasJoined = userParticipations[game.id] || false;
-                    this.createActiveGameDisplay(game, yPos, !hasJoined, true); // joinable if not joined yet
-                    yPos += 70;
-                });
-            }
+            allMultiplayerGames.forEach(game => {
+                // Check if user has already joined this game
+                const hasJoined = userParticipations[game.id] || false;
+                const isCreator = game.user_id === this.user.id;
+                const isJoinable = !hasJoined && !isCreator;
+                this.createActiveGameDisplay(game, yPos, isJoinable, true); // all are multiplayer
+                yPos += 70;
+            });
             
         } catch (error) {
             console.error('Error loading active games:', error);
@@ -4055,7 +4070,6 @@ class ActiveGameViewScene extends Phaser.Scene {
             let yPos = 250;
             participants.forEach((participant, index) => {
                 const isMe = participant.user_id === this.user.id;
-                const email = participant.profiles?.email || 'Anonymous';
                 const value = participant.current_value || 10000000;
                 const profit = ((value - 10000000) / 10000000) * 100;
                 
@@ -4073,7 +4087,7 @@ class ActiveGameViewScene extends Phaser.Scene {
                 }).setOrigin(0, 0.5);
                 
                 // Player email
-                this.add.text(250, yPos, email, {
+                this.add.text(250, yPos, 'Anonymous', {
                     fontSize: '18px',
                     color: isMe ? '#00ffff' : '#ffffff'
                 }).setOrigin(0, 0.5);
