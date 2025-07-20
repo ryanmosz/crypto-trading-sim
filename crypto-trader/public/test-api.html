@@ -84,10 +84,18 @@
         
         <div id="api-key-status" style="text-align: center; margin: 20px 0; padding: 15px; border-radius: 5px;"></div>
         
+        <h2>API Integration Tests</h2>
+        
         <div class="test-section">
-            <h2>Test without API Key (Demo API)</h2>
-            <button onclick="testWithoutKey()">Test Demo API</button>
-            <div id="demo-result"></div>
+            <h3>Quick Price Check</h3>
+            <button onclick="checkSolanaPrice()">Check Solana Price Only</button>
+            <div id="solana-price"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Direct CoinGecko API Test</h3>
+            <button onclick="testDirectAPI()">Test CoinGecko API</button>
+            <div id="direct-api-result"></div>
         </div>
         
         <div class="test-section">
@@ -269,6 +277,55 @@
                 
             } catch (error) {
                 displayError(error.message, 'local-result');
+            }
+        }
+        
+        // Quick Solana price check
+        async function checkSolanaPrice() {
+            const resultDiv = document.getElementById('solana-price');
+            resultDiv.innerHTML = '<p>Checking Solana price...</p>';
+            
+            try {
+                const url = 'https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd';
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.solana && data.solana.usd) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <strong>Live Solana Price:</strong> $${data.solana.usd}<br>
+                            <small>Fallback price in app: $180</small><br>
+                            <small>Difference: $${(180 - data.solana.usd).toFixed(2)}</small>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">No price data returned</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+        
+        // Direct API test
+        async function testDirectAPI() {
+            const resultDiv = document.getElementById('direct-api-result');
+            resultDiv.innerHTML = '<p>Testing direct API call...</p>';
+            
+            try {
+                const url = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,binancecoin,solana,ripple&vs_currencies=usd';
+                console.log('Calling:', url);
+                
+                const response = await fetch(url);
+                console.log('Response status:', response.status);
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                resultDiv.innerHTML = '<h3 class="success">✅ Direct API Success!</h3><pre>' + 
+                    JSON.stringify(data, null, 2) + '</pre>';
+                    
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
             }
         }
     </script>

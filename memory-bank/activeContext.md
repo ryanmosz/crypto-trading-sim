@@ -79,6 +79,13 @@
 ## Current Work
 
 ### Just Completed
+- Fixed Update Prices button errors and missing Solana prices:
+  - Fixed "CryptoPriceManager not available" error - now uses window.CryptoAPI
+  - Added Auth instance to NowModeSetupScene for proper Supabase access
+  - Added "Last update: [timestamp]" display below Update Prices button
+  - Improved error handling to ensure all cryptos (including SOL) have prices
+  - Added fallback prices for any missing crypto data
+  - Better logging to diagnose price fetching issues
 - Fixed "Solana unavailable" error when clicking Update Prices:
   - Added SOL (Solana) to all crypto mappings (was missing)
   - Removed DOGE from all files (not used in game)

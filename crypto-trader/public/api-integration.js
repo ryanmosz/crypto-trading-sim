@@ -21,25 +21,34 @@ async function fetchCurrentPrices() {
         const ids = Object.values(CRYPTO_ID_MAP).join(',');
         const url = `${COINGECKO_API_URL}/simple/price?ids=${ids}&vs_currencies=usd`;
         
+        console.log('Fetching prices from:', url);
+        
         const options = {};
         if (COINGECKO_API_KEY) {
             options.headers = {
                 'x-cg-demo-api-key': COINGECKO_API_KEY
             };
+            console.log('Using API key:', COINGECKO_API_KEY ? 'Yes' : 'No');
+        } else {
+            console.warn('No CoinGecko API key configured - using free tier');
         }
         
         const response = await fetch(url, options);
+        console.log('API Response status:', response.status);
+        
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
         const data = await response.json();
+        console.log('Raw API response:', data);
         
         // Convert CoinGecko format to our format
         const prices = {};
         for (const [symbol, geckoId] of Object.entries(CRYPTO_ID_MAP)) {
             if (data[geckoId] && data[geckoId].usd) {
                 prices[symbol] = data[geckoId].usd;
+                console.log(`${symbol}: $${data[geckoId].usd} (live)`);
             } else {
                 console.warn(`No price data for ${symbol} (${geckoId})`);
                 // Use fallback price for missing data
@@ -51,13 +60,15 @@ async function fetchCurrentPrices() {
                     XRP: 2.40
                 };
                 prices[symbol] = fallbacks[symbol] || 0;
+                console.log(`${symbol}: $${prices[symbol]} (fallback)`);
             }
         }
         
-        console.log('Fetched prices:', prices);
+        console.log('Final prices object:', prices);
         return prices;
     } catch (error) {
         console.error('Error fetching prices from CoinGecko:', error);
+        console.log('Using all fallback prices due to error');
         // Return fallback prices
         return {
             BTC: 98500,
