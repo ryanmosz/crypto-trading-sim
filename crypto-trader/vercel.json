@@ -1,0 +1,16 @@
+{
+  "name": "crypto-trading-sim",
+  "version": 2,
+  "public": true,
+  "framework": null,
+  "outputDirectory": "public",
+  "buildCommand": "",
+  "installCommand": "",
+  "devCommand": "",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+} 

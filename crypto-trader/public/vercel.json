@@ -1,9 +1,0 @@
-{
-  "name": "crypto-trading-sim",
-  "version": 2,
-  "public": true,
-  "framework": null,
-  "outputDirectory": ".",
-  "buildCommand": "",
-  "devCommand": ""
-} 
