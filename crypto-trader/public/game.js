@@ -826,7 +826,7 @@ class AllocationScene extends Phaser.Scene {
         
         // Timer (60 seconds)
         this.timeLeft = 60;
-        this.timerText = this.add.text(800, 90, '1:00', {
+        this.timerText = this.add.text(800, 550, '1:00', {
             fontSize: '24px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
