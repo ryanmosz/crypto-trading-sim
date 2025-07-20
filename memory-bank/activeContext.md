@@ -79,17 +79,17 @@
 ## Current Work
 
 ### Just Completed
-- Fixed Past tab paging controls that weren't changing displayed games
-- Fixed Update Prices button issues:
-  - Now only shows on Now mode games (not historical)
-  - Properly styled to match other buttons
-  - Positioned in top-right at coordinates (800, 100)
-- Fixed allocation screen spacing problems:
-  - Moved columns for better readability
-  - Icon at x:100, Name at x:150, Price at x:320 (left-aligned)
-  - Price text no longer overlaps with other elements
-- Added duration display for Now mode games (e.g., "Duration: 30 days")
-- Added price refresh functionality without scene restart
+- Fixed TypeError when locking in Now mode allocations
+  - Added price validation and default values
+  - Display "Price unavailable" for missing prices instead of crashing
+- Moved Update Prices button to proper location:
+  - Removed from dashboard/active game screens
+  - Now only appears on Now mode duration selection screen
+  - Positioned in top-right corner for easy access
+- Previous fixes:
+  - Fixed Past tab paging controls
+  - Fixed allocation screen spacing issues
+  - Added duration display for Now mode games
 
 ### Recent Major Changes
 

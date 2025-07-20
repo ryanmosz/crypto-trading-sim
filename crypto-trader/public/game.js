@@ -1138,8 +1138,8 @@ class AllocationScene extends Phaser.Scene {
             BTC: 98500,
             ETH: 3850,
             BNB: 725,
-            XRP: 2.40,
-            DOGE: 0.42
+            SOL: 180,
+            XRP: 2.40
         };
     }
 }

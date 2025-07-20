@@ -24,8 +24,8 @@ const CRYPTO_MAP = {
   BTC: 'bitcoin',
   ETH: 'ethereum',
   BNB: 'binancecoin',
-  XRP: 'ripple',
-  DOGE: 'dogecoin'
+  SOL: 'solana',
+  XRP: 'ripple'
 };
 
 // Fetch current prices from CoinGecko
@@ -95,8 +95,8 @@ async function generateTestPrices(): Promise<Record<string, number>> {
       BTC: 98500,
       ETH: 3850,
       BNB: 725,
-      XRP: 2.40,
-      DOGE: 0.42
+      SOL: 180,
+      XRP: 2.40
     };
     
     for (const [symbol, basePrice] of Object.entries(basePrices)) {

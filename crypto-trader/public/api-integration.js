@@ -11,8 +11,8 @@ const CRYPTO_ID_MAP = {
     BTC: 'bitcoin',
     ETH: 'ethereum', 
     BNB: 'binancecoin',
-    XRP: 'ripple',
-    DOGE: 'dogecoin'
+    SOL: 'solana',
+    XRP: 'ripple'
 };
 
 // Function to fetch current prices from CoinGecko
@@ -51,8 +51,8 @@ async function fetchCurrentPrices() {
             BTC: 98500,
             ETH: 3850,
             BNB: 725,
-            XRP: 2.40,
-            DOGE: 0.42
+            SOL: 180,
+            XRP: 2.40
         };
     }
 }
