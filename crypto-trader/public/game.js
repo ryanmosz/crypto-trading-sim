@@ -1962,6 +1962,11 @@ class DashboardScene extends Phaser.Scene {
     }
     
     async create() {
+        // Initialize auth if needed
+        if (this.auth && this.auth.init) {
+            await this.auth.init();
+        }
+        
         // Make sure we have a valid user
         if (!this.user || !this.user.email) {
             console.error('No valid user for dashboard');
@@ -2187,6 +2192,21 @@ class DashboardScene extends Phaser.Scene {
         this.contentGroup.add(loadingText);
         
         try {
+            // Check if auth is still valid
+            const { data: { session }, error: sessionError } = await this.auth.supabase.auth.getSession();
+            
+            if (sessionError || !session) {
+                console.error('Session expired or invalid:', sessionError);
+                loadingText.setText('Session expired. Please log in again.');
+                loadingText.setColor('#ff0000');
+                
+                // Redirect to login after a delay
+                this.time.delayedCall(2000, () => {
+                    this.scene.start('LoginScene');
+                });
+                return;
+            }
+            
             // Query user's active games
             const { data: myGames, error: myError } = await this.auth.supabase
                 .from('active_games')
@@ -2198,7 +2218,8 @@ class DashboardScene extends Phaser.Scene {
             if (myError) throw myError;
             
             // Query all active multiplayer games
-            const { data: multiplayerGames, error: mpError } = await this.auth.supabase
+            let multiplayerGames = [];
+            const { data: mpGames, error: mpError } = await this.auth.supabase
                 .from('active_games')
                 .select('*')
                 .eq('is_multiplayer', true)
@@ -2206,7 +2227,13 @@ class DashboardScene extends Phaser.Scene {
                 .neq('user_id', this.user.id)
                 .order('created_at', { ascending: false });
                 
-            if (mpError) throw mpError;
+            if (mpError) {
+                console.error('Error loading multiplayer games:', mpError);
+                // Continue with empty array instead of throwing
+                multiplayerGames = [];
+            } else {
+                multiplayerGames = mpGames || [];
+            }
             
             // Check which multiplayer games user has already joined
             const multiplayerGameIds = multiplayerGames ? multiplayerGames.map(g => g.id) : [];

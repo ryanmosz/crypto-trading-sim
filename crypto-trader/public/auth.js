@@ -156,21 +156,37 @@ export const gameData = {
 export class Auth {
   constructor() {
     this.supabase = supabase;
+    this._initialized = false;
+  }
+  
+  async init() {
+    if (this._initialized) return;
+    
+    // Ensure supabase client is available
+    if (!this.supabase) {
+      this.supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+    
+    this._initialized = true;
   }
   
   async signUp(email, password) {
+    await this.init();
     return auth.signUp(email, password);
   }
   
   async signIn(email, password) {
+    await this.init();
     return auth.signIn(email, password);
   }
   
   async signOut() {
+    await this.init();
     return auth.signOut();
   }
   
   async getCurrentUser() {
+    await this.init();
     return auth.getCurrentUser();
   }
   
