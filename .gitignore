@@ -19,6 +19,13 @@ out/
 .env.production.local
 .env.development.local
 crypto-trader/env.js
+# Never commit these!
+*.key
+*.pem
+.env.*
+env.js
+secrets/
+credentials/
 
 # IDE and editor files
 .idea/
