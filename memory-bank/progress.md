@@ -65,23 +65,33 @@ Phase 1 (Historical trading) is ~85% complete with core gameplay functional but 
 - **Deployment**: GitHub Pages with CI/CD pipeline
 
 #### M1 - Persist Past Runs (July 19, 2025) ✅
-- **Authentication UI**: Replaced fake users with email/password form
-- **Dashboard Scene**: Shows welcome message and game history
-- **Automatic Saving**: Results save to database without user action
-- **Navigation Flow**: All scenes properly handle user object
-- **Session Persistence**: Auto-login on page refresh
+**Status: Complete**
 
-### 🚧 Ready for Next Phase: M2 - Now Mode
+Past game runs are successfully saved to Supabase and displayed on the dashboard with:
+- Full game history with scenario, allocations, and performance
+- Details modal showing investment breakdown
+- Paging system for navigating many past games
+- Proper UI layout preventing overlap
 
-### 📅 Upcoming Milestones
+#### M2 - Now Mode (July 20, 2025) 🏗️
+**Status: In Progress (60% complete)**
 
-#### M2 - Now Mode (Global Leaderboard)
-- Allocate-Now screen for live trading
-- Insert entries with current prices
-- Cron job calculating portfolio values
-- Global leaderboard showing top 100
+**Completed:**
+- ✅ Database tables created (active_games, price_history, prices_cache)
+- ✅ Now mode setup scene with duration selection
+- ✅ Allocation scene modified to handle current prices
+- ✅ Now mode result scene saves games to database
+- ✅ Dashboard shows active games with performance
+
+**Remaining:**
+- ⏳ Price fetching API integration
+- ⏳ Background job for price updates
+- ⏳ Auto-completion when games expire
+- ⏳ Active game detail view
+- ⏳ Price history tracking
 
 #### M3 - Polish Pass
+**Status: Not Started**
 - Loading states throughout
 - Error handling and toasts
 - Performance optimizations

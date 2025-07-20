@@ -75,3 +75,47 @@
    - Needs starting prices stored
    - Requires periodic price updates
    - Different completion flow 
+
+## Current Work
+
+### M2 - Now Mode Implementation (In Progress)
+
+**Completed Today:**
+1. Database setup:
+   - Created `active_games` table for ongoing games
+   - Created `price_history` table for tracking price changes
+   - Created `prices_cache` table for current crypto prices
+   - Set up proper RLS policies
+
+2. Frontend implementation:
+   - Created `NowModeSetupScene` for duration selection (30/60/90 days)
+   - Created `NowModeResultScene` to confirm game start and save to DB
+   - Modified `AllocationScene` to handle Now mode with current prices
+   - Updated `ScenarioSelectScene` to route to Now mode setup
+
+3. Dashboard updates:
+   - Added "Active Games" section above past games
+   - Display active games with time remaining and performance
+   - Show current value and profit/loss percentage
+   - Placeholder for viewing active game details
+
+**Still Needed:**
+1. Price fetching mechanism (API integration or manual updates)
+2. Background job to update prices and game values
+3. Game completion handler (auto-complete when time expires)
+4. Active game detail view scene
+5. Price history tracking for charts
+
+### UI Polish Status
+
+Dashboard layout now has:
+- Active games section at y=240
+- Past games section moved to y=400
+- Sign out button remains at bottom
+- Proper spacing between all sections
+
+Past games display features:
+- Paging with up/down arrows
+- 4 games per page
+- Proper spacing to prevent overlap
+- Page indicator shows current/total pages 
