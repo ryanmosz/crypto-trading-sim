@@ -860,6 +860,50 @@ class AllocationScene extends Phaser.Scene {
                 backText.setColor('#ffffff');
             })
             .on('pointerdown', () => this.scene.start('ScenarioSelectScene', { user: this.user }));
+        
+        // Test price update button (temporary for debugging)
+        const testPriceBtn = this.add.text(100, 230, '[Update Prices]', {
+            fontSize: '14px',
+            color: '#00ff00'
+        }).setOrigin(0, 0.5)
+        .setInteractive({ useHandCursor: true })
+        .on('pointerover', function() { this.setColor('#ffffff'); })
+        .on('pointerout', function() { this.setColor('#00ff00'); })
+        .on('pointerdown', async () => {
+            console.log('Testing price update...');
+            try {
+                // Generate random price changes (-10% to +10%)
+                const priceChanges = {
+                    BTC: 98500 * (0.9 + Math.random() * 0.2),
+                    ETH: 3850 * (0.9 + Math.random() * 0.2),
+                    BNB: 725 * (0.9 + Math.random() * 0.2),
+                    XRP: 2.40 * (0.9 + Math.random() * 0.2),
+                    DOGE: 0.42 * (0.9 + Math.random() * 0.2)
+                };
+                
+                // Update prices in cache
+                for (const [symbol, price] of Object.entries(priceChanges)) {
+                    await this.auth.supabase
+                        .from('prices_cache')
+                        .upsert({ symbol, price })
+                        .select();
+                }
+                
+                // Call the update function
+                const { data, error } = await this.auth.supabase
+                    .rpc('update_active_game_values');
+                    
+                if (error) {
+                    console.error('Price update error:', error);
+                } else {
+                    console.log('Prices updated successfully!');
+                    // Refresh the scene to show new values
+                    this.scene.restart({ user: this.user });
+                }
+            } catch (e) {
+                console.error('Price update exception:', e);
+            }
+        });
     }
     
     createCryptoRow(symbol, crypto, y) {
@@ -1671,6 +1715,50 @@ class DashboardScene extends Phaser.Scene {
             }
         });
         
+        // Test price update button (temporary for debugging)
+        const testPriceBtn = this.add.text(100, 230, '[Update Prices]', {
+            fontSize: '14px',
+            color: '#00ff00'
+        }).setOrigin(0, 0.5)
+        .setInteractive({ useHandCursor: true })
+        .on('pointerover', function() { this.setColor('#ffffff'); })
+        .on('pointerout', function() { this.setColor('#00ff00'); })
+        .on('pointerdown', async () => {
+            console.log('Testing price update...');
+            try {
+                // Generate random price changes (-10% to +10%)
+                const priceChanges = {
+                    BTC: 98500 * (0.9 + Math.random() * 0.2),
+                    ETH: 3850 * (0.9 + Math.random() * 0.2),
+                    BNB: 725 * (0.9 + Math.random() * 0.2),
+                    XRP: 2.40 * (0.9 + Math.random() * 0.2),
+                    DOGE: 0.42 * (0.9 + Math.random() * 0.2)
+                };
+                
+                // Update prices in cache
+                for (const [symbol, price] of Object.entries(priceChanges)) {
+                    await this.auth.supabase
+                        .from('prices_cache')
+                        .upsert({ symbol, price })
+                        .select();
+                }
+                
+                // Call the update function
+                const { data, error } = await this.auth.supabase
+                    .rpc('update_active_game_values');
+                    
+                if (error) {
+                    console.error('Price update error:', error);
+                } else {
+                    console.log('Prices updated successfully!');
+                    // Refresh the scene to show new values
+                    this.scene.restart({ user: this.user });
+                }
+            } catch (e) {
+                console.error('Price update exception:', e);
+            }
+        });
+        
         // Load active games and past runs
         this.loadActiveGames();
         this.loadPastRuns();
@@ -1778,8 +1866,11 @@ class DashboardScene extends Phaser.Scene {
             bg.setStrokeStyle(1, 0x00ffff);
         })
         .on('pointerdown', () => {
-            // TODO: Create ActiveGameViewScene to show details
-            alert('Active game details coming soon!');
+            // Go to active game view
+            this.scene.start('ActiveGameViewScene', { 
+                user: this.user,
+                gameData: game
+            });
         });
     }
     
@@ -2634,13 +2725,200 @@ class NowModeResultScene extends Phaser.Scene {
     }
 }
 
+// Active Game View Scene
+class ActiveGameViewScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'ActiveGameViewScene' });
+    }
+    
+    init(data) {
+        this.user = data.user;
+        this.gameData = data.gameData;
+    }
+    
+    create() {
+        // Black background
+        this.cameras.main.setBackgroundColor('#000000');
+        
+        // Header
+        this.add.text(450, 40, 'ACTIVE GAME DETAILS', {
+            fontSize: '36px',
+            fontFamily: 'Arial Black',
+            color: '#00ffff'
+        }).setOrigin(0.5);
+        
+        // Game info
+        const daysRemaining = Math.ceil((new Date(this.gameData.ends_at) - new Date()) / (1000 * 60 * 60 * 24));
+        const startedDate = new Date(this.gameData.started_at).toLocaleDateString();
+        const endsDate = new Date(this.gameData.ends_at).toLocaleDateString();
+        
+        this.add.text(450, 90, `${this.gameData.duration_days}-Day Challenge`, {
+            fontSize: '24px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        this.add.text(450, 120, `Started: ${startedDate} | Ends: ${endsDate}`, {
+            fontSize: '16px',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
+        // Time remaining with color coding
+        const timeColor = daysRemaining <= 7 ? '#ff1493' : 
+                         daysRemaining <= 14 ? '#ffff00' : '#00ff00';
+        
+        this.add.text(450, 150, `${daysRemaining} days remaining`, {
+            fontSize: '20px',
+            fontFamily: 'Arial Black',
+            color: timeColor
+        }).setOrigin(0.5);
+        
+        // Performance summary
+        const startValue = this.gameData.starting_money || 10000000;
+        const currentValue = this.gameData.current_value || startValue;
+        const profit = currentValue - startValue;
+        const profitPercent = (profit / startValue) * 100;
+        const profitColor = profit >= 0 ? '#00ff00' : '#ff0066';
+        
+        // Current value
+        this.add.text(450, 200, 'Current Portfolio Value', {
+            fontSize: '18px',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
+        this.add.text(450, 230, `$${currentValue.toLocaleString()}`, {
+            fontSize: '36px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        this.add.text(450, 270, `${profit >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%`, {
+            fontSize: '28px',
+            fontFamily: 'Arial Black',
+            color: profitColor
+        }).setOrigin(0.5);
+        
+        // Allocations breakdown
+        this.add.text(450, 320, 'Your Allocations:', {
+            fontSize: '20px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        let yPos = 360;
+        const allocations = this.gameData.allocations;
+        const startingPrices = this.gameData.starting_prices;
+        const currentPrices = this.gameData.current_prices || startingPrices;
+        
+        Object.entries(allocations).forEach(([crypto, amount]) => {
+            if (amount > 0) {
+                const invested = amount * 1000000;
+                const startPrice = startingPrices[crypto];
+                const currentPrice = currentPrices[crypto];
+                const coins = invested / startPrice;
+                const currentCryptoValue = coins * currentPrice;
+                const cryptoProfit = ((currentPrice - startPrice) / startPrice) * 100;
+                const cryptoProfitColor = cryptoProfit >= 0 ? '#00ff00' : '#ff0066';
+                
+                // Crypto name and allocation
+                this.add.text(150, yPos, crypto, {
+                    fontSize: '18px',
+                    fontFamily: 'Arial Black',
+                    color: '#ffffff'
+                }).setOrigin(0, 0.5);
+                
+                // Original investment
+                this.add.text(250, yPos, `$${invested.toLocaleString()}`, {
+                    fontSize: '16px',
+                    color: '#666666'
+                }).setOrigin(0, 0.5);
+                
+                // Current value
+                this.add.text(450, yPos, `$${currentCryptoValue.toLocaleString()}`, {
+                    fontSize: '16px',
+                    color: '#ffffff'
+                }).setOrigin(0.5);
+                
+                // Performance
+                this.add.text(650, yPos, `${cryptoProfit >= 0 ? '+' : ''}${cryptoProfit.toFixed(1)}%`, {
+                    fontSize: '16px',
+                    fontFamily: 'Arial Black',
+                    color: cryptoProfitColor
+                }).setOrigin(0, 0.5);
+                
+                yPos += 30;
+            }
+        });
+        
+        // Cash if any
+        const totalInvested = Object.values(allocations).reduce((sum, val) => sum + (val * 1000000), 0);
+        const cash = 10000000 - totalInvested;
+        if (cash > 0) {
+            this.add.text(150, yPos, 'Cash', {
+                fontSize: '18px',
+                fontFamily: 'Arial Black',
+                color: '#666666'
+            }).setOrigin(0, 0.5);
+            
+            this.add.text(250, yPos, `$${cash.toLocaleString()}`, {
+                fontSize: '16px',
+                color: '#666666'
+            }).setOrigin(0, 0.5);
+            
+            this.add.text(450, yPos, `$${cash.toLocaleString()}`, {
+                fontSize: '16px',
+                color: '#666666'
+            }).setOrigin(0.5);
+            
+            this.add.text(650, yPos, '+0.0%', {
+                fontSize: '16px',
+                fontFamily: 'Arial Black',
+                color: '#666666'
+            }).setOrigin(0, 0.5);
+        }
+        
+        // Last updated
+        if (this.gameData.last_updated) {
+            const lastUpdated = new Date(this.gameData.last_updated);
+            const minutesAgo = Math.floor((new Date() - lastUpdated) / 60000);
+            
+            this.add.text(450, 480, `Prices updated ${minutesAgo} minutes ago`, {
+                fontSize: '14px',
+                color: '#666666'
+            }).setOrigin(0.5);
+        }
+        
+        // Back button
+        const backButton = this.add.rectangle(450, 530, 200, 40, 0x333333)
+            .setStrokeStyle(2, 0x666666)
+            .setInteractive({ useHandCursor: true });
+            
+        const backText = this.add.text(450, 530, 'BACK', {
+            fontSize: '18px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        backButton
+            .on('pointerover', () => {
+                backButton.setStrokeStyle(2, 0x00ffff);
+                backText.setColor('#00ffff');
+            })
+            .on('pointerout', () => {
+                backButton.setStrokeStyle(2, 0x666666);
+                backText.setColor('#ffffff');
+            })
+            .on('pointerdown', () => {
+                this.scene.start('DashboardScene', { user: this.user });
+            });
+    }
+}
+
 // Game configuration
 const config = {
     type: Phaser.AUTO,
     parent: 'game-container',
     width: 900,
     height: 600,
-    scene: [LoginScene, DashboardScene, ScenarioSelectScene, SimulationSpeedScene, AllocationScene, SimulationScene, ResultsScene, NowModeSetupScene, NowModeResultScene],
+    scene: [LoginScene, DashboardScene, ScenarioSelectScene, SimulationSpeedScene, AllocationScene, SimulationScene, ResultsScene, NowModeSetupScene, NowModeResultScene, ActiveGameViewScene],
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
