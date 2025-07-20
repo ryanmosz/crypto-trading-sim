@@ -74,6 +74,22 @@ export const auth = {
     return user;
   },
   
+  // Get user profile with username
+  async getUserProfile(userId) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+      
+    if (error) {
+      console.error('Error fetching user profile:', error);
+      return null;
+    }
+    
+    return data;
+  },
+  
   // Get current session
   async getSession() {
     const { data: { session } } = await supabase.auth.getSession();

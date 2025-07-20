@@ -9,6 +9,8 @@ class TutorialOverlay {
     }
     
     show(x, y, width, height, text, position = 'bottom', options = {}) {
+        console.log('TutorialOverlay.show called:', {x, y, width, height, text, position});
+        
         // Clean up any existing overlay
         this.hide();
         
@@ -18,6 +20,7 @@ class TutorialOverlay {
         
         // Fill entire screen
         this.overlay.fillRect(0, 0, 900, 600);
+        console.log('Overlay created:', this.overlay);
         
         // Create "hole" in overlay for spotlight effect (unless disabled)
         let highlight = null;
@@ -71,6 +74,8 @@ class TutorialOverlay {
             this.elements.push(highlight);
         }
         
+        console.log('Tutorial overlay elements created:', this.elements.length);
+        
         // Set depth to be on top
         this.elements.forEach(el => el.setDepth(1000));
         
@@ -91,6 +96,7 @@ class TutorialOverlay {
 class TutorialManager {
     constructor() {
         this.hasStarted = false; // Track if tutorial has been started
+        this.shownTabTutorials = new Set(); // Track which tab tutorials have been shown
         this.steps = [
             {
                 scene: 'DashboardScene',
@@ -119,6 +125,14 @@ class TutorialManager {
             },
             {
                 scene: 'DashboardScene',
+                elementId: 'pastGamesTab',
+                x: 670, y: 150, w: 200, h: 50,
+                text: "PAST GAMES: Review your completed games and track your trading history!",
+                waitForClick: false,
+                position: 'bottom'
+            },
+            {
+                scene: 'DashboardScene',
                 elementId: 'leaderboard',
                 x: 450, y: 530, w: 250, h: 50,
                 text: "Check the LEADERBOARD to see top traders and compete with others!",
@@ -134,10 +148,18 @@ class TutorialManager {
                 position: 'top'
             },
             {
+                scene: 'ScenarioSelectScene',
+                elementId: 'scenarios',
+                x: 450, y: 300, w: 700, h: 350,
+                text: "Choose a historical crypto event to trade through. Each scenario presents unique market conditions!",
+                position: 'top',
+                hideSpotlight: false
+            },
+            {
                 scene: 'AllocationScene',
                 elementId: 'allocations',
                 x: 450, y: 150, w: 600, h: 60,
-                text: "Drag the sliders to allocate your $10,000 across different cryptocurrencies. Your goal is to maximize returns!",
+                text: "Use the + and - buttons to allocate your $10,000,000 across different cryptocurrencies. Your goal is to maximize returns!",
                 position: 'bottom'
             },
             {
@@ -182,6 +204,24 @@ class TutorialManager {
                 autoAdvance: true
             },
             {
+                scene: 'DashboardScene',
+                elementId: 'activeGamesContent',
+                x: 450, y: 400, w: 800, h: 300,
+                text: "View and join multiplayer games here. These use real-time crypto prices from CoinGecko!",
+                position: 'top',
+                waitForClick: false,
+                checkActiveTab: 'active'
+            },
+            {
+                scene: 'DashboardScene', 
+                elementId: 'pastGamesContent',
+                x: 450, y: 400, w: 800, h: 300,
+                text: "Your completed games are saved here. Review your performance and learn from past trades!",
+                position: 'top',
+                waitForClick: false,
+                checkActiveTab: 'past'
+            },
+            {
                 scene: 'AllocationScene',
                 elementId: 'allocations',
                 x: 450, y: 250, w: 800, h: 250,
@@ -214,34 +254,56 @@ class TutorialManager {
     }
     
     async start(scene, user) {
-        // DEBUG MODE: Always show tutorial for testing
-        // But only once per page load
-        if (this.hasStarted) return false;
+        console.log('Tutorial start called for scene:', scene.constructor.name);
         
-        // // Don't show multiple times in same session
-        // if (this.hasShownForSession) return false;
+        // Don't restart if already active
+        if (this.isActive) {
+            console.log('Tutorial already active, checking scene');
+            this.checkScene(scene);
+            return false;
+        }
         
-        // this.user = user;
-        // const needsTutorial = await this.checkIfNeeded(user);
+        // For testing, show tutorial but don't reset if already started
+        if (!this.hasStarted) {
+            this.user = user;
+            this.hasStarted = true;
+            this.hasShownForSession = true;
+            this.isActive = true;
+            this.currentStep = 0;
+            console.log('Tutorial starting at step:', this.currentStep);
+            this.showStep(scene);
+            return true;
+        }
         
-        // if (!needsTutorial) return false;
-        
-        this.user = user;
-        this.hasStarted = true;
-        this.hasShownForSession = true;
-        this.isActive = true;
-        this.currentStep = 0;
-        this.showStep(scene);
-        return true;
+        return false;
     }
     
     showStep(scene) {
+        console.log('ShowStep called:', {
+            isActive: this.isActive,
+            currentStep: this.currentStep,
+            totalSteps: this.steps.length,
+            sceneKey: scene.scene.key
+        });
+        
         if (!this.isActive || this.currentStep >= this.steps.length) return;
         
         const step = this.steps[this.currentStep];
+        console.log('Current step:', step);
         
         // Check if we're on the right scene
-        if (scene.scene.key !== step.scene) return;
+        // Phaser uses the class name as the key if not explicitly set
+        const sceneKey = scene.scene.key || scene.constructor.name;
+        if (sceneKey !== step.scene) {
+            console.log('Scene mismatch:', sceneKey, 'vs', step.scene);
+            return;
+        }
+        
+        // Check if this step requires a specific tab to be active
+        if (step.checkActiveTab && scene.activeTab !== step.checkActiveTab) {
+            console.log('Tab mismatch:', scene.activeTab, 'vs', step.checkActiveTab);
+            return;
+        }
         
         // Create overlay if needed
         if (!this.overlay) {
@@ -272,15 +334,75 @@ class TutorialManager {
         this.saveProgress();
     }
     
+    // Show tutorial for specific tabs regardless of current step
+    showTabTutorial(scene, tabName) {
+        console.log('showTabTutorial called for tab:', tabName);
+        
+        if (!this.isActive) {
+            console.log('Tutorial not active, skipping tab tutorial');
+            return;
+        }
+        
+        // Don't show if already shown for this tab
+        if (this.shownTabTutorials.has(tabName)) {
+            console.log('Tab tutorial already shown for:', tabName);
+            return;
+        }
+        
+        // Find a step that matches this scene and tab
+        const tabStep = this.steps.find(step => 
+            step.scene === 'DashboardScene' && 
+            step.checkActiveTab === tabName &&
+            step.elementId && (step.elementId.includes('Content') || step.elementId.includes('Tab'))
+        );
+        
+        if (tabStep) {
+            this.shownTabTutorials.add(tabName);
+            console.log('Showing tab tutorial for:', tabName, tabStep);
+            
+            // Create overlay if needed
+            if (!this.overlay) {
+                this.overlay = new TutorialOverlay(scene);
+            }
+            
+            // Show the step
+            const { nextBtn, skipBtn } = this.overlay.show(
+                tabStep.x, tabStep.y, tabStep.w, tabStep.h, 
+                tabStep.text, tabStep.position,
+                { hideSpotlight: tabStep.hideSpotlight }
+            );
+            
+            // Simple handlers - just hide on click
+            nextBtn.on('pointerdown', () => {
+                if (this.overlay) {
+                    this.overlay.hide();
+                }
+            });
+            skipBtn.on('pointerdown', () => {
+                if (this.overlay) {
+                    this.overlay.hide();
+                }
+            });
+        }
+    }
+    
     nextStep(scene) {
         this.currentStep++;
+        console.log('Tutorial advancing to step:', this.currentStep);
         
         if (this.currentStep >= this.steps.length) {
             this.complete();
         } else {
             // Check if next step is in current scene
             const nextStep = this.steps[this.currentStep];
-            if (nextStep.scene === scene.scene.key) {
+            console.log('Next step:', nextStep);
+            
+            const sceneKey = scene.scene.key || scene.constructor.name;
+            if (nextStep.scene === sceneKey) {
+                // If tab-specific, check the tab
+                if (nextStep.checkActiveTab) {
+                    console.log('Next step requires tab:', nextStep.checkActiveTab, 'current:', scene.activeTab);
+                }
                 this.showStep(scene);
             } else {
                 // Hide overlay and wait for scene change
@@ -298,7 +420,13 @@ class TutorialManager {
         if (this.overlay && this.overlay.elements.length > 0) return;
         
         const currentStep = this.steps[this.currentStep];
-        if (currentStep && currentStep.scene === scene.scene.key) {
+        const sceneKey = scene.scene.key || scene.constructor.name;
+        if (currentStep && currentStep.scene === sceneKey) {
+            // Check if tab condition is met (if specified)
+            if (currentStep.checkActiveTab && scene.activeTab !== currentStep.checkActiveTab) {
+                return;
+            }
+            
             // Only show if we have valid text to display
             if (currentStep.text) {
                 // Recreate overlay for new scene
@@ -391,6 +519,7 @@ class TutorialManager {
 
 // Global tutorial instance
 window.tutorialManager = new TutorialManager();
+console.log('Tutorial manager created:', window.tutorialManager);
 
 // Game configuration
 const GAME_CONFIG = {
@@ -852,7 +981,9 @@ class LoginScene extends Phaser.Scene {
         try {
             let result;
             if (this.isSignUp) {
-                result = await this.auth.signUp(email, password);
+                // Use email prefix as default username
+                const defaultUsername = email.split('@')[0];
+                result = await this.auth.signUp(email, password, defaultUsername);
             } else {
                 result = await this.auth.signIn(email, password);
             }
@@ -864,10 +995,17 @@ class LoginScene extends Phaser.Scene {
             const user = result.data?.user || result.data?.session?.user;
             
             if (user && user.id) {
+                // Fetch user profile with username
+                const profile = await this.auth.getUserProfile(user.id);
+                const fullUser = {
+                    ...user,
+                    username: profile?.username || user.email?.split('@')[0] || 'Unknown'
+                };
+                
                 // Clean up form
                 this.formContainer.remove();
                 // Go to dashboard
-                this.scene.start('DashboardScene', { user });
+                this.scene.start('DashboardScene', { user: fullUser });
             } else {
                 throw new Error('Authentication failed - no user returned');
             }
@@ -898,7 +1036,9 @@ class LoginScene extends Phaser.Scene {
             if (result.error) {
                 // If sign in fails, try to sign up
                 console.log('Sign in failed, attempting sign up...');
-                result = await this.auth.signUp(email, password);
+                // Use email prefix as default username
+                const defaultUsername = email.split('@')[0];
+                result = await this.auth.signUp(email, password, defaultUsername);
                 
                 if (result.error) {
                     throw result.error;
@@ -908,10 +1048,17 @@ class LoginScene extends Phaser.Scene {
             const user = result.data?.user || result.data?.session?.user;
             
             if (user && user.id) {
+                // Fetch user profile with username
+                const profile = await this.auth.getUserProfile(user.id);
+                const fullUser = {
+                    ...user,
+                    username: profile?.username || user.email?.split('@')[0] || 'Unknown'
+                };
+                
                 // Clean up form
                 this.formContainer.remove();
                 // Go to dashboard
-                this.scene.start('DashboardScene', { user });
+                this.scene.start('DashboardScene', { user: fullUser });
             } else {
                 throw new Error('Authentication failed - no user returned');
             }
@@ -1671,6 +1818,11 @@ class SimulationScene extends Phaser.Scene {
             color: '#ffffff'
         }).setOrigin(0.5);
         
+        // Continue tutorial if active
+        if (window.tutorialManager) {
+            window.tutorialManager.checkScene(this);
+        }
+        
         // Create crypto displays
         let yPos = 200;
         this.cryptoDisplays = {};
@@ -1925,6 +2077,11 @@ class ResultsScene extends Phaser.Scene {
             color: isWinner ? '#00ffff' : '#ff1493'
         }).setOrigin(0.5);
         
+        // Continue tutorial if active
+        if (window.tutorialManager) {
+            window.tutorialManager.checkScene(this);
+        }
+        
         // Performance breakdown - white header
         let yPos = 280;
         this.add.text(450, yPos, 'Performance Breakdown:', {
@@ -2104,8 +2261,12 @@ class DashboardScene extends Phaser.Scene {
         this.contentY = 280; // Starting Y position for content
         
         // Check and start tutorial for new users
+        console.log('DashboardScene - Checking tutorial manager:', window.tutorialManager);
         if (window.tutorialManager) {
+            console.log('Starting tutorial from DashboardScene');
             window.tutorialManager.start(this, this.user);
+        } else {
+            console.log('Tutorial manager not found!');
         }
         
         // Show content based on active tab
@@ -2160,6 +2321,13 @@ class DashboardScene extends Phaser.Scene {
     }
     
     createTabs() {
+        // Clear existing tabs if any
+        if (this.tabGroup) {
+            this.tabGroup.clear(true, true);
+        } else {
+            this.tabGroup = this.add.group();
+        }
+        
         const tabY = 150;
         const tabWidth = 200;
         const tabHeight = 50;
@@ -2192,6 +2360,10 @@ class DashboardScene extends Phaser.Scene {
                 color: isActive ? '#000000' : '#ffffff'
             }).setOrigin(0.5);
             
+            // Add to tab group for cleanup
+            this.tabGroup.add(tabBg);
+            this.tabGroup.add(tabText);
+            
             // Tab interactions
             if (!isActive) {
                 tabBg.on('pointerover', () => {
@@ -2204,8 +2376,9 @@ class DashboardScene extends Phaser.Scene {
                 })
                 .on('pointerdown', () => {
                     this.activeTab = tab.key;
-                    // Recreate tabs to update active state
-                    this.scene.restart({ user: this.user });
+                    // Clear and redraw tabs without restarting scene
+                    this.createTabs();
+                    this.showTabContent();
                 });
             }
         });
@@ -2226,9 +2399,24 @@ class DashboardScene extends Phaser.Scene {
                 this.showPastGamesContent();
                 break;
         }
+        
+        // Check if tutorial should show for this tab
+        if (window.tutorialManager && window.tutorialManager.isActive) {
+            // Show tab-specific tutorial if user hasn't seen it yet
+            if (this.activeTab === 'active' || this.activeTab === 'past') {
+                window.tutorialManager.showTabTutorial(this, this.activeTab);
+            } else {
+                window.tutorialManager.checkScene(this);
+            }
+        }
     }
     
     showNewGameContent() {
+        // Ensure contentGroup exists
+        if (!this.contentGroup) {
+            this.contentGroup = this.add.group();
+        }
+        
         // Large play button
         const playButton = this.add.rectangle(450, this.contentY + 80, 400, 80, 0x00ffff)
             .setInteractive({ useHandCursor: true });
@@ -2293,6 +2481,11 @@ class DashboardScene extends Phaser.Scene {
     }
     
     async showActiveGamesContent() {
+        // Ensure contentGroup exists
+        if (!this.contentGroup) {
+            this.contentGroup = this.add.group();
+        }
+        
         // Loading text
         const loadingText = this.add.text(450, this.contentY + 40, 'Loading active games...', {
             fontSize: '16px',
@@ -2364,6 +2557,7 @@ class DashboardScene extends Phaser.Scene {
                 }
             }
             
+            this.contentGroup.remove(loadingText);
             loadingText.destroy();
             
             const totalGames = allMultiplayerGames.length;
@@ -2427,6 +2621,11 @@ class DashboardScene extends Phaser.Scene {
     }
     
     async showPastGamesContent() {
+        // Ensure contentGroup exists
+        if (!this.contentGroup) {
+            this.contentGroup = this.add.group();
+        }
+        
         // Loading text
         const loadingText = this.add.text(450, this.contentY + 40, 'Loading past games...', {
             fontSize: '16px',
@@ -2446,6 +2645,7 @@ class DashboardScene extends Phaser.Scene {
             
             if (error) throw error;
             
+            this.contentGroup.remove(loadingText);
             loadingText.destroy();
             
             if (!data || data.length === 0) {
@@ -2619,7 +2819,9 @@ class DashboardScene extends Phaser.Scene {
     displayCurrentPage() {
         // Remove old page display group from content group before destroying
         if (this.pageDisplayGroup) {
-            this.contentGroup.remove(this.pageDisplayGroup);
+            if (this.contentGroup) {
+                this.contentGroup.remove(this.pageDisplayGroup);
+            }
             this.pageDisplayGroup.destroy(true);
         }
         this.pageDisplayGroup = this.add.group();
@@ -2683,7 +2885,9 @@ class DashboardScene extends Phaser.Scene {
         }
         
         // Add page display group to content group
-        this.contentGroup.add(this.pageDisplayGroup);
+        if (this.contentGroup) {
+            this.contentGroup.add(this.pageDisplayGroup);
+        }
     }
     
     createPastRunDisplay(run, y) {
@@ -4065,18 +4269,32 @@ class ActiveGameViewScene extends Phaser.Scene {
         
         try {
             // Load all participants with their usernames
-            const { data: participants, error } = await this.auth.supabase
+            // First get participants
+            const { data: participants, error: participantsError } = await this.auth.supabase
                 .from('game_participants')
-                .select(`
-                    *,
-                    profiles:user_id (
-                        username
-                    )
-                `)
+                .select('*')
                 .eq('game_id', this.gameData.id)
                 .order('current_value', { ascending: false });
                 
-            if (error) throw error;
+            if (participantsError) throw participantsError;
+            
+            // Then get usernames for all participants
+            if (participants && participants.length > 0) {
+                const userIds = participants.map(p => p.user_id);
+                const { data: profiles, error: profilesError } = await this.auth.supabase
+                    .from('profiles')
+                    .select('id, username')
+                    .in('id', userIds);
+                    
+                if (profilesError) throw profilesError;
+                
+                // Merge username data with participants
+                participants.forEach((participant, index) => {
+                    const profile = profiles?.find(p => p.id === participant.user_id);
+                    // All users should have usernames set at signup
+                    participant.username = profile?.username || `Player ${index + 1}`;
+                });
+            }
             
             loadingText.destroy();
             
@@ -4084,7 +4302,8 @@ class ActiveGameViewScene extends Phaser.Scene {
             let yPos = 250;
             participants.forEach((participant, index) => {
                 const isMe = participant.user_id === this.user.id;
-                const username = participant.profiles?.username || 'Anonymous';
+                // All users should have usernames from profiles
+                const username = participant.username || `Player ${index + 1}`;
                 const value = participant.current_value || 10000000;
                 const profit = ((value - 10000000) / 10000000) * 100;
                 
@@ -4107,16 +4326,16 @@ class ActiveGameViewScene extends Phaser.Scene {
                     color: isMe ? '#00ffff' : '#ffffff'
                 }).setOrigin(0, 0.5);
                 
-                // Value
-                this.add.text(500, yPos, `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
+                // Value - right aligned to avoid overlap
+                this.add.text(600, yPos, `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
                     fontSize: '18px',
                     color: isMe ? '#00ffff' : '#ffffff',
                     fontFamily: 'Arial Black'
-                }).setOrigin(0, 0.5);
+                }).setOrigin(1, 0.5);  // Right align
                 
-                // Gain/Loss
+                // Gain/Loss - with spacing after value
                 const profitColor = profit >= 0 ? '#00ff00' : '#ff0066';
-                this.add.text(650, yPos, `${profit >= 0 ? '+' : ''}${profit.toFixed(2)}%`, {
+                this.add.text(620, yPos, `${profit >= 0 ? '+' : ''}${profit.toFixed(2)}%`, {
                     fontSize: '18px',
                     color: isMe ? '#00ffff' : profitColor,
                     fontFamily: 'Arial Black'
@@ -4387,18 +4606,32 @@ class JoinGameScene extends Phaser.Scene {
     async loadParticipants(loadingText) {
         try {
             // Get game participants with usernames
-            const { data: participants, error } = await this.auth.supabase
+            // First get participants
+            const { data: participants, error: participantsError } = await this.auth.supabase
                 .from('game_participants')
-                .select(`
-                    *,
-                    profiles:user_id (
-                        username
-                    )
-                `)
+                .select('*')
                 .eq('game_id', this.game.id)
                 .order('current_value', { ascending: false });
                 
-            if (error) throw error;
+            if (participantsError) throw participantsError;
+            
+            // Then get usernames for all participants
+            if (participants && participants.length > 0) {
+                const userIds = participants.map(p => p.user_id);
+                const { data: profiles, error: profilesError } = await this.auth.supabase
+                    .from('profiles')
+                    .select('id, username')
+                    .in('id', userIds);
+                    
+                if (profilesError) throw profilesError;
+                
+                // Merge username data with participants
+                participants.forEach((participant, index) => {
+                    const profile = profiles?.find(p => p.id === participant.user_id);
+                    // Use a more friendly default name if no username is set
+                    participant.username = profile?.username || `Player ${index + 1}`;
+                });
+            }
             
             loadingText.destroy();
             
@@ -4418,25 +4651,25 @@ class JoinGameScene extends Phaser.Scene {
                 let yPos = 250;
                 participants.forEach((participant, index) => {
                     const isMe = participant.user_id === this.user.id;
-                    const username = participant.profiles?.username || 'Anonymous';
+                    const username = participant.username || `Player ${index + 1}`;
                     const value = participant.current_value || 10000000;
                     const profit = ((value - 10000000) / 10000000) * 100;
                     
-                    // Rank and email
+                    // Rank and username
                     this.add.text(250, yPos, `${index + 1}. ${username}`, {
                         fontSize: '16px',
                         color: '#ffffff'
                     }).setOrigin(0, 0.5);
                     
-                    // Value
+                    // Value - right aligned
                     this.add.text(550, yPos, `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
                         fontSize: '16px',
                         color: '#ffffff'
-                    }).setOrigin(0, 0.5);
+                    }).setOrigin(1, 0.5);  // Right align
                     
-                    // Profit
+                    // Profit - with more spacing
                     const profitColor = profit >= 0 ? '#00ff00' : '#ff0066';
-                    this.add.text(650, yPos, `${profit >= 0 ? '+' : ''}${profit.toFixed(1)}%`, {
+                    this.add.text(560, yPos, `${profit >= 0 ? '+' : ''}${profit.toFixed(1)}%`, {
                         fontSize: '16px',
                         color: profitColor
                     }).setOrigin(0, 0.5);
@@ -4759,3 +4992,26 @@ const config = {
 
 // Start the game
 const game = new Phaser.Game(config);
+
+// Check for existing session on load
+(async () => {
+    try {
+        const session = await auth.getSession();
+        if (session?.user) {
+            console.log('Existing session found, fetching profile...');
+            const profile = await auth.getUserProfile(session.user.id);
+            const fullUser = {
+                ...session.user,
+                username: profile?.username || session.user.email?.split('@')[0] || 'Unknown'
+            };
+            
+            // Wait for game to be ready then switch to dashboard
+            game.events.once('ready', () => {
+                game.scene.stop('LoginScene');
+                game.scene.start('DashboardScene', { user: fullUser });
+            });
+        }
+    } catch (error) {
+        console.error('Error checking session:', error);
+    }
+})();
