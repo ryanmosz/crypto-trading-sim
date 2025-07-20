@@ -1647,13 +1647,13 @@ class DashboardScene extends Phaser.Scene {
     
     createPastRunDisplay(run, y) {
         // Background
-        const bg = this.add.rectangle(450, y, 700, 50, 0x111111)
+        const bg = this.add.rectangle(450, y, 720, 50, 0x111111)
             .setStrokeStyle(1, 0x333333)
             .setInteractive({ useHandCursor: true });
         
         // Scenario name
         const scenarioName = SCENARIOS[run.scenario_key]?.displayName || run.scenario_key;
-        this.add.text(200, y, scenarioName, {
+        this.add.text(120, y, scenarioName, {
             fontSize: '18px',
             color: '#ffffff'
         }).setOrigin(0, 0.5);
@@ -1663,21 +1663,21 @@ class DashboardScene extends Phaser.Scene {
         const profitPercent = (profit / GAME_CONFIG.startingMoney) * 100;
         const profitColor = profit >= 0 ? '#00ffff' : '#ff1493';
         
-        this.add.text(450, y, `$${run.final_value.toLocaleString()}`, {
+        this.add.text(400, y, `$${run.final_value.toLocaleString()}`, {
             fontSize: '18px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
         }).setOrigin(0.5);
         
-        this.add.text(600, y, `${profit >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
+        this.add.text(510, y, `${profit >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
             fontSize: '18px',
             fontFamily: 'Arial Black',
             color: profitColor
         }).setOrigin(0.5);
         
-        // Date
+        // Date - moved to far right edge
         const date = new Date(run.created_at);
-        this.add.text(700, y, date.toLocaleDateString(), {
+        this.add.text(780, y, date.toLocaleDateString(), {
             fontSize: '14px',
             color: '#666666'
         }).setOrigin(1, 0.5);
