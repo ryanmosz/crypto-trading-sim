@@ -33,14 +33,14 @@
   - Historical accuracy (unavailable cryptos grayed out)
 - **Deployment**: GitHub Pages with CI/CD pipeline
 
-### 🚧 Currently Working On: M1 - Persist Past Runs
+#### M1 - Persist Past Runs (July 19, 2025) ✅
+- **Authentication UI**: Replaced fake users with email/password form
+- **Dashboard Scene**: Shows welcome message and game history
+- **Automatic Saving**: Results save to database without user action
+- **Navigation Flow**: All scenes properly handle user object
+- **Session Persistence**: Auto-login on page refresh
 
-#### Today's Tasks
-- [ ] Replace fake users (Alice/Bob) with real auth
-- [ ] Add email/password login to game UI
-- [ ] Save game results to past_runs table
-- [ ] Create dashboard scene showing user history
-- [ ] Handle auth state persistence
+### 🚧 Ready for Next Phase: M2 - Now Mode
 
 ### 📅 Upcoming Milestones
 

@@ -50,14 +50,21 @@
 - 🔗 Will be live at: https://ryanmosz.github.io/crypto-trading-sim/
 
 ### Current Focus
-Backend integration complete - ready to integrate auth into the game UI and start saving user data.
+M1 Complete! Authentication fully integrated, games saving automatically. Ready for M2: Now Mode.
 
-### Immediate Next Steps
-1. Replace fake users (Alice/Bob/Quick Play) with real auth
-2. Add login/signup UI screens
-3. Save game results to past_runs table after each game
-4. Build leaderboard view showing top scores
-5. Show user's personal history and stats
+### Just Completed (July 19, 2025)
+- ✅ Replaced fake users with real authentication
+- ✅ Created login/signup form with email/password
+- ✅ Built dashboard showing user's game history
+- ✅ Games automatically save to database
+- ✅ Session persistence (stays logged in)
+
+### Immediate Next Steps - M2: Now Mode
+1. Create "Allocate Now" scene using current prices
+2. Insert now_entries with live allocations
+3. Build cron job to update portfolio values
+4. Create global leaderboard showing top 100
+5. Add real-time competition features
 
 ### Future Enhancements
 1. Implement "Now" mode with live prices from price_cache
