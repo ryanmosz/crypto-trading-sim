@@ -115,6 +115,10 @@
   - Removed "Historical data - this actually happened!" message
   - Moved fun message ("Black Thursday got you!") to historical note's position
   - Changed fun message color to blue/teal (#00ffff) for better visual hierarchy
+- Fixed final screen text overlap completely:
+  - Removed duplicate "Historical data - this actually happened!" rendering
+  - Both texts were being drawn at same position causing overlap
+  - Now only fun message displays in blue/teal (#00ffff) with no overlap
 
 ### Recent Major Changes
 
