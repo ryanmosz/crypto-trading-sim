@@ -2338,8 +2338,20 @@ class DashboardScene extends Phaser.Scene {
             
         } catch (error) {
             console.error('Error loading active games:', error);
-            loadingText.setText('Error loading active games');
-            loadingText.setColor('#ff0000');
+            
+            // Check if it's an auth error
+            if (error.message && error.message.includes('JWT') || error.message.includes('token')) {
+                loadingText.setText('Session expired. Please log in again.');
+                loadingText.setColor('#ff0000');
+                
+                // Redirect to login after delay
+                this.time.delayedCall(2000, () => {
+                    this.scene.start('LoginScene');
+                });
+            } else {
+                loadingText.setText('Error loading active games. Please try refreshing.');
+                loadingText.setColor('#ff0000');
+            }
         }
     }
     
