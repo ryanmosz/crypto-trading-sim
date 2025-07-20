@@ -1,6 +1,6 @@
 # Active Context - Crypto Trader Development
 
-## Current State (January 18, 2025)
+## Current State (July 19, 2025)
 
 ### What's Working
 - Complete game flow from login to results
@@ -18,27 +18,30 @@
 - Historical accuracy (cryptos that didn't exist are grayed out)
 - GitHub Pages deployment configured and ready
 
-### Supabase Integration Progress (NEW)
+### Supabase Integration Progress (COMPLETE!)
 - ✅ Auth module created with sign up/sign in functions
-- ✅ Database migrations prepared (profiles, game data tables)
-- ✅ Edge function for price fetching ready
-- ✅ Environment configuration set up
-- ⏳ Awaiting API keys from dashboard
-- ⏳ Need to run migrations
-- ⏳ Need to deploy edge function
+- ✅ Database migrations executed (profiles, game data tables)
+- ✅ Edge function deployed and fetching prices
+- ✅ Environment configuration with all keys
+- ✅ MCP tools connected and working
+- ✅ Cron job scheduled (updates every 5 minutes)
+- ✅ Price cache populated with 30 cryptocurrencies
+- ✅ Test page working at /public/test-auth.html
 
-### Recent Changes
-- Created comprehensive Supabase integration foundation
-- Prepared all SQL migrations and edge functions locally
-- Set up auth.js module for frontend integration
-- Added SUPABASE_SETUP_STATUS.md with clear next steps
+### Recent Changes (July 19, 2025)
+- Successfully connected MCP tools to Supabase project
+- Executed all database migrations via MCP
+- Deployed edge function for real-time price fetching
+- Scheduled automatic price updates every 5 minutes
+- Standardized UI hover effects across all screens
+- Created UI Consistency Guide documentation
+- All backend infrastructure is now live and operational
 
-### Next Manual Steps Required
-1. Get API keys from Supabase dashboard
-2. Run SQL migrations (001_auth_profiles.sql, 002_core_tables.sql)
-3. Deploy fetch-prices edge function
-4. Set up cron schedule for price updates
-5. Test authentication flow
+### UI Improvements
+- Consistent hover behavior: border + primary text change color
+- Secondary text (subtitles, descriptions) stays gray
+- No background fills or scaling on hover
+- Clean, modern aesthetic throughout
 
 ### Deployment Status
 - ✅ GitHub Actions workflow created
@@ -47,17 +50,30 @@
 - 🔗 Will be live at: https://ryanmosz.github.io/crypto-trading-sim/
 
 ### Current Focus
-Testing and refinement of the speed selection system. User is evaluating the flow and may want additional speed options or timing adjustments.
+Backend integration complete - ready to integrate auth into the game UI and start saving user data.
 
-### Next Steps
-1. Consider adding more speed options (e.g., "Slow Motion" for educational play)
-2. Add more historical scenarios as discussed
-3. Consider showing simulation time remaining during play
-4. Add educational overlays for historical context
+### Immediate Next Steps
+1. Replace fake users (Alice/Bob/Quick Play) with real auth
+2. Add login/signup UI screens
+3. Save game results to past_runs table after each game
+4. Build leaderboard view showing top scores
+5. Show user's personal history and stats
+
+### Future Enhancements
+1. Implement "Now" mode with live prices from price_cache
+2. Add social features (share results, challenge friends)
+3. Create user profiles with achievements
+4. Add more historical scenarios
 
 ### Technical Details
 - Using Phaser 3.90.0
+- Supabase backend with PostgreSQL database
+- MCP tools for programmatic Supabase management
+- Edge Functions (Deno) for serverless compute
+- Cron jobs for scheduled price updates
 - Simple file structure: `crypto-trader/public/`
-- Serving with Python http.server on port 8000
+- Serving with Python http.server on port 8001
 - All game logic in single `game.js` file
-- Modular scenario system allows easy addition of new time periods 
+- Auth logic separated into `auth.js` module
+- Modular scenario system allows easy addition of new time periods
+- Live deployment at: https://ryanmosz.github.io/crypto-trading-sim/ 
