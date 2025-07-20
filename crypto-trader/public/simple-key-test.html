@@ -132,7 +132,8 @@
                     updateStatus('price-status', `❌ Price cache error: ${priceError.message}`, true);
                 } else {
                     if (priceData && priceData.length > 0) {
-                        updateStatus('price-status', `✅ Price cache works! Found ${priceData.length} prices`, false);
+                        const priceInfo = priceData.map(p => `${p.symbol}: $${p.price}`).join(', ');
+                        updateStatus('price-status', `✅ Price cache works! ${priceInfo}`, false);
                         console.log('Price data:', priceData);
                     } else {
                         updateStatus('price-status', '⚠️ Price cache table is empty but accessible', false);

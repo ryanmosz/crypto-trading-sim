@@ -222,8 +222,8 @@
                 
                 if (error) throw error;
                 
-                const cryptos = data.map(p => p.crypto_id).join(', ');
-                updateStatus('price-status', `✅ Price cache accessible! Latest prices: ${cryptos || 'none'}`);
+                const priceInfo = data.map(p => `${p.symbol}: $${p.price}`).join(', ');
+                updateStatus('price-status', `✅ Price cache accessible! Latest prices: ${priceInfo || 'none'}`);
             } catch (error) {
                 updateStatus('price-status', `❌ Price cache read failed: ${error.message}`, true);
             }
