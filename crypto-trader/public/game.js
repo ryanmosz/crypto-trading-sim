@@ -20,13 +20,13 @@ class TutorialOverlay {
         this.overlay.fillRect(0, 0, 900, 600);
         
         // Create "hole" in overlay for spotlight effect (unless disabled)
+        let highlight = null;
         if (!options.hideSpotlight) {
             this.overlay.setBlendMode(Phaser.BlendModes.MULTIPLY);
             
             // Add highlight rectangle
-            const highlight = this.scene.add.rectangle(x, y, width + 20, height + 20, 0x00ffff, 0)
+            highlight = this.scene.add.rectangle(x, y, width + 20, height + 20, 0x00ffff, 0)
                 .setStrokeStyle(3, 0x00ffff);
-            this.elements.push(highlight);
         }
         
         // Tutorial text box position
@@ -67,7 +67,7 @@ class TutorialOverlay {
         
         // Store elements
         this.elements = [this.overlay, textBg, tutorialText, nextBtn, skipBtn];
-        if (!options.hideSpotlight) {
+        if (highlight) {
             this.elements.push(highlight);
         }
         
@@ -94,7 +94,7 @@ class TutorialManager {
             {
                 scene: 'DashboardScene',
                 elementId: 'welcome',
-                x: 450, y: 395, w: 700, h: 60,
+                x: 450, y: 250, w: 700, h: 60,
                 text: "Welcome to Crypto Trader Simulator! Let's take a quick tour of what you can do here.",
                 waitForClick: true,
                 position: 'center',
