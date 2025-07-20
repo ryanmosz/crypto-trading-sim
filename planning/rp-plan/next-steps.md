@@ -20,77 +20,77 @@ We need:
 
 ---
 
-## 1. Replace Fake Users with Auth (2 hours)
+## 1. Replace Fake Users with Auth (2 hours) ✅
 
-### 1.1 Update LoginScene
-- [ ] Import auth.js module
-- [ ] Replace Alice/Bob/Quick Play buttons with:
+### 1.1 Update LoginScene ✅
+- [x] Import auth.js module
+- [x] Replace Alice/Bob/Quick Play buttons with:
   - Email/password input fields
   - Sign Up button
   - Sign In button
-- [ ] Store user session in game state
-- [ ] Show logged-in user email
+- [x] Store user session in game state
+- [x] Show logged-in user email
 
-### 1.2 Handle Auth State
-- [ ] Check for existing session on game start
-- [ ] If logged in → skip login, go to dashboard
-- [ ] If not → show login screen
-- [ ] Add Sign Out button somewhere
+### 1.2 Handle Auth State ✅
+- [x] Check for existing session on game start
+- [x] If logged in → skip login, go to dashboard
+- [x] If not → show login screen
+- [x] Add Sign Out button somewhere
 
 **Test**: Can sign up, sign in, and see email displayed
 
 ---
 
-## 2. Save Game Results (1 hour)
+## 2. Save Game Results (1 hour) ✅
 
-### 2.1 Modify ResultsScene
-- [ ] When results load, immediately save to database:
+### 2.1 Modify ResultsScene ✅
+- [x] When results load, immediately save to database:
   ```javascript
   // In ResultsScene.create()
   this.savePastRun();
   ```
 
-### 2.2 Create savePastRun Method
-- [ ] Get current user from auth
-- [ ] Prepare data:
+### 2.2 Create savePastRun Method ✅
+- [x] Get current user from auth
+- [x] Prepare data:
   - scenario_key (e.g., 'march_2020')
   - allocations object
   - final_value
   - profit_percent
-- [ ] INSERT into past_runs table via Supabase client
+- [x] INSERT into past_runs table via Supabase client
 
 **Test**: Play a game, check Supabase dashboard for new row
 
 ---
 
-## 3. Create Dashboard Scene (2 hours)
+## 3. Create Dashboard Scene (2 hours) ✅
 
-### 3.1 New DashboardScene
-- [ ] Shows after login
-- [ ] Display:
+### 3.1 New DashboardScene ✅
+- [x] Shows after login
+- [x] Display:
   - Welcome message with user email
   - "Play New Game" button → ScenarioSelectScene
   - "My Past Games" section
   - Sign Out button
 
-### 3.2 Load & Display Past Runs
-- [ ] Query past_runs for current user
-- [ ] Sort by created_at DESC
-- [ ] Show each run:
+### 3.2 Load & Display Past Runs ✅
+- [x] Query past_runs for current user
+- [x] Sort by created_at DESC
+- [x] Show each run:
   - Scenario name & date
   - Final value & profit %
   - When played
   - "Play Again" link
 
-### 3.3 Add to Scene List
-- [ ] Update game config to include DashboardScene
-- [ ] Update navigation flow
+### 3.3 Add to Scene List ✅
+- [x] Update game config to include DashboardScene
+- [x] Update navigation flow
 
 **Test**: See your game history after playing multiple rounds
 
 ---
 
-## 4. Quick Wins (if time allows)
+## 4. Quick Wins (if time allows) ⏳
 
 - [ ] Add loading states while saving/fetching
 - [ ] Show success message after saving game
@@ -99,7 +99,7 @@ We need:
 
 ---
 
-## 5. Commit Checkpoint
+## 5. Commit Checkpoint ✅
 
 ```bash
 git add -A
@@ -116,11 +116,11 @@ git push
 
 ## Success Criteria ✅
 
-1. Can create account with email/password
-2. Game saves results to database automatically
-3. Dashboard shows all my past games
-4. Can sign out and sign back in
-5. Past games persist between sessions
+1. ✅ Can create account with email/password
+2. ✅ Game saves results to database automatically
+3. ✅ Dashboard shows all my past games
+4. ✅ Can sign out and sign back in
+5. ✅ Past games persist between sessions
 
 ---
 
@@ -130,5 +130,5 @@ git push
 
 ---
 
-**Time Estimate**: 5-6 hours of focused work
+**Time Estimate**: ~~5-6 hours~~ 2 hours (completed!)
 **Complexity**: Medium (mostly wiring existing pieces together) 
