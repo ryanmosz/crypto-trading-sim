@@ -16,15 +16,20 @@
 - Clean UI with no text overlaps
 - Modular scenario system supporting various timeframes
 - Historical accuracy (cryptos that didn't exist are grayed out)
+- **NEW**: GitHub Pages deployment configured and ready
 
 ### Recent Changes
-- Added SimulationSpeedScene between scenario and allocation selection
-- Each scenario now supports multiple speed options:
-  - Regular Speed: Default timing
-  - Double Speed: Half the time
-- Enhanced scenario structure with `speeds` configuration
-- Updated scene flow to include speed selection
-- Passed speed data through entire scene chain
+- Added comprehensive deployment documentation
+- Set up GitHub Actions workflow for automatic deployment
+- Created local deployment test script
+- Updated README with live game link
+- **Next Step**: Enable GitHub Pages in repo settings
+
+### Deployment Status
+- ✅ GitHub Actions workflow created
+- ✅ Deployment documentation complete
+- ⏳ Waiting for GitHub Pages to be enabled
+- 🔗 Will be live at: https://ryanmosz.github.io/crypto-trading-sim/
 
 ### Current Focus
 Testing and refinement of the speed selection system. User is evaluating the flow and may want additional speed options or timing adjustments.
