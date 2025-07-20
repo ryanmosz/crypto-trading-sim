@@ -81,8 +81,8 @@ class TutorialManager {
             {
                 scene: 'DashboardScene',
                 elementId: 'playNewGame',
-                x: 450, y: 150, w: 200, h: 50,
-                text: "Welcome to Crypto Trader! Click 'PLAY NEW GAME' to start your first trading challenge.",
+                x: 450, y: 365, w: 400, h: 80,
+                text: "Welcome to Crypto Trader! Click 'START NEW GAME' to try trading cryptocurrencies through historical scenarios, test your strategies, and learn from market movements. Or explore the 'Active Games' tab to join ongoing multiplayer challenges!",
                 waitForClick: true
             },
             {
@@ -1992,6 +1992,10 @@ class DashboardScene extends Phaser.Scene {
         
         // Create tabs
         this.createTabs();
+        
+        // Initialize content group
+        this.contentGroup = this.add.group();
+        this.contentY = 280; // Starting Y position for content
         
         // Check and start tutorial for new users
         if (window.tutorialManager) {
