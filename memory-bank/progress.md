@@ -21,6 +21,12 @@ Phase 1 (Historical trading) is ~85% complete with core gameplay functional but 
 
 ### ✅ Completed Milestones
 
+**UI Enhancements:**
+- Redesigned dashboard past runs list to prevent overlapping text
+- Split game details modal into main/details views for better space usage
+- Fixed details view to show accurate calculated totals from historical data
+- Optimized details view layout to support up to 5 crypto allocations
+
 #### M0 - Auth + Backend Infrastructure (July 19, 2025)
 - **Supabase Project**: Created and fully configured
 - **Authentication**: auth.js module with signUp/signIn/signOut
