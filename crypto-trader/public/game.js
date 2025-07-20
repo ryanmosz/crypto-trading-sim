@@ -1634,14 +1634,6 @@ class DashboardScene extends Phaser.Scene {
             // Display past runs
             let yPos = 300;
             data.forEach((run, index) => {
-                // Debug log to see what's in the database
-                console.log(`Past run ${index}:`, {
-                    scenario_key: run.scenario_key,
-                    allocations: run.allocations,
-                    final_value: run.final_value,
-                    created_at: run.created_at
-                });
-                
                 this.createPastRunDisplay(run, yPos);
                 yPos += 60;
             });
@@ -1660,28 +1652,24 @@ class DashboardScene extends Phaser.Scene {
             .setInteractive({ useHandCursor: true });
         
         // Scenario name - handle both old and new data formats
-        let scenarioDisplay = '';
-        const scenario = SCENARIOS[run.scenario_key];
+        let scenarioName = SCENARIOS[run.scenario_key]?.displayName;
         
-        if (scenario) {
-            // Use both displayName and description for better context
-            scenarioDisplay = `${scenario.displayName} - ${scenario.description}`;
-        } else {
+        if (!scenarioName) {
             // Handle old data that might have saved displayName as scenario_key
             for (const [key, scen] of Object.entries(SCENARIOS)) {
                 if (scen.displayName === run.scenario_key) {
-                    scenarioDisplay = `${scen.displayName} - ${scen.description}`;
+                    scenarioName = scen.displayName;
                     break;
                 }
             }
             // If still not found, use the raw value
-            if (!scenarioDisplay) {
-                scenarioDisplay = run.scenario_key;
+            if (!scenarioName) {
+                scenarioName = run.scenario_key;
             }
         }
         
-        this.add.text(90, y, scenarioDisplay, {
-            fontSize: '16px',
+        this.add.text(120, y, scenarioName, {
+            fontSize: '18px',
             color: '#ffffff'
         }).setOrigin(0, 0.5);
         
@@ -1690,17 +1678,19 @@ class DashboardScene extends Phaser.Scene {
         const profitPercent = (profit / GAME_CONFIG.startingMoney) * 100;
         const profitColor = profit >= 0 ? '#00ffff' : '#ff1493';
         
-        this.add.text(470, y, `$${run.final_value.toLocaleString()}`, {
+        // Position dollar amount further left
+        this.add.text(480, y, `$${run.final_value.toLocaleString()}`, {
             fontSize: '18px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
-        }).setOrigin(0.5);
+        }).setOrigin(1, 0.5);  // Right-align the dollar amount
         
-        this.add.text(590, y, `${profit >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
+        // Position percentage with more space
+        this.add.text(530, y, `${profit >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
             fontSize: '18px',
             fontFamily: 'Arial Black',
             color: profitColor
-        }).setOrigin(0.5);
+        }).setOrigin(0, 0.5);  // Left-align the percentage
         
         // Date - moved to far right edge
         const date = new Date(run.created_at);
