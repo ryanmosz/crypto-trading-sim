@@ -605,10 +605,15 @@ class ScenarioSelectScene extends Phaser.Scene {
                 dateDisplay.setColor('#ffffff');
             })
             .on('pointerdown', () => {
-                this.scene.start('SimulationSpeedScene', { 
-                    user: this.userName,
-                    scenario: scenarioKey
-                });
+                if (scenarioKey === 'now') {
+                    // Show coming soon message for Now mode
+                    alert('Now mode coming soon! This will let you trade with real-time prices.');
+                } else {
+                    this.scene.start('SimulationSpeedScene', { 
+                        user: this.user,
+                        scenario: scenarioKey
+                    });
+                }
             });
             
         const dateDisplay = this.add.text(450, y - 10, dateText, {
@@ -1685,14 +1690,147 @@ class DashboardScene extends Phaser.Scene {
             bg.setStrokeStyle(1, 0x333333);
         })
         .on('pointerdown', () => {
-            // Could show detailed view or replay
-            this.scene.start('AllocationScene', {
-                user: this.user,
-                scenario: run.scenario_key,
-                speed: 'regular',
-                simulationTime: 30
-            });
+            // Show game details
+            this.showGameDetails(run);
         });
+    }
+    
+    showGameDetails(run) {
+        // Store modal elements for cleanup
+        const modalElements = [];
+        
+        // Create overlay background
+        const overlay = this.add.rectangle(450, 300, 900, 600, 0x000000, 0.9)
+            .setInteractive(); // Block clicks underneath
+        modalElements.push(overlay);
+        
+        // Modal container
+        const modal = this.add.rectangle(450, 300, 600, 400, 0x111111)
+            .setStrokeStyle(2, 0x00ffff);
+        modalElements.push(modal);
+        
+        // Title
+        const scenario = SCENARIOS[run.scenario_key];
+        modalElements.push(this.add.text(450, 150, `Game Details`, {
+            fontSize: '28px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5));
+        
+        // Scenario info
+        modalElements.push(this.add.text(450, 190, scenario ? scenario.displayName : run.scenario_key, {
+            fontSize: '20px',
+            color: '#00ffff'
+        }).setOrigin(0.5));
+        
+        modalElements.push(this.add.text(450, 215, scenario ? scenario.description : '', {
+            fontSize: '16px',
+            color: '#666666'
+        }).setOrigin(0.5));
+        
+        // Results
+        const profit = run.final_value - GAME_CONFIG.startingMoney;
+        const profitPercent = (profit / GAME_CONFIG.startingMoney) * 100;
+        const profitColor = profit >= 0 ? '#00ffff' : '#ff1493';
+        
+        modalElements.push(this.add.text(450, 260, 'Final Value:', {
+            fontSize: '18px',
+            color: '#ffffff'
+        }).setOrigin(0.5));
+        
+        modalElements.push(this.add.text(450, 290, `$${run.final_value.toLocaleString()}`, {
+            fontSize: '32px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5));
+        
+        modalElements.push(this.add.text(450, 325, `${profit >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
+            fontSize: '24px',
+            fontFamily: 'Arial Black',
+            color: profitColor
+        }).setOrigin(0.5));
+        
+        // Allocations
+        let yPos = 370;
+        modalElements.push(this.add.text(300, yPos, 'Your Allocations:', {
+            fontSize: '16px',
+            color: '#ffffff'
+        }).setOrigin(0, 0.5));
+        
+        yPos += 25;
+        if (run.allocations) {
+            Object.entries(run.allocations).forEach(([symbol, blocks]) => {
+                if (blocks > 0) {
+                    modalElements.push(this.add.text(300, yPos, `${symbol}: ${blocks} blocks ($${(blocks * 1000000).toLocaleString()})`, {
+                        fontSize: '14px',
+                        color: '#666666'
+                    }).setOrigin(0, 0.5));
+                    yPos += 20;
+                }
+            });
+        }
+        
+        // Date played
+        const date = new Date(run.created_at);
+        modalElements.push(this.add.text(450, 440, `Played on ${date.toLocaleString()}`, {
+            fontSize: '14px',
+            color: '#666666'
+        }).setOrigin(0.5));
+        
+        // Close button
+        const closeBtn = this.add.rectangle(450, 480, 100, 40, 0x333333)
+            .setStrokeStyle(2, 0x666666)
+            .setInteractive({ useHandCursor: true });
+        modalElements.push(closeBtn);
+            
+        const closeText = this.add.text(450, 480, 'CLOSE', {
+            fontSize: '18px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        modalElements.push(closeText);
+        
+        closeBtn
+            .on('pointerover', () => {
+                closeBtn.setStrokeStyle(2, 0x00ffff);
+                closeText.setColor('#00ffff');
+            })
+            .on('pointerout', () => {
+                closeBtn.setStrokeStyle(2, 0x666666);
+                closeText.setColor('#ffffff');
+            })
+            .on('pointerdown', () => {
+                // Remove all modal elements
+                modalElements.forEach(element => element.destroy());
+            });
+            
+        // Play Again button
+        const playAgainBtn = this.add.rectangle(350, 480, 120, 40, 0x00ffff)
+            .setStrokeStyle(2, 0x00ffff)
+            .setInteractive({ useHandCursor: true });
+        modalElements.push(playAgainBtn);
+            
+        const playAgainText = this.add.text(350, 480, 'PLAY AGAIN', {
+            fontSize: '16px',
+            fontFamily: 'Arial Black',
+            color: '#000000'
+        }).setOrigin(0.5);
+        modalElements.push(playAgainText);
+        
+        playAgainBtn
+            .on('pointerover', () => {
+                playAgainBtn.setFillStyle(0xff1493);
+            })
+            .on('pointerout', () => {
+                playAgainBtn.setFillStyle(0x00ffff);
+            })
+            .on('pointerdown', () => {
+                // Start a new game with the same scenario
+                this.scene.start('SimulationSpeedScene', {
+                    user: this.user,
+                    scenario: run.scenario_key
+                });
+            });
     }
 }
 
