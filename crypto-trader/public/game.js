@@ -381,14 +381,18 @@ class LoginScene extends Phaser.Scene {
         this.authButton.style.opacity = '0.5';
         
         try {
-            let user;
+            let result;
             if (this.isSignUp) {
-                user = await this.auth.signUp(email, password);
-                // Create profile automatically
-                // Note: In production, this would be handled by a database trigger
+                result = await this.auth.signUp(email, password);
             } else {
-                user = await this.auth.signIn(email, password);
+                result = await this.auth.signIn(email, password);
             }
+            
+            if (result.error) {
+                throw result.error;
+            }
+            
+            const user = result.data?.user || result.data?.session?.user;
             
             if (user && user.id) {
                 // Clean up form
