@@ -293,6 +293,40 @@ class LoginScene extends Phaser.Scene {
             fontSize: '16px',
             color: '#ff1493'
         }).setOrigin(0.5);
+        
+        // Test login buttons (temporary for testing)
+        this.add.text(450, 560, 'TEST LOGINS:', {
+            fontSize: '14px',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
+        // Adam test button
+        const adamBtn = this.add.text(350, 580, '[Login as Adam]', {
+            fontSize: '14px',
+            color: '#00ff00'
+        }).setOrigin(0.5)
+        .setInteractive({ useHandCursor: true })
+        .on('pointerover', function() { this.setColor('#ffffff'); })
+        .on('pointerout', function() { this.setColor('#00ff00'); })
+        .on('pointerdown', () => {
+            this.emailInput.value = 'adam@test.com';
+            this.passwordInput.value = 'password123';
+            this.handleAuth();
+        });
+        
+        // Beth test button
+        const bethBtn = this.add.text(550, 580, '[Login as Beth]', {
+            fontSize: '14px',
+            color: '#00ff00'
+        }).setOrigin(0.5)
+        .setInteractive({ useHandCursor: true })
+        .on('pointerover', function() { this.setColor('#ffffff'); })
+        .on('pointerout', function() { this.setColor('#00ff00'); })
+        .on('pointerdown', () => {
+            this.emailInput.value = 'beth@test.com';
+            this.passwordInput.value = 'password123';
+            this.handleAuth();
+        });
     }
     
     createAuthForm() {
@@ -1334,7 +1368,8 @@ class ResultsScene extends Phaser.Scene {
                     final_value: this.totalValue,
                     profit_amount: profit,
                     profit_percent: profitPercent
-                });
+                })
+                .select();
             
             if (error) throw error;
             
@@ -1407,6 +1442,19 @@ class DashboardScene extends Phaser.Scene {
             fontFamily: 'Arial Black',
             color: '#ffffff'
         }).setOrigin(0.5);
+        
+        // Refresh button (for testing)
+        const refreshBtn = this.add.text(600, 250, '[Refresh]', {
+            fontSize: '16px',
+            color: '#00ff00'
+        }).setOrigin(0.5)
+        .setInteractive({ useHandCursor: true })
+        .on('pointerover', function() { this.setColor('#ffffff'); })
+        .on('pointerout', function() { this.setColor('#00ff00'); })
+        .on('pointerdown', () => {
+            // Reload the scene to refresh past runs
+            this.scene.restart({ user: this.user });
+        });
         
         // Loading text for past runs
         this.loadingText = this.add.text(450, 300, 'Loading your game history...', {
