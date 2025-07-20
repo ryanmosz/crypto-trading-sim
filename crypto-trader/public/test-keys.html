@@ -137,7 +137,7 @@
                 
                 // Test basic connection
                 const { data, error } = await supabase
-                    .from('games')
+                    .from('active_games')
                     .select('count')
                     .limit(1);
                 
@@ -163,7 +163,14 @@
                 // Sign in anonymously
                 const { data, error } = await supabase.auth.signInAnonymously();
                 
-                if (error) throw error;
+                if (error) {
+                    // 422 might mean anonymous auth is disabled
+                    if (error.status === 422) {
+                        updateStatus('auth-status', '⚠️ Anonymous auth might be disabled (422 error) - this is OK if not using anonymous users', false);
+                        return;
+                    }
+                    throw error;
+                }
                 
                 const session = data.session;
                 if (!session) throw new Error('No session created');
@@ -210,7 +217,7 @@
                 const { data, error } = await supabase
                     .from('prices_cache')
                     .select('*')
-                    .order('updated_at', { ascending: false })
+                    .order('fetched_at', { ascending: false })
                     .limit(5);
                 
                 if (error) throw error;
