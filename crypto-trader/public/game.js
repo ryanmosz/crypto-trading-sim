@@ -3393,21 +3393,11 @@ class LeaderboardScene extends Phaser.Scene {
             if (!userInTop10) {
                 // Note: Can't query individual stats from the leaderboard view
                 // because it's pre-aggregated. Would need a separate function/view.
-                // For now, just show a message
                 
                 // Separator
                 this.add.text(450, yPos + 20, '···', {
                     fontSize: '20px',
                     color: '#666666'
-                }).setOrigin(0.5);
-                
-                yPos += 50;
-                
-                // Your stats message
-                this.add.text(450, yPos, 'Play more games to appear on the leaderboard!', {
-                    fontSize: '18px',
-                    color: '#ffff00',
-                    fontStyle: 'italic'
                 }).setOrigin(0.5);
             }
             
