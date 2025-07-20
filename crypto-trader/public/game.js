@@ -142,9 +142,9 @@ class TutorialManager {
             {
                 scene: 'AllocationScene',
                 elementId: 'allocations',
-                x: 450, y: 300, w: 700, h: 300,
-                text: "Allocate your $10M across different cryptocurrencies. Click the + buttons to invest!",
-                position: 'top'
+                x: 450, y: 150, w: 600, h: 60,
+                text: "Drag the sliders to allocate your $10,000 across different cryptocurrencies. Your goal is to maximize returns!",
+                position: 'bottom'
             },
             {
                 scene: 'SimulationScene',
@@ -2262,10 +2262,7 @@ class DashboardScene extends Phaser.Scene {
             // Query ALL active games (both single player and multiplayer)
             const { data: allGames, error: gamesError } = await this.auth.supabase
                 .from('active_games')
-                .select(`
-                    *,
-                    profiles:user_id (username)
-                `)
+                .select('*')
                 .eq('is_complete', false)
                 .order('created_at', { ascending: false });
             
@@ -2492,6 +2489,8 @@ class DashboardScene extends Phaser.Scene {
         this.contentGroup.add(remainingDisplay);
         
         // Show creator for multiplayer games
+        // Disabled for now - need to fix profile join
+        /*
         if (isMultiplayer && game.profiles?.username) {
             const creatorText = this.add.text(430, y, `by ${game.profiles.username}`, {
                 fontSize: '12px',
@@ -2499,6 +2498,7 @@ class DashboardScene extends Phaser.Scene {
             }).setOrigin(0, 0.5);
             this.contentGroup.add(creatorText);
         }
+        */
         
         if (isJoinable) {
             // For joinable games, show participant count
