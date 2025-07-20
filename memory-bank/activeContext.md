@@ -122,17 +122,18 @@
 
 ### Recent Major Changes
 
-### M2 - Now Mode Implementation (99% Complete) 🚀
+### M2 - Now Mode Implementation (98% Complete) 🚀
 
-**API Key Integrated!** ✅
-- CoinGecko API key added to `env.js`
-- Test page detects and uses the key
-- Ready for real-time price updates
+**UPDATE: Edge Functions Deployed!** ✅
+- Both `fetch-prices` and `update-game-prices` are deployed
+- Cron jobs are scheduled and active:
+  - Job 1: fetch-crypto-prices (every 5 minutes)
+  - Job 2: update-game-prices (hourly)
 
-**Cron Job Active!** ✅
-- Hourly price updates scheduled (Job ID: 2)
-- Runs at the top of every hour
-- Will activate once edge function is deployed
+**Final 2% - Set API Key:**
+```bash
+supabase secrets set COINGECKO_API_KEY=CG-PkKqSj9jtXcCR53uBnnYyNVf
+```
 
 **UI Improvements!** ✅
 - Dashboard redesigned with tab system
