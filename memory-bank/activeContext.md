@@ -9,13 +9,17 @@
    - [x] Fixed dashboard past games list to prevent date/percentage overlap
    - [x] Split game details modal into main and details pages for better layout
    - [x] Enhanced details view to show investment performance (initial → final values)
-   - [ ] Debug and fix save functionality for real game simulations
-   - [ ] Implement "Now" mode with real-time prices
+   - [x] Debug and fix save functionality for real game simulations
+   - [x] Implement "Now" mode with real-time prices
+   - [x] Fixed multiplayer username display issues
+   - [x] Fixed tutorial system infinite loop
+   - [x] Fixed dashboard not loading after login
+   - [x] Fixed tab content display overlap issues
 
 ## Immediate Tasks:
-   - Fix the current save bug for real game simulations
-   - Continue implementing "Now" mode functionality
-   - Polish UI and error handling
+   - Deploy edge functions for automated price updates
+   - Test multiplayer game functionality thoroughly
+   - Continue polishing UI and error handling
 
 ## Recent Decisions
 
@@ -63,6 +67,24 @@
     - Up arrow at x=350 (100px spacing)
     - Down arrow at x=550 (100px spacing)
     - No more arrows overlapping with page text
+16. Fixed multiplayer username display:
+    - Added getUserProfile() method to fetch usernames from profiles table
+    - Updated RLS policy to allow public SELECT on profiles for usernames
+    - Fixed participant loading to manually merge usernames after fetching
+    - Usernames now display correctly for all multiplayer participants
+17. Fixed tutorial system:
+    - Prevented infinite loop by checking if tutorial is already active
+    - Added tab-specific tutorial triggers for Active and Past tabs
+    - Updated tutorial text from "drag sliders" to "+ and - buttons"
+    - Tutorial now shows on all required scenes
+18. Fixed dashboard loading after login:
+    - Profile data now fetched immediately after authentication
+    - Added session check on page load for auto-login
+    - No more need for page refresh after login
+19. Fixed tab content display overlap:
+    - Enhanced content clearing when switching tabs
+    - Added background overlays to prevent content bleed-through
+    - Properly destroy all groups and elements before showing new content
 
 ## Game Saving Issue
 - Test save works but real games don't save
