@@ -1,3 +1,6 @@
+// Import auth module
+import { Auth } from './auth.js';
+
 // Game configuration
 const GAME_CONFIG = {
     startingMoney: 10000000, // $10M
@@ -233,11 +236,21 @@ const SCENARIOS = {
 class LoginScene extends Phaser.Scene {
     constructor() {
         super({ key: 'LoginScene' });
+        this.auth = new Auth();
+        this.isSignUp = false;
     }
 
-    create() {
+    async create() {
         // Hide loading div
         document.getElementById('loading').style.display = 'none';
+        
+        // Check for existing session
+        const currentUser = await this.auth.getCurrentUser();
+        if (currentUser) {
+            // Already logged in, go to dashboard
+            this.scene.start('DashboardScene', { user: currentUser });
+            return;
+        }
         
         // Black background
         this.cameras.main.setBackgroundColor('#000000');
@@ -255,47 +268,154 @@ class LoginScene extends Phaser.Scene {
             color: '#ffffff'
         }).setOrigin(0.5);
         
-        // Test users
-        this.createUserButton('Alice', 'Conservative Trader', 250, () => {
-            this.scene.start('ScenarioSelectScene', { user: 'Alice' });
-        });
+        // Mode text
+        this.modeText = this.add.text(450, 220, 'Sign In', {
+            fontSize: '24px',
+            fontFamily: 'Arial Black',
+            color: '#00ffff'
+        }).setOrigin(0.5);
         
-        this.createUserButton('Bob', 'Risk Taker', 350, () => {
-            this.scene.start('ScenarioSelectScene', { user: 'Bob' });
-        });
+        // Create auth form
+        this.createAuthForm();
         
-        // Quick play
-        this.createUserButton('Quick Play', 'Jump right in!', 450, () => {
-            this.scene.start('ScenarioSelectScene', { user: 'Player' });
+        // Toggle link
+        this.toggleText = this.add.text(450, 480, "Don't have an account? Sign Up", {
+            fontSize: '16px',
+            color: '#00ffff'
+        }).setOrigin(0.5)
+        .setInteractive({ useHandCursor: true })
+        .on('pointerover', function() { this.setColor('#ff1493'); })
+        .on('pointerout', function() { this.setColor('#00ffff'); })
+        .on('pointerdown', () => this.toggleMode());
+        
+        // Error text (hidden initially)
+        this.errorText = this.add.text(450, 510, '', {
+            fontSize: '16px',
+            color: '#ff1493'
+        }).setOrigin(0.5);
+    }
+    
+    createAuthForm() {
+        // Create HTML form overlay
+        const formHtml = `
+            <div id="auth-form" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); text-align: center;">
+                <input type="email" id="email-input" placeholder="Email" style="
+                    width: 300px;
+                    padding: 12px;
+                    margin: 10px;
+                    background: #111;
+                    border: 2px solid #666;
+                    color: white;
+                    font-size: 16px;
+                    border-radius: 4px;
+                ">
+                <br>
+                <input type="password" id="password-input" placeholder="Password" style="
+                    width: 300px;
+                    padding: 12px;
+                    margin: 10px;
+                    background: #111;
+                    border: 2px solid #666;
+                    color: white;
+                    font-size: 16px;
+                    border-radius: 4px;
+                ">
+                <br>
+                <button id="auth-button" style="
+                    width: 200px;
+                    padding: 12px;
+                    margin: 20px;
+                    background: #00ffff;
+                    border: none;
+                    color: black;
+                    font-size: 18px;
+                    font-weight: bold;
+                    border-radius: 4px;
+                    cursor: pointer;
+                ">SIGN IN</button>
+            </div>
+        `;
+        
+        // Add form to page
+        const formContainer = document.createElement('div');
+        formContainer.innerHTML = formHtml;
+        document.body.appendChild(formContainer);
+        
+        // Store references
+        this.emailInput = document.getElementById('email-input');
+        this.passwordInput = document.getElementById('password-input');
+        this.authButton = document.getElementById('auth-button');
+        this.formContainer = formContainer;
+        
+        // Add event listeners
+        this.authButton.onclick = () => this.handleAuth();
+        
+        // Focus email input
+        this.emailInput.focus();
+        
+        // Allow Enter key to submit
+        this.passwordInput.onkeydown = (e) => {
+            if (e.key === 'Enter') this.handleAuth();
+        };
+    }
+    
+    toggleMode() {
+        this.isSignUp = !this.isSignUp;
+        this.modeText.setText(this.isSignUp ? 'Sign Up' : 'Sign In');
+        this.toggleText.setText(this.isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up");
+        this.authButton.textContent = this.isSignUp ? 'SIGN UP' : 'SIGN IN';
+        this.errorText.setText('');
+    }
+    
+    async handleAuth() {
+        const email = this.emailInput.value.trim();
+        const password = this.passwordInput.value;
+        
+        if (!email || !password) {
+            this.showError('Please enter email and password');
+            return;
+        }
+        
+        // Disable button during auth
+        this.authButton.disabled = true;
+        this.authButton.style.opacity = '0.5';
+        
+        try {
+            let user;
+            if (this.isSignUp) {
+                user = await this.auth.signUp(email, password);
+                // Create profile automatically
+                // Note: In production, this would be handled by a database trigger
+            } else {
+                user = await this.auth.signIn(email, password);
+            }
+            
+            if (user) {
+                // Clean up form
+                this.formContainer.remove();
+                // Go to dashboard
+                this.scene.start('DashboardScene', { user });
+            }
+        } catch (error) {
+            this.showError(error.message || 'Authentication failed');
+            this.authButton.disabled = false;
+            this.authButton.style.opacity = '1';
+        }
+    }
+    
+    showError(message) {
+        this.errorText.setText(message);
+        // Clear error after 3 seconds
+        this.time.delayedCall(3000, () => {
+            this.errorText.setText('');
         });
     }
     
-    createUserButton(name, desc, y, callback) {
-        const button = this.add.rectangle(450, y, 400, 80, 0x000000, 1)
-            .setStrokeStyle(2, 0x666666)
-            .setInteractive({ useHandCursor: true });
-            
-        const nameText = this.add.text(450, y - 10, name, {
-            fontSize: '28px',
-            fontFamily: 'Arial Black',
-            color: '#ffffff'
-        }).setOrigin(0.5);
-        
-        const descText = this.add.text(450, y + 15, desc, {
-            fontSize: '16px',
-            color: '#999999'
-        }).setOrigin(0.5);
-        
-        button
-            .on('pointerover', () => {
-                button.setStrokeStyle(2, 0x00ffff);
-                nameText.setColor('#00ffff');
-            })
-            .on('pointerout', () => {
-                button.setStrokeStyle(2, 0x666666);
-                nameText.setColor('#ffffff');
-            })
-            .on('pointerdown', callback);
+    shutdown() {
+        // Clean up form when scene shuts down
+        if (this.formContainer) {
+            this.formContainer.remove();
+        }
     }
 }
 
@@ -306,7 +426,8 @@ class ScenarioSelectScene extends Phaser.Scene {
     }
     
     init(data) {
-        this.userName = data.user || 'Player';
+        this.user = data.user;
+        this.userName = data.user?.email || data.user || 'Player';
     }
     
     create() {
@@ -378,7 +499,13 @@ class ScenarioSelectScene extends Phaser.Scene {
                 backButton.setStrokeStyle(2, 0x666666);
                 backText.setColor('#ffffff');
             })
-            .on('pointerdown', () => this.scene.start('LoginScene'));
+            .on('pointerdown', () => {
+                if (this.user && this.user.id) {
+                    this.scene.start('DashboardScene', { user: this.user });
+                } else {
+                    this.scene.start('LoginScene');
+                }
+            });
     }
     
     createScenarioButton(dateText, subtitleText, y, scenarioKey) {
@@ -420,7 +547,8 @@ class SimulationSpeedScene extends Phaser.Scene {
     }
     
     init(data) {
-        this.userName = data.user;
+        this.user = data.user;
+        this.userName = data.user?.email || data.user || 'Player';
         this.scenarioKey = data.scenario;
         this.scenario = SCENARIOS[this.scenarioKey];
     }
@@ -492,7 +620,7 @@ class SimulationSpeedScene extends Phaser.Scene {
                 backButton.setStrokeStyle(2, 0x666666);
                 backText.setColor('#ffffff');
             })
-            .on('pointerdown', () => this.scene.start('ScenarioSelectScene', { user: this.userName }));
+            .on('pointerdown', () => this.scene.start('ScenarioSelectScene', { user: this.user }));
     }
     
     createSpeedButton(speedKey, speedConfig, y) {
@@ -522,7 +650,7 @@ class SimulationSpeedScene extends Phaser.Scene {
             })
             .on('pointerdown', () => {
                 this.scene.start('AllocationScene', {
-                    user: this.userName,
+                    user: this.user,
                     scenario: this.scenarioKey,
                     speed: speedKey,
                     simulationTime: speedConfig.time
@@ -538,7 +666,8 @@ class AllocationScene extends Phaser.Scene {
     }
     
     init(data) {
-        this.userName = data.user || 'Player';
+        this.user = data.user;
+        this.userName = data.user?.email || data.user || 'Player';
         this.scenarioKey = data.scenario || 'march_2020';
         this.scenario = SCENARIOS[this.scenarioKey];
         this.speed = data.speed || 'regular';
@@ -628,7 +757,7 @@ class AllocationScene extends Phaser.Scene {
                 backButton.setStrokeStyle(2, 0x666666);
                 backText.setColor('#ffffff');
             })
-            .on('pointerdown', () => this.scene.start('ScenarioSelectScene', { user: this.userName }));
+            .on('pointerdown', () => this.scene.start('ScenarioSelectScene', { user: this.user }));
     }
     
     createCryptoRow(symbol, crypto, y) {
@@ -800,7 +929,7 @@ class AllocationScene extends Phaser.Scene {
         
         // Start the simulation
         this.scene.start('SimulationScene', {
-            user: this.userName,
+            user: this.user,
             allocations: this.allocations,
             scenario: this.scenarioKey,
             speed: this.speed,
@@ -816,7 +945,8 @@ class SimulationScene extends Phaser.Scene {
     }
     
     init(data) {
-        this.userName = data.user;
+        this.user = data.user;
+        this.userName = data.user?.email || data.user || 'Player';
         this.allocations = data.allocations;
         this.scenarioKey = data.scenario || 'march_2020';
         this.scenario = SCENARIOS[this.scenarioKey];
@@ -1029,7 +1159,7 @@ class SimulationScene extends Phaser.Scene {
         });
         
         this.scene.start('ResultsScene', {
-            user: this.userName,
+            user: this.user,
             totalValue,
             results,
             allocations: this.allocations,
@@ -1042,10 +1172,12 @@ class SimulationScene extends Phaser.Scene {
 class ResultsScene extends Phaser.Scene {
     constructor() {
         super({ key: 'ResultsScene' });
+        this.auth = new Auth();
     }
     
     init(data) {
-        this.userName = data.user;
+        this.user = data.user;
+        this.userName = data.user?.email || data.user || 'Player';
         this.totalValue = data.totalValue;
         this.results = data.results;
         this.allocations = data.allocations;
@@ -1053,9 +1185,14 @@ class ResultsScene extends Phaser.Scene {
         this.scenario = SCENARIOS[this.scenarioKey];
     }
     
-    create() {
+    async create() {
         // Black background
         this.cameras.main.setBackgroundColor('#000000');
+        
+        // Save the game result if user is logged in
+        if (this.user && this.user.id) {
+            await this.savePastRun();
+        }
         
         // Results header - white
         const profit = this.totalValue - GAME_CONFIG.startingMoney;
@@ -1136,7 +1273,7 @@ class ResultsScene extends Phaser.Scene {
                 playAgainBtn.setStrokeStyle(2, 0x666666);
                 playAgainText.setColor('#ffffff');
             })
-            .on('pointerdown', () => this.scene.start('ScenarioSelectScene', { user: this.userName }));
+            .on('pointerdown', () => this.scene.start('ScenarioSelectScene', { user: this.user }));
         
         // New strategy button - pink accent
         const newStrategyBtn = this.add.rectangle(550, 500, 180, 50, 0x000000, 1)
@@ -1159,8 +1296,10 @@ class ResultsScene extends Phaser.Scene {
                 tryAgainText.setColor('#ffffff');
             })
             .on('pointerdown', () => this.scene.start('AllocationScene', { 
-                user: this.userName,
-                scenario: this.scenarioKey
+                user: this.user,
+                scenario: this.scenarioKey,
+                speed: 'regular',
+                simulationTime: 30
             }));
         
         // Fun message - white
@@ -1174,6 +1313,200 @@ class ResultsScene extends Phaser.Scene {
             color: '#ffffff'
         }).setOrigin(0.5);
     }
+    
+    async savePastRun() {
+        try {
+            const profit = this.totalValue - GAME_CONFIG.startingMoney;
+            const profitPercent = (profit / GAME_CONFIG.startingMoney) * 100;
+            
+            const { data, error } = await this.auth.supabase
+                .from('past_runs')
+                .insert({
+                    user_id: this.user.id,
+                    scenario_key: this.scenarioKey,
+                    allocations: this.allocations,
+                    final_value: this.totalValue,
+                    profit_amount: profit,
+                    profit_percent: profitPercent
+                });
+            
+            if (error) throw error;
+            
+            console.log('Game saved successfully!');
+        } catch (error) {
+            console.error('Error saving game:', error);
+        }
+    }
+}
+
+// Dashboard Scene
+class DashboardScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'DashboardScene' });
+        this.auth = new Auth();
+    }
+    
+    init(data) {
+        this.user = data.user;
+    }
+    
+    async create() {
+        // Black background
+        this.cameras.main.setBackgroundColor('#000000');
+        
+        // Header
+        this.add.text(450, 40, 'CRYPTO TRADER DASHBOARD', {
+            fontSize: '36px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        // Welcome message
+        this.add.text(450, 90, `Welcome, ${this.user.email}!`, {
+            fontSize: '20px',
+            color: '#00ffff'
+        }).setOrigin(0.5);
+        
+        // Play button
+        const playButton = this.add.rectangle(450, 160, 300, 60, 0x00ffff)
+            .setInteractive({ useHandCursor: true });
+            
+        const playText = this.add.text(450, 160, 'PLAY NEW GAME', {
+            fontSize: '24px',
+            fontFamily: 'Arial Black',
+            color: '#000000'
+        }).setOrigin(0.5);
+        
+        playButton
+            .on('pointerover', () => {
+                playButton.setFillStyle(0xff1493);
+            })
+            .on('pointerout', () => {
+                playButton.setFillStyle(0x00ffff);
+            })
+            .on('pointerdown', () => {
+                this.scene.start('ScenarioSelectScene', { user: this.user });
+            });
+        
+        // Past runs header
+        this.add.text(450, 250, 'YOUR PAST GAMES', {
+            fontSize: '24px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        // Loading text for past runs
+        this.loadingText = this.add.text(450, 300, 'Loading your game history...', {
+            fontSize: '16px',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
+        // Sign out button
+        const signOutButton = this.add.text(800, 550, 'Sign Out', {
+            fontSize: '16px',
+            color: '#666666'
+        }).setOrigin(1, 0.5)
+        .setInteractive({ useHandCursor: true })
+        .on('pointerover', function() { this.setColor('#ff1493'); })
+        .on('pointerout', function() { this.setColor('#666666'); })
+        .on('pointerdown', async () => {
+            await this.auth.signOut();
+            this.scene.start('LoginScene');
+        });
+        
+        // Load past runs
+        this.loadPastRuns();
+    }
+    
+    async loadPastRuns() {
+        try {
+            // Query past runs from Supabase
+            const { data, error } = await this.auth.supabase
+                .from('past_runs')
+                .select('*')
+                .eq('user_id', this.user.id)
+                .order('created_at', { ascending: false })
+                .limit(10);
+            
+            if (error) throw error;
+            
+            this.loadingText.destroy();
+            
+            if (!data || data.length === 0) {
+                this.add.text(450, 300, 'No games played yet. Start your first game!', {
+                    fontSize: '16px',
+                    color: '#666666'
+                }).setOrigin(0.5);
+                return;
+            }
+            
+            // Display past runs
+            let yPos = 300;
+            data.forEach((run, index) => {
+                this.createPastRunDisplay(run, yPos);
+                yPos += 60;
+            });
+            
+        } catch (error) {
+            console.error('Error loading past runs:', error);
+            this.loadingText.setText('Error loading game history');
+        }
+    }
+    
+    createPastRunDisplay(run, y) {
+        // Background
+        const bg = this.add.rectangle(450, y, 700, 50, 0x111111)
+            .setStrokeStyle(1, 0x333333)
+            .setInteractive({ useHandCursor: true });
+        
+        // Scenario name
+        const scenarioName = SCENARIOS[run.scenario_key]?.displayName || run.scenario_key;
+        this.add.text(200, y, scenarioName, {
+            fontSize: '18px',
+            color: '#ffffff'
+        }).setOrigin(0, 0.5);
+        
+        // Final value
+        const profit = run.final_value - 10000000;
+        const profitPercent = (profit / 10000000) * 100;
+        const profitColor = profit >= 0 ? '#00ffff' : '#ff1493';
+        
+        this.add.text(450, y, `$${run.final_value.toLocaleString()}`, {
+            fontSize: '18px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        this.add.text(600, y, `${profit >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
+            fontSize: '18px',
+            fontFamily: 'Arial Black',
+            color: profitColor
+        }).setOrigin(0.5);
+        
+        // Date
+        const date = new Date(run.created_at);
+        this.add.text(700, y, date.toLocaleDateString(), {
+            fontSize: '14px',
+            color: '#666666'
+        }).setOrigin(1, 0.5);
+        
+        // Hover effect
+        bg.on('pointerover', () => {
+            bg.setStrokeStyle(2, 0x00ffff);
+        })
+        .on('pointerout', () => {
+            bg.setStrokeStyle(1, 0x333333);
+        })
+        .on('pointerdown', () => {
+            // Could show detailed view or replay
+            this.scene.start('AllocationScene', {
+                user: this.user,
+                scenario: run.scenario_key,
+                speed: 'regular',
+                simulationTime: 30
+            });
+        });
+    }
 }
 
 // Game configuration
@@ -1182,7 +1515,7 @@ const config = {
     parent: 'game-container',
     width: 900,
     height: 600,
-    scene: [LoginScene, ScenarioSelectScene, SimulationSpeedScene, AllocationScene, SimulationScene, ResultsScene],
+    scene: [LoginScene, DashboardScene, ScenarioSelectScene, SimulationSpeedScene, AllocationScene, SimulationScene, ResultsScene],
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
