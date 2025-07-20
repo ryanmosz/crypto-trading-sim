@@ -1669,10 +1669,13 @@ class DashboardScene extends Phaser.Scene {
         
         // Show paging controls if there are multiple pages
         if (totalPages > 1) {
+            // Position paging controls compactly to fit on screen
+            const pagingY = yPos + 5;  // Start paging controls right after games
+            
             // Up arrow (previous page)
             if (this.currentPage > 0) {
-                const upArrow = this.add.text(450, yPos + 10, '▲', {
-                    fontSize: '20px',
+                const upArrow = this.add.text(420, pagingY, '▲', {
+                    fontSize: '18px',
                     color: '#00ffff'
                 }).setOrigin(0.5)
                 .setInteractive({ useHandCursor: true })
@@ -1686,16 +1689,16 @@ class DashboardScene extends Phaser.Scene {
             }
             
             // Page indicator
-            const pageText = this.add.text(450, yPos + 35, `Page ${this.currentPage + 1} of ${totalPages}`, {
-                fontSize: '14px',
+            const pageText = this.add.text(450, pagingY, `Page ${this.currentPage + 1} of ${totalPages}`, {
+                fontSize: '13px',
                 color: '#666666'
             }).setOrigin(0.5);
             this.gameDisplayGroup.add(pageText);
             
             // Down arrow (next page)
             if (this.currentPage < totalPages - 1) {
-                const downArrow = this.add.text(450, yPos + 60, '▼', {
-                    fontSize: '20px',
+                const downArrow = this.add.text(480, pagingY, '▼', {
+                    fontSize: '18px',
                     color: '#00ffff'
                 }).setOrigin(0.5)
                 .setInteractive({ useHandCursor: true })
