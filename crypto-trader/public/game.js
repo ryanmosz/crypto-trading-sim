@@ -2259,37 +2259,22 @@ class DashboardScene extends Phaser.Scene {
                 return;
             }
             
-            // Query user's active games
-            const { data: myGames, error: myError } = await this.auth.supabase
+            // Query ALL active games (both single player and multiplayer)
+            const { data: allGames, error: gamesError } = await this.auth.supabase
                 .from('active_games')
                 .select('*')
-                .eq('user_id', this.user.id)
                 .eq('is_complete', false)
                 .order('created_at', { ascending: false });
             
-            if (myError) throw myError;
+            if (gamesError) throw gamesError;
             
-            // Query all active multiplayer games
-            let multiplayerGames = [];
-            const { data: mpGames, error: mpError } = await this.auth.supabase
-                .from('active_games')
-                .select('*')
-                .eq('is_multiplayer', true)
-                .eq('is_complete', false)
-                .neq('user_id', this.user.id)
-                .order('created_at', { ascending: false });
-                
-            if (mpError) {
-                console.error('Error loading multiplayer games:', mpError);
-                // Continue with empty array instead of throwing
-                multiplayerGames = [];
-            } else {
-                multiplayerGames = mpGames || [];
-            }
+            // Separate into single player (user's own) and multiplayer games
+            const myGames = allGames ? allGames.filter(g => !g.is_multiplayer && g.user_id === this.user.id) : [];
+            const multiplayerGames = allGames ? allGames.filter(g => g.is_multiplayer) : [];
             
-            // Check which multiplayer games user has already joined
-            const multiplayerGameIds = multiplayerGames ? multiplayerGames.map(g => g.id) : [];
-            let joinedGames = [];
+            // For multiplayer games, check which ones the user has joined
+            const multiplayerGameIds = multiplayerGames.map(g => g.id);
+            let userParticipations = {};
             
             if (multiplayerGameIds.length > 0) {
                 const { data: participations } = await this.auth.supabase
@@ -2298,12 +2283,12 @@ class DashboardScene extends Phaser.Scene {
                     .eq('user_id', this.user.id)
                     .in('game_id', multiplayerGameIds);
                     
-                joinedGames = participations ? participations.map(p => p.game_id) : [];
+                if (participations) {
+                    participations.forEach(p => {
+                        userParticipations[p.game_id] = true;
+                    });
+                }
             }
-            
-            // Filter out already joined games
-            const joinableGames = multiplayerGames ? 
-                multiplayerGames.filter(g => !joinedGames.includes(g.id)) : [];
             
             // Get the latest price update time from price cache
             const { data: priceData, error: priceError } = await this.auth.supabase
@@ -2315,13 +2300,8 @@ class DashboardScene extends Phaser.Scene {
                 
             // Update all games with the actual price cache update time
             if (!priceError && priceData) {
-                if (myGames) {
-                    myGames.forEach(game => {
-                        game.last_updated = priceData.fetched_at;
-                    });
-                }
-                if (joinableGames) {
-                    joinableGames.forEach(game => {
+                if (allGames) {
+                    allGames.forEach(game => {
                         game.last_updated = priceData.fetched_at;
                     });
                 }
@@ -2329,7 +2309,7 @@ class DashboardScene extends Phaser.Scene {
             
             loadingText.destroy();
             
-            const totalGames = (myGames?.length || 0) + (joinableGames?.length || 0);
+            const totalGames = (myGames?.length || 0) + (multiplayerGames?.length || 0);
             
             if (totalGames === 0) {
                 const noGamesText = this.add.text(450, this.contentY + 60, 
@@ -2350,11 +2330,11 @@ class DashboardScene extends Phaser.Scene {
                 return;
             }
             
-            // Display user's games first
             let yPos = this.contentY + 40;
             
+            // Display user's single player games first
             if (myGames && myGames.length > 0) {
-                const myGamesHeader = this.add.text(450, yPos, 'YOUR GAMES', {
+                const myGamesHeader = this.add.text(450, yPos, 'YOUR SOLO GAMES', {
                     fontSize: '14px',
                     color: '#00ffff',
                     fontFamily: 'Arial Black'
@@ -2363,27 +2343,29 @@ class DashboardScene extends Phaser.Scene {
                 yPos += 30;
                 
                 myGames.forEach(game => {
-                    this.createActiveGameDisplay(game, yPos, false); // false = not joinable
+                    this.createActiveGameDisplay(game, yPos, false, false); // not joinable, not multiplayer
                     yPos += 70;
                 });
             }
             
-            // Display joinable multiplayer games
-            if (joinableGames && joinableGames.length > 0) {
+            // Display ALL multiplayer games
+            if (multiplayerGames && multiplayerGames.length > 0) {
                 if (myGames && myGames.length > 0) {
                     yPos += 20; // Extra spacing between sections
                 }
                 
-                const joinableHeader = this.add.text(450, yPos, 'JOIN MULTIPLAYER GAMES', {
+                const multiplayerHeader = this.add.text(450, yPos, 'MULTIPLAYER GAMES', {
                     fontSize: '14px',
                     color: '#00ff00',
                     fontFamily: 'Arial Black'
                 }).setOrigin(0.5);
-                this.contentGroup.add(joinableHeader);
+                this.contentGroup.add(multiplayerHeader);
                 yPos += 30;
                 
-                joinableGames.forEach(game => {
-                    this.createActiveGameDisplay(game, yPos, true); // true = joinable
+                multiplayerGames.forEach(game => {
+                    // Check if user has already joined this game
+                    const hasJoined = userParticipations[game.id] || false;
+                    this.createActiveGameDisplay(game, yPos, !hasJoined, true); // joinable if not joined yet
                     yPos += 70;
                 });
             }
@@ -2460,7 +2442,7 @@ class DashboardScene extends Phaser.Scene {
         }
     }
     
-    createActiveGameDisplay(game, y, isJoinable = false) {
+    createActiveGameDisplay(game, y, isJoinable = false, isMultiplayer = false) {
         // Calculate days remaining
         const now = new Date();
         const endsAt = new Date(game.ends_at);
