@@ -2354,7 +2354,7 @@ class DashboardScene extends Phaser.Scene {
                     yPos += 20; // Extra spacing between sections
                 }
                 
-                const multiplayerHeader = this.add.text(450, yPos, 'MULTIPLAYER GAMES', {
+                const multiplayerHeader = this.add.text(450, yPos+10, 'MULTIPLAYER GAMES', {
                     fontSize: '14px',
                     color: '#00ff00',
                     fontFamily: 'Arial Black'
@@ -4030,7 +4030,7 @@ class ActiveGameViewScene extends Phaser.Scene {
             // Load all participants
             const { data: participants, error } = await this.auth.supabase
                 .from('game_participants')
-                .select('*, profiles(email)')
+                .select('*')
                 .eq('game_id', this.gameData.id)
                 .order('current_value', { ascending: false });
                 
@@ -4343,7 +4343,7 @@ class JoinGameScene extends Phaser.Scene {
             // Get game participants
             const { data: participants, error } = await this.auth.supabase
                 .from('game_participants')
-                .select('*, profiles(email)')
+                .select('*')
                 .eq('game_id', this.game.id)
                 .order('current_value', { ascending: false });
                 
