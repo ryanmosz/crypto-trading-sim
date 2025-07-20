@@ -1698,103 +1698,122 @@ class DashboardScene extends Phaser.Scene {
     showGameDetails(run) {
         // Store modal elements for cleanup
         const modalElements = [];
+        let currentView = 'main'; // Track current view
         
         // Create overlay background
         const overlay = this.add.rectangle(450, 300, 900, 600, 0x000000, 0.9)
             .setInteractive(); // Block clicks underneath
         modalElements.push(overlay);
         
-        // Modal container - will update height later
+        // Modal container - fixed size for both views
         const modal = this.add.rectangle(450, 300, 600, 400, 0x111111)
             .setStrokeStyle(2, 0x00ffff);
         modalElements.push(modal);
         
-        // Title
+        // Create containers for each view
+        const mainViewElements = [];
+        const detailsViewElements = [];
+        
+        // Function to show main view
+        const showMainView = () => {
+            // Hide details view
+            detailsViewElements.forEach(el => el.setVisible(false));
+            
+            // Show main view
+            mainViewElements.forEach(el => el.setVisible(true));
+            currentView = 'main';
+        };
+        
+        // Function to show details view
+        const showDetailsView = () => {
+            // Hide main view
+            mainViewElements.forEach(el => el.setVisible(false));
+            
+            // Show details view
+            detailsViewElements.forEach(el => el.setVisible(true));
+            currentView = 'details';
+        };
+        
+        // ===== MAIN VIEW CONTENT =====
         const scenario = SCENARIOS[run.scenario_key];
-        modalElements.push(this.add.text(450, 150, `Game Details`, {
+        
+        // Title
+        const mainTitle = this.add.text(450, 130, `Game Details`, {
             fontSize: '28px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
-        }).setOrigin(0.5));
+        }).setOrigin(0.5);
+        mainViewElements.push(mainTitle);
+        modalElements.push(mainTitle);
         
         // Scenario info
-        modalElements.push(this.add.text(450, 190, scenario ? scenario.displayName : run.scenario_key, {
+        const scenarioText = this.add.text(450, 170, scenario ? scenario.displayName : run.scenario_key, {
             fontSize: '20px',
             color: '#00ffff'
-        }).setOrigin(0.5));
+        }).setOrigin(0.5);
+        mainViewElements.push(scenarioText);
+        modalElements.push(scenarioText);
         
-        modalElements.push(this.add.text(450, 215, scenario ? scenario.description : '', {
+        const scenarioDesc = this.add.text(450, 195, scenario ? scenario.description : '', {
             fontSize: '16px',
             color: '#666666'
-        }).setOrigin(0.5));
+        }).setOrigin(0.5);
+        mainViewElements.push(scenarioDesc);
+        modalElements.push(scenarioDesc);
         
         // Results
         const profit = run.final_value - GAME_CONFIG.startingMoney;
         const profitPercent = (profit / GAME_CONFIG.startingMoney) * 100;
         const profitColor = profit >= 0 ? '#00ffff' : '#ff1493';
         
-        modalElements.push(this.add.text(450, 260, 'Final Value:', {
+        const finalLabel = this.add.text(450, 240, 'Final Value:', {
             fontSize: '18px',
             color: '#ffffff'
-        }).setOrigin(0.5));
+        }).setOrigin(0.5);
+        mainViewElements.push(finalLabel);
+        modalElements.push(finalLabel);
         
-        modalElements.push(this.add.text(450, 290, `$${run.final_value.toLocaleString()}`, {
+        const finalValue = this.add.text(450, 270, `$${run.final_value.toLocaleString()}`, {
             fontSize: '32px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
-        }).setOrigin(0.5));
+        }).setOrigin(0.5);
+        mainViewElements.push(finalValue);
+        modalElements.push(finalValue);
         
-        modalElements.push(this.add.text(450, 325, `${profit >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
+        const profitText = this.add.text(450, 305, `${profit >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
             fontSize: '24px',
             fontFamily: 'Arial Black',
             color: profitColor
-        }).setOrigin(0.5));
+        }).setOrigin(0.5);
+        mainViewElements.push(profitText);
+        modalElements.push(profitText);
         
-        // Allocations
-        let yPos = 370;
-        modalElements.push(this.add.text(300, yPos, 'Your Allocations:', {
-            fontSize: '16px',
-            color: '#ffffff'
-        }).setOrigin(0, 0.5));
-        
-        yPos += 25;
-        if (run.allocations) {
-            Object.entries(run.allocations).forEach(([symbol, blocks]) => {
-                if (blocks > 0) {
-                    modalElements.push(this.add.text(300, yPos, `${symbol}: ${blocks} blocks ($${(blocks * 1000000).toLocaleString()})`, {
-                        fontSize: '14px',
-                        color: '#666666'
-                    }).setOrigin(0, 0.5));
-                    yPos += 20;
-                }
-            });
-        }
-        
-        // Add some spacing after allocations
-        yPos += 15;
-        
-        // Date played - now positioned dynamically based on allocations
+        // Date played
         const date = new Date(run.created_at);
-        const dateY = Math.max(yPos, 440);
-        modalElements.push(this.add.text(450, dateY, date.toLocaleDateString() + ' at ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), {
+        const dateText = this.add.text(450, 350, date.toLocaleDateString() + ' at ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), {
             fontSize: '14px',
             color: '#666666'
-        }).setOrigin(0.5));
+        }).setOrigin(0.5);
+        mainViewElements.push(dateText);
+        modalElements.push(dateText);
         
-        // Position buttons dynamically below the date
-        const buttonY = dateY + 40;
+        // Main view buttons
+        const mainButtonY = 420;
         
         // Close button
-        const closeBtn = this.add.rectangle(450, buttonY, 100, 40, 0x333333)
+        const closeBtn = this.add.rectangle(320, mainButtonY, 100, 40, 0x333333)
             .setStrokeStyle(2, 0x666666)
             .setInteractive({ useHandCursor: true });
+        mainViewElements.push(closeBtn);
         modalElements.push(closeBtn);
             
-        const closeText = this.add.text(450, buttonY, 'CLOSE', {
+        const closeText = this.add.text(320, mainButtonY, 'CLOSE', {
             fontSize: '18px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
         }).setOrigin(0.5);
+        mainViewElements.push(closeText);
         modalElements.push(closeText);
         
         closeBtn
@@ -1811,17 +1830,47 @@ class DashboardScene extends Phaser.Scene {
                 modalElements.forEach(element => element.destroy());
             });
             
-        // Play Again button
-        const playAgainBtn = this.add.rectangle(350, buttonY, 120, 40, 0x00ffff)
+        // Details button
+        const detailsBtn = this.add.rectangle(450, mainButtonY, 100, 40, 0x333333)
             .setStrokeStyle(2, 0x00ffff)
             .setInteractive({ useHandCursor: true });
+        mainViewElements.push(detailsBtn);
+        modalElements.push(detailsBtn);
+            
+        const detailsBtnText = this.add.text(450, mainButtonY, 'DETAILS', {
+            fontSize: '16px',
+            fontFamily: 'Arial Black',
+            color: '#00ffff'
+        }).setOrigin(0.5);
+        mainViewElements.push(detailsBtnText);
+        modalElements.push(detailsBtnText);
+        
+        detailsBtn
+            .on('pointerover', () => {
+                detailsBtn.setFillStyle(0x333333);
+                detailsBtnText.setColor('#ffffff');
+            })
+            .on('pointerout', () => {
+                detailsBtn.setFillStyle(0x000000);
+                detailsBtnText.setColor('#00ffff');
+            })
+            .on('pointerdown', () => {
+                showDetailsView();
+            });
+            
+        // Play Again button
+        const playAgainBtn = this.add.rectangle(580, mainButtonY, 120, 40, 0x00ffff)
+            .setStrokeStyle(2, 0x00ffff)
+            .setInteractive({ useHandCursor: true });
+        mainViewElements.push(playAgainBtn);
         modalElements.push(playAgainBtn);
             
-        const playAgainText = this.add.text(350, buttonY, 'PLAY AGAIN', {
+        const playAgainText = this.add.text(580, mainButtonY, 'PLAY AGAIN', {
             fontSize: '16px',
             fontFamily: 'Arial Black',
             color: '#000000'
         }).setOrigin(0.5);
+        mainViewElements.push(playAgainText);
         modalElements.push(playAgainText);
         
         playAgainBtn
@@ -1832,17 +1881,94 @@ class DashboardScene extends Phaser.Scene {
                 playAgainBtn.setFillStyle(0x00ffff);
             })
             .on('pointerdown', () => {
-                // Start a new game with the same scenario
                 this.scene.start('SimulationSpeedScene', {
                     user: this.user,
                     scenario: run.scenario_key
                 });
             });
             
-        // Adjust modal height to fit content
-        const modalHeight = (buttonY + 40) - 100;  // From top (150-50) to bottom of buttons + padding
-        modal.setSize(600, modalHeight);
-        modal.setY(150 + modalHeight/2);  // Center the modal based on content
+        // ===== DETAILS VIEW CONTENT =====
+        
+        // Title
+        const detailsTitle = this.add.text(450, 130, `Allocation Details`, {
+            fontSize: '28px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5).setVisible(false);
+        detailsViewElements.push(detailsTitle);
+        modalElements.push(detailsTitle);
+        
+        // Allocations
+        let yPos = 180;
+        const allocHeader = this.add.text(450, yPos, 'Your Investment Allocations:', {
+            fontSize: '18px',
+            color: '#00ffff'
+        }).setOrigin(0.5).setVisible(false);
+        detailsViewElements.push(allocHeader);
+        modalElements.push(allocHeader);
+        
+        yPos += 40;
+        if (run.allocations) {
+            Object.entries(run.allocations).forEach(([symbol, blocks]) => {
+                if (blocks > 0) {
+                    const cryptoInfo = GAME_CONFIG.cryptos[symbol];
+                    const allocText = this.add.text(200, yPos, `${symbol} (${cryptoInfo.name}):`, {
+                        fontSize: '16px',
+                        color: '#ffffff'
+                    }).setOrigin(0, 0.5).setVisible(false);
+                    detailsViewElements.push(allocText);
+                    modalElements.push(allocText);
+                    
+                    const blockText = this.add.text(450, yPos, `${blocks} blocks`, {
+                        fontSize: '16px',
+                        color: '#666666'
+                    }).setOrigin(0.5).setVisible(false);
+                    detailsViewElements.push(blockText);
+                    modalElements.push(blockText);
+                    
+                    const valueText = this.add.text(650, yPos, `$${(blocks * 1000000).toLocaleString()}`, {
+                        fontSize: '16px',
+                        color: '#00ffff'
+                    }).setOrigin(1, 0.5).setVisible(false);
+                    detailsViewElements.push(valueText);
+                    modalElements.push(valueText);
+                    
+                    yPos += 30;
+                }
+            });
+        }
+        
+        // Back button (details view)
+        const backBtn = this.add.rectangle(450, 420, 100, 40, 0x333333)
+            .setStrokeStyle(2, 0x666666)
+            .setInteractive({ useHandCursor: true })
+            .setVisible(false);
+        detailsViewElements.push(backBtn);
+        modalElements.push(backBtn);
+            
+        const backText = this.add.text(450, 420, 'BACK', {
+            fontSize: '18px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5).setVisible(false);
+        detailsViewElements.push(backText);
+        modalElements.push(backText);
+        
+        backBtn
+            .on('pointerover', () => {
+                backBtn.setStrokeStyle(2, 0x00ffff);
+                backText.setColor('#00ffff');
+            })
+            .on('pointerout', () => {
+                backBtn.setStrokeStyle(2, 0x666666);
+                backText.setColor('#ffffff');
+            })
+            .on('pointerdown', () => {
+                showMainView();
+            });
+            
+        // Show main view by default
+        showMainView();
     }
 }
 
