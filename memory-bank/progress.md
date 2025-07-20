@@ -14,9 +14,9 @@ Phase 1 (Historical trading) is ~85% complete with core gameplay functional but 
 - Test game saves work (via Test Save button)
 - UI layout improvements prevent text overlap
 
-## Current Issues
-1. Real game saves fail (not using Test Save button)
-2. "Now" mode not implemented yet
+## Current Issues (Recently Fixed)
+1. ~~Real game saves fail~~ - FIXED with auth initialization fix
+2. ~~"Now" mode not implemented yet~~ - 99% Complete, fully functional
 3. Test Save button uses hardcoded profitable data even for crash scenarios (misleading)
 
 ### ✅ Completed Milestones

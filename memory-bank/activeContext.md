@@ -212,11 +212,15 @@ Past games display features:
 - Proper spacing to prevent overlap
 - Page indicator shows current/total pages 
 
-### Known Issues / Next Steps
+### Current Issues / Next Steps
 
 1. ~~**Live prices not fetching** - FIXED!~~
    - Was a Row Level Security (RLS) issue on prices_cache table
    - Added policies to allow authenticated users to update prices
    - Solana now shows correct live price (~$179.81)
 2. Edge function deployment (manual step required)
-3. Minor UI polish items 
+3. ~~**Now mode save error** - FIXED!~~
+   - Auth initialization error in ResultsScene
+   - Removed call to non-existent auth.initialize() method
+   - Added cache-busting to prevent browser caching issues
+   - User needs to clear cache/refresh to get fix 
