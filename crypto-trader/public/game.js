@@ -2770,6 +2770,7 @@ class NowModeSetupScene extends Phaser.Scene {
 class NowModeResultScene extends Phaser.Scene {
     constructor() {
         super({ key: 'NowModeResultScene' });
+        this.auth = new Auth();
     }
     
     init(data) {
@@ -2877,7 +2878,7 @@ class NowModeResultScene extends Phaser.Scene {
     
     async saveActiveGame() {
         try {
-            const { data: { user } } = await supabase.auth.getUser();
+            const { data: { user } } = await this.auth.supabase.auth.getUser();
             if (!user) {
                 console.error('No authenticated user');
                 return;
@@ -2888,7 +2889,7 @@ class NowModeResultScene extends Phaser.Scene {
             endsAt.setDate(endsAt.getDate() + this.durationDays);
             
             // Save to active_games table
-            const { data, error } = await supabase
+            const { data, error } = await this.auth.supabase
                 .from('active_games')
                 .insert({
                     user_id: user.id,
