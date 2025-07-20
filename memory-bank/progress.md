@@ -73,8 +73,8 @@ Past game runs are successfully saved to Supabase and displayed on the dashboard
 - Paging system for navigating many past games
 - Proper UI layout preventing overlap
 
-#### M2 - Now Mode (July 20, 2025) 🏗️
-**Status: In Progress (80% complete)**
+#### M2 - Now Mode (July 20, 2025) 🎉
+**Status: 95% Complete**
 
 **Completed:**
 - ✅ Database tables created (active_games, price_history, prices_cache)
@@ -86,14 +86,24 @@ Past game runs are successfully saved to Supabase and displayed on the dashboard
 - ✅ Active game detail view with full breakdown
 - ✅ Manual price update mechanism for testing
 - ✅ Edge function structure created
+- ✅ Performance chart visualization
+- ✅ Expiration warnings with color coding
+- ✅ CoinGecko API integration module
+- ✅ Complete deployment guide
 
-**Remaining:**
-- ⏳ Deploy edge function with cron schedule
-- ⏳ Real CoinGecko API integration
-- ⏳ Auto-completion notifications
-- ⏳ Price history charts
+**Remaining (5%):**
+- ⏳ Deploy to production
+- ⏳ Enable cron schedule
+- ⏳ Activate live API calls
 
-**Testing Guide:** See NOW_MODE_TESTING.md for complete testing instructions
+**Key Features:**
+- Line chart showing portfolio trends
+- Visual warnings for expiring games (yellow → red)
+- Ready for real-time price integration
+- Full deployment documentation
+
+**Testing Guide:** See NOW_MODE_TESTING.md
+**Deployment:** See DEPLOYMENT_GUIDE.md
 
 #### M3 - Polish Pass
 **Status: Not Started**

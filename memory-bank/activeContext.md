@@ -78,9 +78,9 @@
 
 ## Current Work
 
-### M2 - Now Mode Implementation (In Progress)
+### M2 - Now Mode Implementation (95% Complete) 🎉
 
-**Completed Today (80% done):**
+**Completed Features:**
 1. Database setup:
    - Created `active_games` table for ongoing games
    - Created `price_history` table for tracking price changes
@@ -93,24 +93,45 @@
    - Created `NowModeResultScene` to confirm game start and save to DB
    - Modified `AllocationScene` to handle Now mode with current prices
    - Updated `ScenarioSelectScene` to route to Now mode setup
-   - **NEW: Created `ActiveGameViewScene` for detailed game view**
+   - Created `ActiveGameViewScene` for detailed game view
+   - **NEW: Added performance chart visualization**
+   - **NEW: Added expiration warnings with color coding**
 
 3. Dashboard updates:
    - Added "Active Games" section above past games
    - Display active games with time remaining and performance
    - Show current value and profit/loss percentage
-   - **NEW: VIEW button now shows full game details**
+   - VIEW button shows full game details with chart
+   - **NEW: Visual warnings for expiring games**
 
 4. Price update mechanism:
-   - **NEW: Manual price update button for testing (±10% changes)**
-   - **NEW: Database functions to recalculate all game values**
-   - **NEW: Edge function structure for automated updates**
+   - Manual price update button for testing (±10% changes)
+   - Database functions to recalculate all game values
+   - Edge function structure for automated updates
+   - **NEW: CoinGecko API integration ready to enable**
 
-**Still Needed (20%):**
-1. Deploy edge function and set up cron schedule
-2. Real CoinGecko API integration
-3. Auto-completion notifications
-4. Price history charts
+5. Documentation:
+   - **NEW: Complete deployment guide (DEPLOYMENT_GUIDE.md)**
+   - **NEW: API integration module (api-integration.js)**
+
+**Still Needed (5%):**
+1. Deploy edge function to production
+2. Enable cron schedule
+3. Activate real API calls (currently commented out)
+
+### Visual Enhancements Added
+
+1. **Performance Chart**: Shows portfolio value trend over time with:
+   - Line graph visualization
+   - Start and end value labels
+   - Color-coded performance indicator
+
+2. **Expiration Warnings**:
+   - Yellow border and text when < 7 days remaining
+   - Red border and warning icon when < 3 days remaining
+   - "ENDS TODAY!" alert for final day
+
+3. **API Integration**: Ready to switch from test data to live prices
 
 ### Testing Instructions
 
