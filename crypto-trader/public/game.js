@@ -606,8 +606,10 @@ class ScenarioSelectScene extends Phaser.Scene {
             })
             .on('pointerdown', () => {
                 if (scenarioKey === 'now') {
-                    // Show coming soon message for Now mode
-                    alert('Now mode coming soon! This will let you trade with real-time prices.');
+                    // Go to Now mode setup
+                    this.scene.start('NowModeSetupScene', { 
+                        user: this.user
+                    });
                 } else {
                     this.scene.start('SimulationSpeedScene', { 
                         user: this.user,
@@ -764,6 +766,11 @@ class AllocationScene extends Phaser.Scene {
         this.allocations = {};
         this.totalAllocated = 0;
         
+        // Now mode specific data
+        this.isNowMode = data.isNowMode || false;
+        this.durationDays = data.durationDays || null;
+        this.currentPrices = null;
+        
         // Initialize all cryptos to 0
         Object.keys(GAME_CONFIG.cryptos).forEach(symbol => {
             this.allocations[symbol] = 0;
@@ -779,6 +786,11 @@ class AllocationScene extends Phaser.Scene {
             fontFamily: 'Arial Black',
             color: '#ffffff'
         }).setOrigin(0.5);
+        
+        // Fetch current prices if in Now mode
+        if (this.isNowMode) {
+            this.fetchCurrentPrices();
+        }
         
         // Money remaining - white text
         this.moneyText = this.add.text(450, 90, '', {
@@ -1017,14 +1029,61 @@ class AllocationScene extends Phaser.Scene {
             return;
         }
         
-        // Start the simulation
-        this.scene.start('SimulationScene', {
-            user: this.user,
-            allocations: this.allocations,
-            scenario: this.scenarioKey,
-            speed: this.speed,
-            simulationTime: this.simulationTime
-        });
+        if (this.isNowMode) {
+            // For Now mode, go to NowModeResultScene
+            this.scene.start('NowModeResultScene', {
+                user: this.user,
+                allocations: this.allocations,
+                durationDays: this.durationDays,
+                startingPrices: this.currentPrices || this.getDefaultPrices(),
+                totalInvested: this.totalAllocated * 1000000
+            });
+        } else {
+            // Start the simulation for historical scenarios
+            this.scene.start('SimulationScene', {
+                user: this.user,
+                allocations: this.allocations,
+                scenario: this.scenarioKey,
+                speed: this.speed,
+                simulationTime: this.simulationTime
+            });
+        }
+    }
+    
+    async fetchCurrentPrices() {
+        try {
+            // Check if we have cached prices first
+            const { data: cachedPrices, error: cacheError } = await supabase
+                .from('prices_cache')
+                .select('*');
+                
+            if (!cacheError && cachedPrices && cachedPrices.length > 0) {
+                // Convert array to object
+                this.currentPrices = {};
+                cachedPrices.forEach(row => {
+                    this.currentPrices[row.symbol] = row.price;
+                });
+                console.log('Loaded prices from cache:', this.currentPrices);
+            } else {
+                // Use default prices if no cache available
+                this.currentPrices = this.getDefaultPrices();
+                console.log('Using default prices:', this.currentPrices);
+            }
+        } catch (error) {
+            console.error('Error fetching prices:', error);
+            this.currentPrices = this.getDefaultPrices();
+        }
+    }
+    
+    getDefaultPrices() {
+        // Default current prices (can be updated with real API later)
+        return {
+            BTC: 98500,
+            ETH: 3850,
+            BNB: 725,
+            XRP: 2.40,
+            DOGE: 0.42
+        };
     }
 }
 
@@ -1525,15 +1584,30 @@ class DashboardScene extends Phaser.Scene {
                 this.scene.start('ScenarioSelectScene', { user: this.user });
             });
         
-        // Past runs header
-        this.add.text(450, 250, 'YOUR PAST GAMES', {
+        // Active games section
+        this.activeGamesY = 240;
+        this.add.text(450, this.activeGamesY, 'ACTIVE GAMES', {
+            fontSize: '24px',
+            fontFamily: 'Arial Black',
+            color: '#00ffff'
+        }).setOrigin(0.5);
+        
+        // Loading text for active games
+        this.activeGamesLoadingText = this.add.text(450, this.activeGamesY + 40, 'Loading active games...', {
+            fontSize: '16px',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
+        // Past runs header - moved down
+        this.pastGamesY = 400;
+        this.add.text(450, this.pastGamesY, 'YOUR PAST GAMES', {
             fontSize: '24px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
         }).setOrigin(0.5);
         
         // Refresh button (for testing)
-        const refreshBtn = this.add.text(750, 250, '[Refresh]', {
+        const refreshBtn = this.add.text(750, this.pastGamesY, '[Refresh]', {
             fontSize: '16px',
             color: '#00ff00'
         }).setOrigin(1, 0.5)
@@ -1546,7 +1620,7 @@ class DashboardScene extends Phaser.Scene {
         });
         
         // Loading text for past runs
-        this.loadingText = this.add.text(450, 300, 'Loading your game history...', {
+        this.loadingText = this.add.text(450, this.pastGamesY + 50, 'Loading your game history...', {
             fontSize: '16px',
             color: '#666666'
         }).setOrigin(0.5);
@@ -1597,8 +1671,116 @@ class DashboardScene extends Phaser.Scene {
             }
         });
         
-        // Load past runs
+        // Load active games and past runs
+        this.loadActiveGames();
         this.loadPastRuns();
+    }
+    
+    async loadActiveGames() {
+        try {
+            // Make sure we have a valid user
+            if (!this.user || !this.user.id) {
+                console.error('No valid user for active games');
+                return;
+            }
+            
+            console.log('Loading active games for user:', this.user.id);
+            
+            // Query active games from Supabase
+            const { data, error } = await this.auth.supabase
+                .from('active_games')
+                .select('*')
+                .eq('user_id', this.user.id)
+                .eq('is_complete', false)
+                .order('created_at', { ascending: false });
+            
+            if (error) throw error;
+            
+            console.log('Active games loaded:', data);
+            
+            this.activeGamesLoadingText.destroy();
+            
+            if (!data || data.length === 0) {
+                this.add.text(450, this.activeGamesY + 40, 'No active games. Start a new "Now" mode game!', {
+                    fontSize: '16px',
+                    color: '#666666'
+                }).setOrigin(0.5);
+                return;
+            }
+            
+            // Display active games
+            let yPos = this.activeGamesY + 60;
+            data.forEach(game => {
+                this.createActiveGameDisplay(game, yPos);
+                yPos += 60;
+            });
+            
+        } catch (error) {
+            console.error('Error loading active games:', error);
+            this.activeGamesLoadingText.setText('Error loading active games');
+        }
+    }
+    
+    createActiveGameDisplay(game, y) {
+        // Background
+        const bg = this.add.rectangle(450, y, 720, 50, 0x111111)
+            .setStrokeStyle(1, 0x00ffff)
+            .setInteractive({ useHandCursor: true });
+        
+        // Calculate days remaining
+        const now = new Date();
+        const endsAt = new Date(game.ends_at);
+        const daysRemaining = Math.ceil((endsAt - now) / (1000 * 60 * 60 * 24));
+        
+        // Calculate performance
+        const startValue = game.starting_money || 10000000;
+        const currentValue = game.current_value || startValue;
+        const profit = currentValue - startValue;
+        const profitPercent = (profit / startValue) * 100;
+        const profitColor = profit >= 0 ? '#00ff00' : '#ff0066';
+        
+        // Duration text
+        this.add.text(150, y, `${game.duration_days}-Day Challenge`, {
+            fontSize: '16px',
+            color: '#ffffff'
+        }).setOrigin(0, 0.5);
+        
+        // Time remaining
+        this.add.text(320, y, `${daysRemaining} days left`, {
+            fontSize: '16px',
+            color: '#00ffff'
+        }).setOrigin(0, 0.5);
+        
+        // Current value
+        this.add.text(480, y, `$${currentValue.toLocaleString()}`, {
+            fontSize: '16px',
+            color: '#ffffff'
+        }).setOrigin(1, 0.5);
+        
+        // Performance
+        this.add.text(580, y, `${profit >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
+            fontSize: '16px',
+            fontFamily: 'Arial Black',
+            color: profitColor
+        }).setOrigin(0, 0.5);
+        
+        // View button text
+        this.add.text(700, y, 'VIEW', {
+            fontSize: '14px',
+            color: '#00ffff'
+        }).setOrigin(0.5);
+        
+        // Click handler
+        bg.on('pointerover', () => {
+            bg.setStrokeStyle(2, 0x00ffff);
+        })
+        .on('pointerout', () => {
+            bg.setStrokeStyle(1, 0x00ffff);
+        })
+        .on('pointerdown', () => {
+            // TODO: Create ActiveGameViewScene to show details
+            alert('Active game details coming soon!');
+        });
     }
     
     async loadPastRuns() {
@@ -1627,7 +1809,7 @@ class DashboardScene extends Phaser.Scene {
             this.loadingText.destroy();
             
             if (!data || data.length === 0) {
-                this.add.text(450, 300, 'No games played yet. Start your first game!', {
+                this.add.text(450, this.pastGamesY + 50, 'No games played yet. Start your first game!', {
                     fontSize: '16px',
                     color: '#666666'
                 }).setOrigin(0.5);
@@ -1661,7 +1843,7 @@ class DashboardScene extends Phaser.Scene {
         const gamesToShow = this.allGames.slice(startIndex, endIndex);
         
         // Display games
-        let yPos = 300;
+        let yPos = this.pastGamesY + 60;
         gamesToShow.forEach((run, index) => {
             this.createPastRunDisplay(run, yPos, this.gameDisplayGroup);
             yPos += 60;
@@ -2189,13 +2371,276 @@ class DashboardScene extends Phaser.Scene {
     }
 }
 
+// Now Mode Setup Scene
+class NowModeSetupScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'NowModeSetupScene' });
+    }
+    
+    init(data) {
+        this.user = data.user;
+        this.userName = data.user?.email || data.user || 'Player';
+    }
+    
+    create() {
+        // Black background
+        this.cameras.main.setBackgroundColor('#000000');
+        
+        // Title
+        this.add.text(450, 100, 'NOW MODE', {
+            fontSize: '42px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        // Subtitle
+        this.add.text(450, 150, 'Trade with real-time crypto prices', {
+            fontSize: '20px',
+            color: '#00ffff'
+        }).setOrigin(0.5);
+        
+        // Explanation
+        const explanationText = [
+            'Start with $10M today and track your performance over time.',
+            'Your allocations are locked in once you start.',
+            'Check back anytime to see how you\'re doing!'
+        ];
+        
+        let yPos = 220;
+        explanationText.forEach(line => {
+            this.add.text(450, yPos, line, {
+                fontSize: '16px',
+                color: '#666666'
+            }).setOrigin(0.5);
+            yPos += 25;
+        });
+        
+        // Duration selection header
+        this.add.text(450, 320, 'Choose Game Duration:', {
+            fontSize: '24px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        // Duration options
+        this.createDurationButton('30 DAYS', 'One month challenge', 380, 30);
+        this.createDurationButton('60 DAYS', 'Two month challenge', 440, 60);
+        this.createDurationButton('90 DAYS', 'Three month challenge', 500, 90);
+        
+        // Back button
+        const backButton = this.add.rectangle(100, 550, 120, 40, 0x333333)
+            .setStrokeStyle(2, 0x666666)
+            .setInteractive({ useHandCursor: true });
+            
+        const backText = this.add.text(100, 550, 'BACK', {
+            fontSize: '18px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        backButton
+            .on('pointerover', () => {
+                backButton.setStrokeStyle(2, 0x00ffff);
+                backText.setColor('#00ffff');
+            })
+            .on('pointerout', () => {
+                backButton.setStrokeStyle(2, 0x666666);
+                backText.setColor('#ffffff');
+            })
+            .on('pointerdown', () => {
+                this.scene.start('ScenarioSelectScene', { user: this.user });
+            });
+    }
+    
+    createDurationButton(text, subtitle, y, days) {
+        const button = this.add.rectangle(450, y, 300, 50, 0x111111)
+            .setStrokeStyle(2, 0x333333)
+            .setInteractive({ useHandCursor: true });
+            
+        const buttonText = this.add.text(450, y - 5, text, {
+            fontSize: '20px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        const subtitleText = this.add.text(450, y + 15, subtitle, {
+            fontSize: '14px',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
+        button
+            .on('pointerover', () => {
+                button.setStrokeStyle(2, 0x00ffff);
+                buttonText.setColor('#00ffff');
+            })
+            .on('pointerout', () => {
+                button.setStrokeStyle(2, 0x333333);
+                buttonText.setColor('#ffffff');
+            })
+            .on('pointerdown', () => {
+                // Go to allocation scene with Now mode data
+                this.scene.start('AllocationScene', {
+                    user: this.user,
+                    scenario: 'now',
+                    durationDays: days,
+                    isNowMode: true
+                });
+            });
+    }
+}
+
+// Now Mode Result Scene
+class NowModeResultScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'NowModeResultScene' });
+    }
+    
+    init(data) {
+        this.user = data.user;
+        this.userName = data.user?.email || data.user || 'Player';
+        this.allocations = data.allocations;
+        this.durationDays = data.durationDays;
+        this.startingPrices = data.startingPrices;
+        this.totalInvested = data.totalInvested;
+    }
+    
+    create() {
+        // Black background
+        this.cameras.main.setBackgroundColor('#000000');
+        
+        // Title
+        this.add.text(450, 100, 'GAME STARTED!', {
+            fontSize: '42px',
+            fontFamily: 'Arial Black',
+            color: '#00ffff'
+        }).setOrigin(0.5);
+        
+        // Duration info
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + this.durationDays);
+        
+        this.add.text(450, 160, `Your ${this.durationDays}-day challenge has begun!`, {
+            fontSize: '24px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        this.add.text(450, 190, `Ends on ${endDate.toLocaleDateString()}`, {
+            fontSize: '18px',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
+        // Your allocations header
+        this.add.text(450, 250, 'Your Allocations:', {
+            fontSize: '20px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        // Show allocations
+        let yPos = 290;
+        Object.entries(this.allocations).forEach(([crypto, amount]) => {
+            if (amount > 0) {
+                const price = this.startingPrices[crypto];
+                const invested = amount * 1000000;
+                this.add.text(450, yPos, 
+                    `${crypto}: $${invested.toLocaleString()} at $${price.toLocaleString()}/coin`, 
+                    {
+                        fontSize: '16px',
+                        color: '#ffffff'
+                    }
+                ).setOrigin(0.5);
+                yPos += 25;
+            }
+        });
+        
+        // Cash remaining if any
+        const cashRemaining = 10000000 - this.totalInvested;
+        if (cashRemaining > 0) {
+            this.add.text(450, yPos, 
+                `Cash: $${cashRemaining.toLocaleString()}`, 
+                {
+                    fontSize: '16px',
+                    color: '#666666'
+                }
+            ).setOrigin(0.5);
+        }
+        
+        // Instructions
+        this.add.text(450, 420, 'Check your dashboard anytime to track performance!', {
+            fontSize: '18px',
+            color: '#00ffff'
+        }).setOrigin(0.5);
+        
+        // Dashboard button
+        const dashboardBtn = this.add.rectangle(450, 480, 250, 50, 0x00ffff)
+            .setInteractive({ useHandCursor: true });
+            
+        const dashboardText = this.add.text(450, 480, 'GO TO DASHBOARD', {
+            fontSize: '20px',
+            fontFamily: 'Arial Black',
+            color: '#000000'
+        }).setOrigin(0.5);
+        
+        dashboardBtn
+            .on('pointerover', () => {
+                dashboardBtn.setFillStyle(0x00cccc);
+            })
+            .on('pointerout', () => {
+                dashboardBtn.setFillStyle(0x00ffff);
+            })
+            .on('pointerdown', () => {
+                this.scene.start('DashboardScene', { user: this.user });
+            });
+        
+        // Save the game after a short delay
+        this.time.delayedCall(500, () => {
+            this.saveActiveGame();
+        });
+    }
+    
+    async saveActiveGame() {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                console.error('No authenticated user');
+                return;
+            }
+            
+            // Calculate ends_at
+            const endsAt = new Date();
+            endsAt.setDate(endsAt.getDate() + this.durationDays);
+            
+            // Save to active_games table
+            const { data, error } = await supabase
+                .from('active_games')
+                .insert({
+                    user_id: user.id,
+                    duration_days: this.durationDays,
+                    ends_at: endsAt.toISOString(),
+                    allocations: this.allocations,
+                    starting_prices: this.startingPrices,
+                    starting_money: GAME_CONFIG.startingMoney,
+                    current_prices: this.startingPrices,
+                    current_value: GAME_CONFIG.startingMoney,
+                    last_updated: new Date().toISOString()
+                });
+                
+            if (error) {
+                console.error('Error saving active game:', error);
+            } else {
+                console.log('Active game saved successfully');
+            }
+        } catch (error) {
+            console.error('Error in saveActiveGame:', error);
+        }
+    }
+}
+
 // Game configuration
 const config = {
     type: Phaser.AUTO,
     parent: 'game-container',
     width: 900,
     height: 600,
-    scene: [LoginScene, DashboardScene, ScenarioSelectScene, SimulationSpeedScene, AllocationScene, SimulationScene, ResultsScene],
+    scene: [LoginScene, DashboardScene, ScenarioSelectScene, SimulationSpeedScene, AllocationScene, SimulationScene, ResultsScene, NowModeSetupScene, NowModeResultScene],
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
