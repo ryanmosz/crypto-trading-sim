@@ -58,6 +58,11 @@
     - Up arrow (x=420), page text (x=450), down arrow (x=480)
     - Positioned just 5px below last game
     - Ensures everything fits within 600px canvas height
+15. Fixed paging controls overlap:
+    - Page text centered at x=450
+    - Up arrow at x=350 (100px spacing)
+    - Down arrow at x=550 (100px spacing)
+    - No more arrows overlapping with page text
 
 ## Game Saving Issue
 - Test save works but real games don't save
