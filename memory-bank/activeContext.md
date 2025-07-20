@@ -36,6 +36,10 @@
    - Smaller fonts: 15px values, 13px percentages
 9. Final centering fix: content spans x=260 to x=635 (375px wide, centered in 600px modal)
    - Added 90px spacing between label and value to prevent "TOTAL:" overlap
+10. Improved past games list display:
+    - Shows full scenario context (e.g. "2013 - Bitcoin's First Bull Run")
+    - Handles legacy data that saved displayName instead of scenario_key
+    - Adjusted column positioning for longer scenario text
 
 ## Game Saving Issue
 - Test save works but real games don't save
