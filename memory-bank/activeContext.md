@@ -1,21 +1,27 @@
 # Active Context
 
-## Current Sprint: M2 - Now Mode
-- **Status**: Planning phase
-- **Blocker**: Historical games not saving properly (need to debug)
-- **Focus**: Design two-game-type system with separate data models
+## Current Sprint:
+   - [x] Fixed authentication flow for game saving
+   - [x] Added test user login buttons
+   - [x] Fixed game saving to match database schema
+   - [x] Fixed bug where clicking past games started new game instead of showing details
+   - [x] Improved past game details modal layout to prevent text overlap
+   - [x] Fixed dashboard past games list to prevent date/percentage overlap
+   - [x] Split game details modal into main and details pages for better layout
+   - [ ] Debug and fix save functionality for real game simulations
+   - [ ] Implement "Now" mode with real-time prices
 
-## Immediate Tasks
-1. Fix save bug in historical games
-2. Create new database tables for "Now" mode
-3. Implement dual game type system
+## Immediate Tasks:
+   - Fix the current save bug for real game simulations
+   - Continue implementing "Now" mode functionality
+   - Polish UI and error handling
 
 ## Recent Decisions
-- Use separate tables for different game types:
-  - `past_runs`: Historical completed games
-  - `active_games`: Ongoing "Now" mode games
-- Keep existing game flow for historical, create new flow for "Now"
-- Test login buttons: adam@test.com and beth@test.com (password: test12)
+
+1. Added modal overlay to show past game details instead of starting new game on click
+2. Dynamically adjust modal height based on content to prevent overlap
+3. Split game details into two pages (main + details) to handle space constraints
+4. Fixed dashboard layout spacing to prevent overlapping text between profit percentage and dates
 
 ## Game Saving Issue
 - Test save works but real games don't save

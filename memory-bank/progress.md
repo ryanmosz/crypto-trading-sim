@@ -1,6 +1,22 @@
 # Progress Tracker
 
-## Current Status: M0 Complete, Starting M1! 🚀
+## Overall Status
+Phase 1 (Historical trading) is ~85% complete with core gameplay functional but save system needs fixes.
+
+## What Works
+- Complete authentication flow (login/signup)
+- Dashboard displays past games correctly
+- Past game details modal with two-page layout (main + details)
+- Historical scenario gameplay (all 3 scenarios)
+- Portfolio allocation system
+- Real-time price simulation
+- Results calculation and display
+- Test game saves work (via Test Save button)
+- UI layout improvements prevent text overlap
+
+## Current Issues
+1. Real game saves fail (not using Test Save button)
+2. "Now" mode not implemented yet
 
 ### ✅ Completed Milestones
 
