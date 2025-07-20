@@ -766,6 +766,7 @@ class AllocationScene extends Phaser.Scene {
         this.isNowMode = data.isNowMode || false;
         this.durationDays = data.durationDays || null;
         this.currentPrices = null;
+        this.isMultiplayer = data.isMultiplayer || false;
         
         // Multiplayer game data
         this.multiplayerGame = data.multiplayerGame || null;
@@ -1111,7 +1112,8 @@ class AllocationScene extends Phaser.Scene {
                 startingPrices: prices,
                 totalInvested: this.totalAllocated * 1000000,
                 isJoiningMultiplayer: this.isJoiningMultiplayer,
-                multiplayerGame: this.multiplayerGame
+                multiplayerGame: this.multiplayerGame,
+                isMultiplayer: this.isMultiplayer
             });
         } else {
             // Start the simulation for historical scenarios
@@ -2839,16 +2841,43 @@ class NowModeSetupScene extends Phaser.Scene {
             yPos += 25;
         });
         
+        // Multiplayer toggle
+        this.isMultiplayer = false;
+        
+        const multiplayerToggle = this.add.rectangle(450, 310, 300, 40, 0x111111)
+            .setStrokeStyle(2, 0x333333)
+            .setInteractive({ useHandCursor: true });
+            
+        this.multiplayerText = this.add.text(450, 310, '🎮 ENABLE MULTIPLAYER', {
+            fontSize: '18px',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
+        multiplayerToggle.on('pointerdown', () => {
+            this.isMultiplayer = !this.isMultiplayer;
+            if (this.isMultiplayer) {
+                multiplayerToggle.setFillStyle(0x00ff00);
+                multiplayerToggle.setStrokeStyle(2, 0x00ff00);
+                this.multiplayerText.setText('🎮 MULTIPLAYER ENABLED');
+                this.multiplayerText.setColor('#000000');
+            } else {
+                multiplayerToggle.setFillStyle(0x111111);
+                multiplayerToggle.setStrokeStyle(2, 0x333333);
+                this.multiplayerText.setText('🎮 ENABLE MULTIPLAYER');
+                this.multiplayerText.setColor('#666666');
+            }
+        });
+        
         // Duration selection header
-        this.add.text(450, 320, 'Choose Game Duration:', {
+        this.add.text(450, 360, 'Choose Game Duration:', {
             fontSize: '24px',
             color: '#ffffff'
         }).setOrigin(0.5);
         
         // Duration options
-        this.createDurationButton('30 DAYS', 'One month challenge', 380, 30);
-        this.createDurationButton('60 DAYS', 'Two month challenge', 440, 60);
-        this.createDurationButton('90 DAYS', 'Three month challenge', 500, 90);
+        this.createDurationButton('30 DAYS', 'One month challenge', 420, 30);
+        this.createDurationButton('60 DAYS', 'Two month challenge', 480, 60);
+        this.createDurationButton('90 DAYS', 'Three month challenge', 540, 90);
         
         // Back button
         const backButton = this.add.rectangle(100, 550, 120, 40, 0x333333)
@@ -2906,7 +2935,8 @@ class NowModeSetupScene extends Phaser.Scene {
                     user: this.user,
                     scenario: 'now',
                     durationDays: days,
-                    isNowMode: true
+                    isNowMode: true,
+                    isMultiplayer: this.isMultiplayer
                 });
             });
     }
@@ -2928,6 +2958,7 @@ class NowModeResultScene extends Phaser.Scene {
         this.totalInvested = data.totalInvested;
         this.isJoiningMultiplayer = data.isJoiningMultiplayer || false;
         this.multiplayerGame = data.multiplayerGame || null;
+        this.isMultiplayer = data.isMultiplayer || false;
     }
     
     create() {
@@ -3074,7 +3105,7 @@ class NowModeResultScene extends Phaser.Scene {
                 endsAt.setDate(endsAt.getDate() + this.durationDays);
                 
                 // Save to active_games table
-                const { data, error } = await this.auth.supabase
+                const { data: gameData, error } = await this.auth.supabase
                     .from('active_games')
                     .insert({
                         user_id: user.id,
@@ -3085,13 +3116,35 @@ class NowModeResultScene extends Phaser.Scene {
                         starting_money: GAME_CONFIG.startingMoney,
                         current_prices: this.startingPrices,
                         current_value: GAME_CONFIG.startingMoney,
-                        last_updated: new Date().toISOString()
-                    });
+                        last_updated: new Date().toISOString(),
+                        is_multiplayer: this.isMultiplayer,
+                        participant_count: 1
+                    })
+                    .select()
+                    .single();
                     
                 if (error) {
                     console.error('Error saving active game:', error);
                 } else {
-                    console.log('Active game saved successfully');
+                    console.log('Active game saved successfully', gameData);
+                    
+                    // If multiplayer, also add creator to game_participants
+                    if (this.isMultiplayer && gameData) {
+                        const { error: participantError } = await this.auth.supabase
+                            .from('game_participants')
+                            .insert({
+                                game_id: gameData.id,
+                                user_id: user.id,
+                                allocations: this.allocations,
+                                starting_value: 10000000,
+                                current_value: 10000000,
+                                is_original_creator: true
+                            });
+                            
+                        if (participantError) {
+                            console.error('Error adding creator to participants:', participantError);
+                        }
+                    }
                 }
             }
         } catch (error) {
