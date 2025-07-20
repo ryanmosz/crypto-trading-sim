@@ -82,6 +82,8 @@
     <div class="container">
         <h1>🧪 CoinGecko API Test</h1>
         
+        <div id="api-key-status" style="text-align: center; margin: 20px 0; padding: 15px; border-radius: 5px;"></div>
+        
         <div class="test-section">
             <h2>Test without API Key (Demo API)</h2>
             <button onclick="testWithoutKey()">Test Demo API</button>
@@ -102,8 +104,30 @@
         </div>
     </div>
 
+    <script src="../env.js"></script>
     <script src="./api-integration.js"></script>
     <script>
+        // Check for API key on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            const statusDiv = document.getElementById('api-key-status');
+            const apiKeyInput = document.getElementById('api-key');
+            
+            if (window.ENV && window.ENV.COINGECKO_API_KEY) {
+                statusDiv.style.background = '#d4edda';
+                statusDiv.style.color = '#155724';
+                statusDiv.innerHTML = `✅ <strong>API Key Detected!</strong> Found in env.js: ${window.ENV.COINGECKO_API_KEY.substring(0, 10)}...`;
+                
+                // Pre-fill the API key input
+                if (apiKeyInput) {
+                    apiKeyInput.value = window.ENV.COINGECKO_API_KEY;
+                }
+            } else {
+                statusDiv.style.background = '#f8d7da';
+                statusDiv.style.color = '#721c24';
+                statusDiv.innerHTML = '❌ <strong>No API Key Found</strong> - Add COINGECKO_API_KEY to env.js';
+            }
+        });
+        
         const CRYPTO_MAP = {
             BTC: 'bitcoin',
             ETH: 'ethereum',

@@ -3,6 +3,9 @@
 
 const COINGECKO_API_URL = 'https://api.coingecko.com/api/v3';
 
+// Get API key from ENV if available
+const COINGECKO_API_KEY = window.ENV?.COINGECKO_API_KEY || null;
+
 // Mapping of our symbols to CoinGecko IDs
 const CRYPTO_ID_MAP = {
     BTC: 'bitcoin',
@@ -18,7 +21,14 @@ async function fetchCurrentPrices() {
         const ids = Object.values(CRYPTO_ID_MAP).join(',');
         const url = `${COINGECKO_API_URL}/simple/price?ids=${ids}&vs_currencies=usd`;
         
-        const response = await fetch(url);
+        const options = {};
+        if (COINGECKO_API_KEY) {
+            options.headers = {
+                'x-cg-demo-api-key': COINGECKO_API_KEY
+            };
+        }
+        
+        const response = await fetch(url, options);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -81,7 +91,14 @@ async function get24hPriceChange() {
         const ids = Object.values(CRYPTO_ID_MAP).join(',');
         const url = `${COINGECKO_API_URL}/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`;
         
-        const response = await fetch(url);
+        const options = {};
+        if (COINGECKO_API_KEY) {
+            options.headers = {
+                'x-cg-demo-api-key': COINGECKO_API_KEY
+            };
+        }
+        
+        const response = await fetch(url, options);
         const data = await response.json();
         
         const changes = {};
