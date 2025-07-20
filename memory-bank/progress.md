@@ -73,37 +73,39 @@ Past game runs are successfully saved to Supabase and displayed on the dashboard
 - Paging system for navigating many past games
 - Proper UI layout preventing overlap
 
-#### M2 - Now Mode (July 20, 2025) 🎉
-**Status: 95% Complete**
+#### M2 - Now Mode (July 20, 2025) 🚀
+**Status: 97% Complete**
 
 **Completed:**
 - ✅ Database tables created (active_games, price_history, prices_cache)
-- ✅ Database functions for updating values and completing games
-- ✅ Now mode setup scene with duration selection
-- ✅ Allocation scene modified to handle current prices
-- ✅ Now mode result scene saves games to database
-- ✅ Dashboard shows active games with performance
-- ✅ Active game detail view with full breakdown
-- ✅ Manual price update mechanism for testing
-- ✅ Edge function structure created
+- ✅ Database functions with security fixes
+- ✅ Now mode complete game flow
+- ✅ Dashboard shows active games with urgency indicators
+- ✅ Active game detail view with allocations
 - ✅ Performance chart visualization
-- ✅ Expiration warnings with color coding
-- ✅ CoinGecko API integration module
-- ✅ Complete deployment guide
+- ✅ Expiration warnings (yellow/red)
+- ✅ Manual price update mechanism
+- ✅ Complete edge function with CoinGecko integration
+- ✅ Leaderboard with competitive rankings
+- ✅ Configuration system (config.js)
+- ✅ API integration module
+- ✅ Feature flags for easy control
+- ✅ Deployment guide
 
-**Remaining (5%):**
-- ⏳ Deploy to production
+**Latest Features:**
+- 🏆 Leaderboard with medals for top 3
+- 📊 Win rate and average profit tracking
+- 🔧 Centralized configuration
+- 🌐 API integration ready to activate
+- 📈 Comprehensive edge function
+
+**Remaining (3%):**
+- ⏳ Add API key and deploy edge function
 - ⏳ Enable cron schedule
-- ⏳ Activate live API calls
+- ⏳ Go live!
 
-**Key Features:**
-- Line chart showing portfolio trends
-- Visual warnings for expiring games (yellow → red)
-- Ready for real-time price integration
-- Full deployment documentation
-
-**Testing Guide:** See NOW_MODE_TESTING.md
-**Deployment:** See DEPLOYMENT_GUIDE.md
+**Testing:** NOW_MODE_TESTING.md
+**Deploy:** DEPLOYMENT_GUIDE.md
 
 #### M3 - Polish Pass
 **Status: Not Started**

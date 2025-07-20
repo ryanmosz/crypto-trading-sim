@@ -78,46 +78,72 @@
 
 ## Current Work
 
-### M2 - Now Mode Implementation (95% Complete) 🎉
+### M2 - Now Mode Implementation (97% Complete) 🚀
 
-**Completed Features:**
-1. Database setup:
-   - Created `active_games` table for ongoing games
-   - Created `price_history` table for tracking price changes
-   - Created `prices_cache` table for current crypto prices
-   - Set up proper RLS policies
-   - Added functions: `update_active_game_values()` and `complete_expired_games()`
+**Latest Additions:**
+1. **Complete Edge Function** ✅
+   - Full CoinGecko API integration
+   - Automatic fallback to test data
+   - Price history management
+   - Old data cleanup
+   - Comprehensive error handling
 
-2. Frontend implementation:
-   - Created `NowModeSetupScene` for duration selection (30/60/90 days)
-   - Created `NowModeResultScene` to confirm game start and save to DB
-   - Modified `AllocationScene` to handle Now mode with current prices
-   - Updated `ScenarioSelectScene` to route to Now mode setup
-   - Created `ActiveGameViewScene` for detailed game view
-   - **NEW: Added performance chart visualization**
-   - **NEW: Added expiration warnings with color coding**
+2. **Configuration System** ✅
+   - `config.js` - Production configuration
+   - `config.example.js` - Template for users
+   - Feature flags for easy control
+   - API settings centralized
 
-3. Dashboard updates:
-   - Added "Active Games" section above past games
-   - Display active games with time remaining and performance
-   - Show current value and profit/loss percentage
-   - VIEW button shows full game details with chart
-   - **NEW: Visual warnings for expiring games**
+3. **Leaderboard Feature** ✅
+   - Competitive ranking system
+   - Top 10 display with medals (🥇🥈🥉)
+   - Performance metrics (win rate, avg profit)
+   - Shows user's position even if not in top 10
+   - Beautiful UI with color-coded performance
 
-4. Price update mechanism:
-   - Manual price update button for testing (±10% changes)
-   - Database functions to recalculate all game values
-   - Edge function structure for automated updates
-   - **NEW: CoinGecko API integration ready to enable**
+4. **API Integration** ✅
+   - `api-integration.js` module created
+   - CoinGecko price fetching ready
+   - 24h price change support
+   - Rate limiting considered
 
-5. Documentation:
-   - **NEW: Complete deployment guide (DEPLOYMENT_GUIDE.md)**
-   - **NEW: API integration module (api-integration.js)**
+**Complete Feature List:**
+- ✅ Database tables (active_games, price_history, prices_cache)
+- ✅ SQL functions with security fixes
+- ✅ Now mode game flow (setup → allocation → tracking)
+- ✅ Dashboard with active games section
+- ✅ Detailed game view with performance charts
+- ✅ Manual price updates for testing
+- ✅ Expiration warnings (visual indicators)
+- ✅ Edge function ready for deployment
+- ✅ Leaderboard view with competitive stats
+- ✅ Configuration management
+- ✅ API integration module
 
-**Still Needed (5%):**
-1. Deploy edge function to production
-2. Enable cron schedule
-3. Activate real API calls (currently commented out)
+**Remaining (3%):**
+1. Add CoinGecko API key to edge function
+2. Deploy edge function: `supabase functions deploy`
+3. Set up cron job in Supabase dashboard
+
+### What You Need (CoinGecko API)
+
+Get your free API key:
+1. Visit https://www.coingecko.com/en/api
+2. Sign up for free account
+3. Get your API key
+4. Set in Supabase: `supabase secrets set COINGECKO_API_KEY=your-key`
+
+### Current State
+
+The game is now **feature-complete** with:
+- Historical trading scenarios ✅
+- Real-time "Now" mode ✅
+- Competitive leaderboard ✅
+- Performance tracking ✅
+- Beautiful UI with charts ✅
+- Production-ready code ✅
+
+Only deployment steps remain!
 
 ### Visual Enhancements Added
 
