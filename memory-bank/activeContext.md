@@ -90,6 +90,13 @@
 - Runs at the top of every hour
 - Will activate once edge function is deployed
 
+**UI Improvements!** ✅
+- Dashboard redesigned with tab system
+- Fixed centering of NEW GAME, ACTIVE, PAST tabs
+- Fixed paging controls on Past tab
+- Fixed leaderboard column overlap
+- Now mode allocation scene errors fixed
+
 **Complete Feature List:**
 - ✅ Historical trading scenarios
 - ✅ Real-time "Now" mode 
@@ -102,6 +109,8 @@
 - ✅ API integration working
 - ✅ Cron job scheduled
 - ✅ All documentation complete
+- ✅ Tab-based dashboard UI
+- ✅ Now mode allocation fixed
 
 **Final 1% - Deploy Edge Function:**
 ```bash
@@ -115,10 +124,10 @@ See `FINAL_TESTING_CHECKLIST.md` for comprehensive testing guide.
 
 ### Project Status
 
-The Crypto Trading Simulator is now **99% complete** with the cron job active and waiting for the edge function deployment. Once deployed, the project will be at 100% with real-time price updates running automatically every hour.
+The Crypto Trading Simulator is now **99% complete** with all UI issues fixed and Now mode working properly. Only edge function deployment remains for automated price updates.
 
 Total development time: ~2 days
-Lines of code: 3,300+ in game.js alone
+Lines of code: 3,400+ in game.js alone
 Features implemented: 20+
 
 ### Visual Enhancements Added
