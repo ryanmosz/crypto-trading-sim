@@ -1,109 +1,106 @@
 # Progress Tracker
 
-## Current Status: Phaser Implementation Working! 🎮
+## Current Status: M0 Complete, Starting M1! 🚀
 
-### What's Complete
-✅ Full game flow (Login → Scenario → Speed → Allocation → Simulation → Results)
-✅ Multiple historical scenarios (2020 crash, 2021 FUD, 2013 bull run)
-✅ Modular scenario system with flexible timeframes
-✅ Simulation speed selection (Regular/Double)
-✅ "Now" scenario placeholder with "Coming Soon" message
-✅ Back button navigation throughout
-✅ Money change animations (cyan/pink flashes)
-✅ Clean, minimal UI without text overlaps
-✅ Historical accuracy (unavailable cryptos grayed out)
-✅ Complete transition from Unity to Phaser
-✅ GitHub repository fully updated
-✅ Comprehensive two-mode vision documented
-✅ GitHub Pages deployment configured with CI/CD
+### ✅ Completed Milestones
 
-### Recent Additions
-- **Deployment Infrastructure**: GitHub Actions workflow for automatic deployment
-- **Deployment Documentation**: Comprehensive guide for multiple platforms
-- **Local Testing Script**: Easy way to test deployment locally
+#### M0 - Auth + Backend Infrastructure (July 19, 2025)
+- **Supabase Project**: Created and fully configured
+- **Authentication**: auth.js module with signUp/signIn/signOut
+- **Database Schema**: All tables created with RLS policies
+  - profiles (user profiles)
+  - past_runs (game history)
+  - now_entries (live mode allocations)
+  - now_snapshots (portfolio tracking)
+  - price_cache (30 cryptocurrencies)
+- **Price Updates**: Edge function fetching from CoinGecko
+- **Cron Schedule**: Updates every 5 minutes automatically
+- **MCP Tools**: Connected and working for programmatic management
+- **Test Page**: Authentication flows verified at test-auth.html
 
-#### Planning & Documentation
-- [x] Master phases document (PHASES.md - central planning doc)
-- [x] Phase-specific implementation guides (5 phases)
-- [x] Bare minimum plan (2-hour ship option)
-- [x] Consolidated setup guide (Unity + Docker)
-- [x] Test user approach (Alice & Bob - both start with $10M)
-- [x] Streamlined structure (11 focused files after reorganization)
+#### Game Implementation (Phaser.js)
+- **Complete Game Flow**: Login → Scenario → Speed → Allocation → Simulation → Results
+- **Historical Scenarios**: 
+  - March 12, 2020 (COVID crash) - 24 hours
+  - May 19, 2021 (China FUD) - 24 hours
+  - 2013 (Bitcoin's first bull run) - Full year
+  - "Now" (placeholder for future real-time mode)
+- **UI Features**:
+  - Consistent hover effects (border + text color change)
+  - Money change animations (cyan for gains, pink for losses)
+  - Clean black background with white text
+  - Back navigation throughout
+  - Historical accuracy (unavailable cryptos grayed out)
+- **Deployment**: GitHub Pages with CI/CD pipeline
 
-#### Infrastructure
-- [x] Project folder structure
-- [x] Git configuration (.gitignore, .editorconfig)
-- [x] Docker setup (Dockerfile, docker-compose.yml)
-- [x] Build automation (build.sh)
-- [x] Memory bank initialized
+### 🚧 Currently Working On: M1 - Persist Past Runs
 
-### 🚧 In Progress
-
-#### Milestone 0: Login Screen with Test Users
-- [x] Unity Hub installation ✅
-- [x] Unity 2022.3.62f1 LTS with WebGL ✅
-- [x] Unity project creation ✅
-- [x] All scripts prepared (UserManager, LoginManager, etc.) ✅
-- [x] Automated scene builders created ✅
-- [ ] Scenes built in Unity (using AutoSceneBuilder)
-- [ ] Test in Unity Editor
-- [ ] First WebGL build
+#### Today's Tasks
+- [ ] Replace fake users (Alice/Bob) with real auth
+- [ ] Add email/password login to game UI
+- [ ] Save game results to past_runs table
+- [ ] Create dashboard scene showing user history
+- [ ] Handle auth state persistence
 
 ### 📅 Upcoming Milestones
 
-#### Day 1: Foundation & Navigation
-- [ ] Milestone 0: Login screen with test users (2 hours) ⭐ BARE MINIMUM
-- [ ] Milestone 1: All 4 screens with navigation (2 hours)
+#### M2 - Now Mode (Global Leaderboard)
+- Allocate-Now screen for live trading
+- Insert entries with current prices
+- Cron job calculating portfolio values
+- Global leaderboard showing top 100
 
-#### Day 2: Allocation System
-- [ ] Milestone 2: Working 100-point distribution (4 hours)
+#### M3 - Polish Pass
+- Loading states throughout
+- Error handling and toasts
+- Performance optimizations
+- Final deployment tweaks
 
-#### Day 3: Live Dashboard
-- [ ] Milestone 3: Mock data with animations (4 hours)
+## Technical Stack
 
-#### Day 4: API Integration
-- [ ] Milestone 4: Real CoinGecko prices (4 hours)
+### Frontend
+- **Game Engine**: Phaser 3.90.0
+- **Auth**: Supabase JS Client
+- **Hosting**: GitHub Pages
+- **Build**: GitHub Actions
 
-#### Day 5: Backend
-- [ ] Milestone 5: Vercel API deployment (6 hours)
+### Backend
+- **Database**: Supabase (PostgreSQL)
+- **Auth**: Supabase Auth
+- **Functions**: Edge Functions (Deno)
+- **Scheduling**: pg_cron
+- **API**: CoinGecko for prices
 
-#### Day 6: Multiplayer
-- [ ] Milestone 6: Leaderboard system (4 hours)
-
-#### Day 7: Polish
-- [ ] Milestone 7: Production ready (4 hours)
-
-## Current Blockers
-
-None - Ready to begin development
-
-## Known Issues
-
-None yet - Project in planning phase
+## Live Price Data
+Currently tracking 30 cryptocurrencies:
+- BTC: $118,020
+- ETH: $3,656.66
+- BNB: $742.15
+- SOL: $178.03
+- XRP: $3.42
+- And 25 more...
 
 ## Metrics
 
-### Planning Phase
-- Planning Documents: 11/11 ✅ (including bare minimum plan)
-- Infrastructure Files: 6/6 ✅
-- Memory Bank Files: 7/7 ✅
-- Test User System: Designed ✅
-- Total Files Created: 24+
+### Development Progress
+- Milestones Complete: 1/4 (M0 ✅)
+- Database Tables: 5/5 ✅
+- Edge Functions: 1/1 ✅
+- Auth Integration: Backend ✅, Frontend ⏳
+- Game Scenes: 6/7 (missing Dashboard)
 
-### Development Phase
-- Milestones Complete: 0/8
-- Screens Built: 0/4
-- API Endpoints: 0/4
-- Test Coverage: 0%
+### Code Stats
+- Main game file: ~1,200 lines
+- Auth module: ~130 lines
+- SQL migrations: ~200 lines
+- Edge function: ~50 lines
 
 ## Next Critical Path
 
-1. Install Unity Hub
-2. Download Unity 2022.3 LTS with WebGL
-3. Create new 2D Unity project
-4. Build login screen with Alice ($10M→$12M) and Bob ($10M→$8M) buttons
-5. Implement simple UserManager for state
-6. Add main screen showing current user
-7. Build to WebGL and test user switching
+1. **Import auth.js into game.js**
+2. **Replace LoginScene buttons with auth form**
+3. **Add savePastRun() to ResultsScene**
+4. **Create new DashboardScene**
+5. **Update navigation flow**
 
-Time estimate: 2 hours for Milestone 0 (Bare Minimum Ship) 
+**Time estimate**: 5-6 hours for M1 completion 
