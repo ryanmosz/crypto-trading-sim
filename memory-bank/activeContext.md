@@ -8,6 +8,7 @@
    - [x] Improved past game details modal layout to prevent text overlap
    - [x] Fixed dashboard past games list to prevent date/percentage overlap
    - [x] Split game details modal into main and details pages for better layout
+   - [x] Enhanced details view to show investment performance (initial → final values)
    - [ ] Debug and fix save functionality for real game simulations
    - [ ] Implement "Now" mode with real-time prices
 
