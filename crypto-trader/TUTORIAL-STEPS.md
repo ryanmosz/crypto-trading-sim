@@ -1,5 +1,7 @@
 # Crypto Trader Simulator - Tutorial Steps Documentation
 
+**DEBUG MODE ENABLED**: Tutorial will run every time you log in for testing purposes.
+
 This file lists all tutorial steps (Tour of App) with their current positions and text. Use this to review and adjust positioning.
 
 ## Overview
