@@ -273,27 +273,29 @@ class LoginScene extends Phaser.Scene {
     createUserButton(name, desc, y, callback) {
         const button = this.add.rectangle(450, y, 400, 80, 0x000000, 1)
             .setStrokeStyle(2, 0x666666)
-            .setInteractive({ useHandCursor: true })
-            .on('pointerover', () => {
-                button.setStrokeStyle(3, 0x00ffff);
-                button.setScale(1.05);
-            })
-            .on('pointerout', () => {
-                button.setStrokeStyle(2, 0x666666);
-                button.setScale(1);
-            })
-            .on('pointerdown', callback);
+            .setInteractive({ useHandCursor: true });
             
-        this.add.text(450, y - 10, name, {
+        const nameText = this.add.text(450, y - 10, name, {
             fontSize: '28px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
         }).setOrigin(0.5);
         
-        this.add.text(450, y + 15, desc, {
+        const descText = this.add.text(450, y + 15, desc, {
             fontSize: '16px',
             color: '#999999'
         }).setOrigin(0.5);
+        
+        button
+            .on('pointerover', () => {
+                button.setStrokeStyle(2, 0x00ffff);
+                nameText.setColor('#00ffff');
+            })
+            .on('pointerout', () => {
+                button.setStrokeStyle(2, 0x666666);
+                nameText.setColor('#ffffff');
+            })
+            .on('pointerdown', callback);
     }
 }
 
@@ -359,16 +361,24 @@ class ScenarioSelectScene extends Phaser.Scene {
         // Back button
         const backButton = this.add.rectangle(100, 550, 120, 40, 0x333333)
             .setStrokeStyle(2, 0x666666)
-            .setInteractive({ useHandCursor: true })
-            .on('pointerover', () => backButton.setFillStyle(0x444444))
-            .on('pointerout', () => backButton.setFillStyle(0x333333))
-            .on('pointerdown', () => this.scene.start('LoginScene'));
+            .setInteractive({ useHandCursor: true });
             
-        this.add.text(100, 550, 'BACK', {
+        const backText = this.add.text(100, 550, 'BACK', {
             fontSize: '18px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
         }).setOrigin(0.5);
+        
+        backButton
+            .on('pointerover', () => {
+                backButton.setStrokeStyle(2, 0x00ffff);
+                backText.setColor('#00ffff');
+            })
+            .on('pointerout', () => {
+                backButton.setStrokeStyle(2, 0x666666);
+                backText.setColor('#ffffff');
+            })
+            .on('pointerdown', () => this.scene.start('LoginScene'));
     }
     
     createScenarioButton(dateText, subtitleText, y, scenarioKey) {
@@ -467,16 +477,24 @@ class SimulationSpeedScene extends Phaser.Scene {
         // Back button
         const backButton = this.add.rectangle(100, 550, 120, 40, 0x333333)
             .setStrokeStyle(2, 0x666666)
-            .setInteractive({ useHandCursor: true })
-            .on('pointerover', () => backButton.setFillStyle(0x444444))
-            .on('pointerout', () => backButton.setFillStyle(0x333333))
-            .on('pointerdown', () => this.scene.start('ScenarioSelectScene', { user: this.userName }));
+            .setInteractive({ useHandCursor: true });
             
-        this.add.text(100, 550, 'BACK', {
+        const backText = this.add.text(100, 550, 'BACK', {
             fontSize: '18px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
         }).setOrigin(0.5);
+        
+        backButton
+            .on('pointerover', () => {
+                backButton.setStrokeStyle(2, 0x00ffff);
+                backText.setColor('#00ffff');
+            })
+            .on('pointerout', () => {
+                backButton.setStrokeStyle(2, 0x666666);
+                backText.setColor('#ffffff');
+            })
+            .on('pointerdown', () => this.scene.start('ScenarioSelectScene', { user: this.userName }));
     }
     
     createSpeedButton(speedKey, speedConfig, y) {
@@ -595,16 +613,24 @@ class AllocationScene extends Phaser.Scene {
         // Back button
         const backButton = this.add.rectangle(100, 550, 120, 40, 0x333333)
             .setStrokeStyle(2, 0x666666)
-            .setInteractive({ useHandCursor: true })
-            .on('pointerover', () => backButton.setFillStyle(0x444444))
-            .on('pointerout', () => backButton.setFillStyle(0x333333))
-            .on('pointerdown', () => this.scene.start('ScenarioSelectScene', { user: this.userName }));
+            .setInteractive({ useHandCursor: true });
             
-        this.add.text(100, 550, 'BACK', {
+        const backText = this.add.text(100, 550, 'BACK', {
             fontSize: '18px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
         }).setOrigin(0.5);
+        
+        backButton
+            .on('pointerover', () => {
+                backButton.setStrokeStyle(2, 0x00ffff);
+                backText.setColor('#00ffff');
+            })
+            .on('pointerout', () => {
+                backButton.setStrokeStyle(2, 0x666666);
+                backText.setColor('#ffffff');
+            })
+            .on('pointerdown', () => this.scene.start('ScenarioSelectScene', { user: this.userName }));
     }
     
     createCryptoRow(symbol, crypto, y) {
@@ -856,7 +882,7 @@ class SimulationScene extends Phaser.Scene {
             color: '#666666'
         }).setOrigin(1, 0.5)
         .setInteractive({ useHandCursor: true })
-        .on('pointerover', function() { this.setColor('#ffffff'); })
+        .on('pointerover', function() { this.setColor('#00ffff'); })
         .on('pointerout', function() { this.setColor('#666666'); })
         .on('pointerdown', () => this.showResults());
         
@@ -1094,34 +1120,50 @@ class ResultsScene extends Phaser.Scene {
         
         // Play again button - cyan accent
         const playAgainBtn = this.add.rectangle(350, 500, 180, 50, 0x000000, 1)
-            .setStrokeStyle(2, 0x00ffff)
-            .setInteractive({ useHandCursor: true })
-            .on('pointerover', () => playAgainBtn.setFillStyle(0x00ffff, 0.2))
-            .on('pointerout', () => playAgainBtn.setFillStyle(0x000000, 1))
-            .on('pointerdown', () => this.scene.start('ScenarioSelectScene', { user: this.userName }));
+            .setStrokeStyle(2, 0x666666)
+            .setInteractive({ useHandCursor: true });
             
-        this.add.text(350, 500, 'PLAY AGAIN', {
+        const playAgainText = this.add.text(350, 500, 'PLAY AGAIN', {
             fontSize: '20px',
             fontFamily: 'Arial Black',
-            color: '#00ffff'
+            color: '#ffffff'
         }).setOrigin(0.5);
+        
+        playAgainBtn
+            .on('pointerover', () => {
+                playAgainBtn.setStrokeStyle(2, 0x00ffff);
+                playAgainText.setColor('#00ffff');
+            })
+            .on('pointerout', () => {
+                playAgainBtn.setStrokeStyle(2, 0x666666);
+                playAgainText.setColor('#ffffff');
+            })
+            .on('pointerdown', () => this.scene.start('ScenarioSelectScene', { user: this.userName }));
         
         // New strategy button - pink accent
         const newStrategyBtn = this.add.rectangle(550, 500, 180, 50, 0x000000, 1)
-            .setStrokeStyle(2, 0xff1493)
-            .setInteractive({ useHandCursor: true })
-            .on('pointerover', () => newStrategyBtn.setFillStyle(0xff1493, 0.2))
-            .on('pointerout', () => newStrategyBtn.setFillStyle(0x000000, 1))
+            .setStrokeStyle(2, 0x666666)
+            .setInteractive({ useHandCursor: true });
+            
+        const tryAgainText = this.add.text(550, 500, 'TRY AGAIN', {
+            fontSize: '20px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        newStrategyBtn
+            .on('pointerover', () => {
+                newStrategyBtn.setStrokeStyle(2, 0xff1493);
+                tryAgainText.setColor('#ff1493');
+            })
+            .on('pointerout', () => {
+                newStrategyBtn.setStrokeStyle(2, 0x666666);
+                tryAgainText.setColor('#ffffff');
+            })
             .on('pointerdown', () => this.scene.start('AllocationScene', { 
                 user: this.userName,
                 scenario: this.scenarioKey
             }));
-            
-        this.add.text(550, 500, 'TRY AGAIN', {
-            fontSize: '20px',
-            fontFamily: 'Arial Black',
-            color: '#ff1493'
-        }).setOrigin(0.5);
         
         // Fun message - white
         const messages = isWinner ? 
