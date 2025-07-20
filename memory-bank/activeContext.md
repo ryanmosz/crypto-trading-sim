@@ -79,6 +79,15 @@
 ## Current Work
 
 ### Just Completed
+- Fixed Row Level Security preventing live price updates:
+  - Live prices were fetching successfully but couldn't save to database
+  - Added RLS policies for authenticated users to insert/update prices_cache
+  - Added service_role policy for edge functions
+  - Solana now shows correct live price ($179.81) instead of fallback ($180)
+- UI improvements to "Last updated" display:
+  - Increased font size from 10px to 14px
+  - Changed color to brighter #999999
+  - Now shows full date and time (e.g., "Last updated: 1/19/2025 6:22:33 PM")
 - Fixed Update Prices button errors and missing Solana prices:
   - Fixed "CryptoPriceManager not available" error - now uses window.CryptoAPI
   - Added Auth instance to NowModeSetupScene for proper Supabase access
@@ -196,9 +205,9 @@ Past games display features:
 
 ### Known Issues / Next Steps
 
-1. **Live prices not fetching** - SOL shows $180 (fallback) instead of live price (~$178)
-   - Added debug logging to diagnose the issue
-   - Need to verify if CoinGecko API is being called properly
-   - Check CORS or API key issues
+1. ~~**Live prices not fetching** - FIXED!~~
+   - Was a Row Level Security (RLS) issue on prices_cache table
+   - Added policies to allow authenticated users to update prices
+   - Solana now shows correct live price (~$179.81)
 2. Edge function deployment (manual step required)
 3. Minor UI polish items 
