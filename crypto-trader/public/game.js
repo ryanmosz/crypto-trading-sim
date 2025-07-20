@@ -388,12 +388,10 @@ class ScenarioSelectScene extends Phaser.Scene {
             .on('pointerover', () => {
                 button.setStrokeStyle(2, 0x00ffff);
                 dateDisplay.setColor('#00ffff');
-                subtitleDisplay.setColor('#00ffff');
             })
             .on('pointerout', () => {
                 button.setStrokeStyle(2, 0x333333);
                 dateDisplay.setColor('#ffffff');
-                subtitleDisplay.setColor('#666666');
             })
             .on('pointerdown', () => {
                 this.scene.start('SimulationSpeedScene', { 
