@@ -112,14 +112,14 @@ class TutorialManager {
                 scene: 'DashboardScene',
                 elementId: 'activeGamesTab',
                 x: 450, y: 150, w: 200, h: 50,
-                text: "ACTIVE GAMES: Join multiplayer challenges or track your ongoing games that update with real prices!",
+                text: "ACTIVE GAMES: Ongoing multiplayer investment challenges with data powered by CoinGecko.com. Challenge your friends! Or enemies!",
                 waitForClick: true,
                 position: 'bottom'
             },
             {
                 scene: 'DashboardScene',
                 elementId: 'leaderboard',
-                x: 450, y: 510, w: 250, h: 50,
+                x: 450, y: 530, w: 250, h: 50,
                 text: "Check the LEADERBOARD to see top traders and compete with others!",
                 waitForClick: true,
                 position: 'top'
