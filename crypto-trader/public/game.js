@@ -1704,7 +1704,7 @@ class DashboardScene extends Phaser.Scene {
             .setInteractive(); // Block clicks underneath
         modalElements.push(overlay);
         
-        // Modal container
+        // Modal container - will update height later
         const modal = this.add.rectangle(450, 300, 600, 400, 0x111111)
             .setStrokeStyle(2, 0x00ffff);
         modalElements.push(modal);
@@ -1770,20 +1770,27 @@ class DashboardScene extends Phaser.Scene {
             });
         }
         
-        // Date played
+        // Add some spacing after allocations
+        yPos += 15;
+        
+        // Date played - now positioned dynamically based on allocations
         const date = new Date(run.created_at);
-        modalElements.push(this.add.text(450, 440, `Played on ${date.toLocaleString()}`, {
+        const dateY = Math.max(yPos, 440);
+        modalElements.push(this.add.text(450, dateY, date.toLocaleDateString() + ' at ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), {
             fontSize: '14px',
             color: '#666666'
         }).setOrigin(0.5));
         
+        // Position buttons dynamically below the date
+        const buttonY = dateY + 40;
+        
         // Close button
-        const closeBtn = this.add.rectangle(450, 480, 100, 40, 0x333333)
+        const closeBtn = this.add.rectangle(450, buttonY, 100, 40, 0x333333)
             .setStrokeStyle(2, 0x666666)
             .setInteractive({ useHandCursor: true });
         modalElements.push(closeBtn);
             
-        const closeText = this.add.text(450, 480, 'CLOSE', {
+        const closeText = this.add.text(450, buttonY, 'CLOSE', {
             fontSize: '18px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
@@ -1805,12 +1812,12 @@ class DashboardScene extends Phaser.Scene {
             });
             
         // Play Again button
-        const playAgainBtn = this.add.rectangle(350, 480, 120, 40, 0x00ffff)
+        const playAgainBtn = this.add.rectangle(350, buttonY, 120, 40, 0x00ffff)
             .setStrokeStyle(2, 0x00ffff)
             .setInteractive({ useHandCursor: true });
         modalElements.push(playAgainBtn);
             
-        const playAgainText = this.add.text(350, 480, 'PLAY AGAIN', {
+        const playAgainText = this.add.text(350, buttonY, 'PLAY AGAIN', {
             fontSize: '16px',
             fontFamily: 'Arial Black',
             color: '#000000'
@@ -1831,6 +1838,11 @@ class DashboardScene extends Phaser.Scene {
                     scenario: run.scenario_key
                 });
             });
+            
+        // Adjust modal height to fit content
+        const modalHeight = (buttonY + 40) - 100;  // From top (150-50) to bottom of buttons + padding
+        modal.setSize(600, modalHeight);
+        modal.setY(150 + modalHeight/2);  // Center the modal based on content
     }
 }
 
