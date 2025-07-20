@@ -1672,9 +1672,16 @@ class DashboardScene extends Phaser.Scene {
             // Position paging controls compactly to fit on screen
             const pagingY = yPos + 5;  // Start paging controls right after games
             
-            // Up arrow (previous page)
+            // Page indicator in center
+            const pageText = this.add.text(450, pagingY, `Page ${this.currentPage + 1} of ${totalPages}`, {
+                fontSize: '13px',
+                color: '#666666'
+            }).setOrigin(0.5);
+            this.gameDisplayGroup.add(pageText);
+            
+            // Up arrow (previous page) - positioned left with proper spacing
             if (this.currentPage > 0) {
-                const upArrow = this.add.text(420, pagingY, '▲', {
+                const upArrow = this.add.text(350, pagingY, '▲', {
                     fontSize: '18px',
                     color: '#00ffff'
                 }).setOrigin(0.5)
@@ -1688,16 +1695,9 @@ class DashboardScene extends Phaser.Scene {
                 this.gameDisplayGroup.add(upArrow);
             }
             
-            // Page indicator
-            const pageText = this.add.text(450, pagingY, `Page ${this.currentPage + 1} of ${totalPages}`, {
-                fontSize: '13px',
-                color: '#666666'
-            }).setOrigin(0.5);
-            this.gameDisplayGroup.add(pageText);
-            
-            // Down arrow (next page)
+            // Down arrow (next page) - positioned right with proper spacing
             if (this.currentPage < totalPages - 1) {
-                const downArrow = this.add.text(480, pagingY, '▼', {
+                const downArrow = this.add.text(550, pagingY, '▼', {
                     fontSize: '18px',
                     color: '#00ffff'
                 }).setOrigin(0.5)
