@@ -16,14 +16,29 @@
 - Clean UI with no text overlaps
 - Modular scenario system supporting various timeframes
 - Historical accuracy (cryptos that didn't exist are grayed out)
-- **NEW**: GitHub Pages deployment configured and ready
+- GitHub Pages deployment configured and ready
+
+### Supabase Integration Progress (NEW)
+- ✅ Auth module created with sign up/sign in functions
+- ✅ Database migrations prepared (profiles, game data tables)
+- ✅ Edge function for price fetching ready
+- ✅ Environment configuration set up
+- ⏳ Awaiting API keys from dashboard
+- ⏳ Need to run migrations
+- ⏳ Need to deploy edge function
 
 ### Recent Changes
-- Added comprehensive deployment documentation
-- Set up GitHub Actions workflow for automatic deployment
-- Created local deployment test script
-- Updated README with live game link
-- **Next Step**: Enable GitHub Pages in repo settings
+- Created comprehensive Supabase integration foundation
+- Prepared all SQL migrations and edge functions locally
+- Set up auth.js module for frontend integration
+- Added SUPABASE_SETUP_STATUS.md with clear next steps
+
+### Next Manual Steps Required
+1. Get API keys from Supabase dashboard
+2. Run SQL migrations (001_auth_profiles.sql, 002_core_tables.sql)
+3. Deploy fetch-prices edge function
+4. Set up cron schedule for price updates
+5. Test authentication flow
 
 ### Deployment Status
 - ✅ GitHub Actions workflow created
