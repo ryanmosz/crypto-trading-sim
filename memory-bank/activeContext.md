@@ -193,3 +193,12 @@ Past games display features:
 - 4 games per page
 - Proper spacing to prevent overlap
 - Page indicator shows current/total pages 
+
+### Known Issues / Next Steps
+
+1. **Live prices not fetching** - SOL shows $180 (fallback) instead of live price (~$178)
+   - Added debug logging to diagnose the issue
+   - Need to verify if CoinGecko API is being called properly
+   - Check CORS or API key issues
+2. Edge function deployment (manual step required)
+3. Minor UI polish items 

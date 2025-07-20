@@ -2625,17 +2625,18 @@ class NowModeSetupScene extends Phaser.Scene {
         }).setOrigin(0.5);
         
         // Last update text
-        const lastUpdateText = this.add.text(750, 70, '', {
-            fontSize: '10px',
-            color: '#666666'
+        const lastUpdateText = this.add.text(750, 75, '', {
+            fontSize: '14px',
+            color: '#999999'
         }).setOrigin(0.5);
         
         // Check for last update time
         const lastUpdate = localStorage.getItem('lastPriceUpdate');
         if (lastUpdate) {
             const date = new Date(lastUpdate);
+            const dateStr = date.toLocaleDateString();
             const timeStr = date.toLocaleTimeString();
-            lastUpdateText.setText(`Last update: ${timeStr}`);
+            lastUpdateText.setText(`Last updated: ${dateStr} ${timeStr}`);
         }
         
         updatePricesBtn
@@ -2666,8 +2667,10 @@ class NowModeSetupScene extends Phaser.Scene {
                         // Store last update time
                         const now = new Date().toISOString();
                         localStorage.setItem('lastPriceUpdate', now);
-                        const timeStr = new Date(now).toLocaleTimeString();
-                        lastUpdateText.setText(`Last update: ${timeStr}`);
+                        const date = new Date(now);
+                        const dateStr = date.toLocaleDateString();
+                        const timeStr = date.toLocaleTimeString();
+                        lastUpdateText.setText(`Last updated: ${dateStr} ${timeStr}`);
                     } else {
                         console.error('CryptoAPI not available');
                         updatePricesText.setText('ERROR');
