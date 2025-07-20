@@ -23,6 +23,7 @@
 2. Dynamically adjust modal height based on content to prevent overlap
 3. Split game details into two pages (main + details) to handle space constraints
 4. Fixed dashboard layout spacing to prevent overlapping text between profit percentage and dates
+5. Fixed details view to recalculate totals from historical data (test saves had incorrect hardcoded values)
 
 ## Game Saving Issue
 - Test save works but real games don't save
