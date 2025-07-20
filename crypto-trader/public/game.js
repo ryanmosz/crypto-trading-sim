@@ -66,7 +66,10 @@ class TutorialOverlay {
         .setInteractive({ useHandCursor: true });
         
         // Store elements
-        this.elements = [this.overlay, highlight, textBg, tutorialText, nextBtn, skipBtn];
+        this.elements = [this.overlay, textBg, tutorialText, nextBtn, skipBtn];
+        if (!options.hideSpotlight) {
+            this.elements.push(highlight);
+        }
         
         // Set depth to be on top
         this.elements.forEach(el => el.setDepth(1000));
@@ -91,7 +94,7 @@ class TutorialManager {
             {
                 scene: 'DashboardScene',
                 elementId: 'welcome',
-                x: 450, y: 300, w: 700, h: 60,
+                x: 450, y: 395, w: 700, h: 60,
                 text: "Welcome to Crypto Trader Simulator! Let's take a quick tour of what you can do here.",
                 waitForClick: true,
                 position: 'center',
