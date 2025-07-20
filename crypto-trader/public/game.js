@@ -797,7 +797,7 @@ class AllocationScene extends Phaser.Scene {
         
         // Display duration for Now mode
         if (this.isNowMode && this.durationDays) {
-            this.add.text(450, 75, `Duration: ${this.durationDays} days`, {
+            this.add.text(450, 68, `Duration: ${this.durationDays} days`, {
                 fontSize: '18px',
                 color: '#00ffff'
             }).setOrigin(0.5);
@@ -1077,11 +1077,22 @@ class AllocationScene extends Phaser.Scene {
         
         if (this.isNowMode) {
             // For Now mode, go to NowModeResultScene
+            // Ensure we have current prices
+            const prices = this.currentPrices || {};
+            
+            // If any prices are missing, add defaults
+            Object.keys(GAME_CONFIG.cryptos).forEach(symbol => {
+                if (!prices[symbol]) {
+                    console.warn(`Missing price for ${symbol}, using default`);
+                    prices[symbol] = 0;
+                }
+            });
+            
             this.scene.start('NowModeResultScene', {
                 user: this.user,
                 allocations: this.allocations,
                 durationDays: this.durationDays,
-                startingPrices: this.currentPrices || this.getDefaultPrices(),
+                startingPrices: prices,
                 totalInvested: this.totalAllocated * 1000000
             });
         } else {
@@ -1667,58 +1678,7 @@ class DashboardScene extends Phaser.Scene {
                 console.error('Test save exception:', e);
             }
         });
-        
 
-        
-        // Update Prices button - only for Now mode
-        if (this.isNowMode) {
-            const updatePricesBtn = this.add.rectangle(800, 100, 150, 35, 0x333333)
-                .setStrokeStyle(2, 0x00ff00)
-                .setInteractive({ useHandCursor: true });
-                
-            const updatePricesText = this.add.text(800, 100, 'UPDATE PRICES', {
-                fontSize: '14px',
-                fontFamily: 'Arial Black',
-                color: '#00ff00'
-            }).setOrigin(0.5);
-            
-            updatePricesBtn
-                .on('pointerover', () => {
-                    updatePricesBtn.setStrokeStyle(2, 0xffffff);
-                    updatePricesBtn.setFillStyle(0x00ff00);
-                    updatePricesText.setColor('#000000');
-                })
-                .on('pointerout', () => {
-                    updatePricesBtn.setStrokeStyle(2, 0x00ff00);
-                    updatePricesBtn.setFillStyle(0x333333);
-                    updatePricesText.setColor('#00ff00');
-                })
-                .on('pointerdown', async () => {
-                    updatePricesText.setText('UPDATING...');
-                    console.log('Fetching latest prices...');
-                    try {
-                        // Fetch fresh prices from CoinGecko
-                        await this.fetchCurrentPrices();
-                        
-                        console.log('Prices updated successfully!');
-                        updatePricesText.setText('UPDATED!');
-                        
-                        // Reset button text after a moment
-                        this.time.delayedCall(1500, () => {
-                            updatePricesText.setText('UPDATE PRICES');
-                        });
-                        
-                        // Refresh the crypto displays
-                        this.refreshCryptoRows();
-                    } catch (e) {
-                        console.error('Price update exception:', e);
-                        updatePricesText.setText('ERROR');
-                        this.time.delayedCall(1500, () => {
-                            updatePricesText.setText('UPDATE PRICES');
-                        });
-                    }
-                });
-        }
     }
     
     createTabs() {
@@ -2637,6 +2597,56 @@ class NowModeSetupScene extends Phaser.Scene {
             color: '#00ffff'
         }).setOrigin(0.5);
         
+        // Update Prices button
+        const updatePricesBtn = this.add.rectangle(750, 50, 130, 30, 0x333333)
+            .setStrokeStyle(2, 0x00ff00)
+            .setInteractive({ useHandCursor: true });
+            
+        const updatePricesText = this.add.text(750, 50, 'UPDATE PRICES', {
+            fontSize: '12px',
+            fontFamily: 'Arial Black',
+            color: '#00ff00'
+        }).setOrigin(0.5);
+        
+        updatePricesBtn
+            .on('pointerover', () => {
+                updatePricesBtn.setStrokeStyle(2, 0xffffff);
+                updatePricesBtn.setFillStyle(0x00ff00);
+                updatePricesText.setColor('#000000');
+            })
+            .on('pointerout', () => {
+                updatePricesBtn.setStrokeStyle(2, 0x00ff00);
+                updatePricesBtn.setFillStyle(0x333333);
+                updatePricesText.setColor('#00ff00');
+            })
+            .on('pointerdown', async () => {
+                updatePricesText.setText('UPDATING...');
+                console.log('Fetching latest prices from CoinGecko...');
+                try {
+                    // Call the API integration to update prices
+                    const priceManager = window.CryptoPriceManager || {};
+                    if (priceManager.updatePrices) {
+                        await priceManager.updatePrices();
+                        console.log('Prices updated successfully!');
+                        updatePricesText.setText('UPDATED!');
+                    } else {
+                        console.warn('Price manager not available');
+                        updatePricesText.setText('ERROR');
+                    }
+                    
+                    // Reset button text after a moment
+                    this.time.delayedCall(1500, () => {
+                        updatePricesText.setText('UPDATE PRICES');
+                    });
+                } catch (e) {
+                    console.error('Price update exception:', e);
+                    updatePricesText.setText('ERROR');
+                    this.time.delayedCall(1500, () => {
+                        updatePricesText.setText('UPDATE PRICES');
+                    });
+                }
+            });
+        
         // Explanation
         const explanationText = [
             'Start with $10M today and track your performance over time.',
@@ -2778,8 +2788,9 @@ class NowModeResultScene extends Phaser.Scene {
             if (amount > 0) {
                 const price = this.startingPrices[crypto];
                 const invested = amount * 1000000;
+                const priceDisplay = price > 0 ? `$${price.toLocaleString()}` : 'Price unavailable';
                 this.add.text(450, yPos, 
-                    `${crypto}: $${invested.toLocaleString()} at $${price.toLocaleString()}/coin`, 
+                    `${crypto}: $${invested.toLocaleString()} at ${priceDisplay}/coin`, 
                     {
                         fontSize: '16px',
                         color: '#ffffff'

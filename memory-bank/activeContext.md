@@ -78,6 +78,21 @@
 
 ## Current Work
 
+### Just Completed
+- Fixed Past tab paging controls that weren't changing displayed games
+- Fixed Update Prices button issues:
+  - Now only shows on Now mode games (not historical)
+  - Properly styled to match other buttons
+  - Positioned in top-right at coordinates (800, 100)
+- Fixed allocation screen spacing problems:
+  - Moved columns for better readability
+  - Icon at x:100, Name at x:150, Price at x:320 (left-aligned)
+  - Price text no longer overlaps with other elements
+- Added duration display for Now mode games (e.g., "Duration: 30 days")
+- Added price refresh functionality without scene restart
+
+### Recent Major Changes
+
 ### M2 - Now Mode Implementation (99% Complete) 🚀
 
 **API Key Integrated!** ✅
