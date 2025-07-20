@@ -784,8 +784,9 @@ class AllocationScene extends Phaser.Scene {
         
         // Timer (60 seconds)
         this.timeLeft = 60;
-        this.timerText = this.add.text(800, 40, '', {
-            fontSize: '20px',
+        this.timerText = this.add.text(800, 90, '1:00', {
+            fontSize: '24px',
+            fontFamily: 'Arial Black',
             color: '#ffffff'
         }).setOrigin(1, 0.5);
         
@@ -1504,6 +1505,42 @@ class DashboardScene extends Phaser.Scene {
         .on('pointerdown', async () => {
             await this.auth.signOut();
             this.scene.start('LoginScene');
+        });
+        
+        // Test save button (temporary for debugging)
+        const testSaveBtn = this.add.text(100, 200, '[Test Save]', {
+            fontSize: '14px',
+            color: '#00ff00'
+        }).setOrigin(0, 0.5)
+        .setInteractive({ useHandCursor: true })
+        .on('pointerover', function() { this.setColor('#ffffff'); })
+        .on('pointerout', function() { this.setColor('#00ff00'); })
+        .on('pointerdown', async () => {
+            console.log('Testing save with user:', this.user);
+            try {
+                const testData = {
+                    user_id: this.user.id,
+                    scenario_key: 'march_2020',
+                    allocations: {BTC: 5, ETH: 3, BNB: 2},
+                    final_value: 12500000,
+                    profit_amount: 2500000,
+                    profit_percent: 25,
+                    created_at: new Date().toISOString()
+                };
+                
+                const { data, error } = await this.auth.supabase
+                    .from('past_runs')
+                    .insert(testData)
+                    .select();
+                    
+                if (error) {
+                    console.error('Test save error:', error);
+                } else {
+                    console.log('Test save successful:', data);
+                }
+            } catch (e) {
+                console.error('Test save exception:', e);
+            }
         });
         
         // Load past runs
