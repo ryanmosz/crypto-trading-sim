@@ -81,9 +81,10 @@ class TutorialManager {
             {
                 scene: 'DashboardScene',
                 elementId: 'playNewGame',
-                x: 450, y: 365, w: 400, h: 80,
+                x: 450, y: 360, w: 400, h: 80,
                 text: "Welcome to Crypto Trader! Click 'START NEW GAME' to try trading cryptocurrencies through historical scenarios, test your strategies, and learn from market movements. Or explore the 'Active Games' tab to join ongoing multiplayer challenges!",
-                waitForClick: true
+                waitForClick: true,
+                position: 'top'
             },
             {
                 scene: 'ScenarioSelectScene',
