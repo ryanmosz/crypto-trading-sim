@@ -97,11 +97,28 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../env.js"></script>
     <script src="./config.js"></script>
-    <script src="./auth.js"></script>
     
     <script>
-        // Initialize Auth
-        const auth = new Auth();
+        // Initialize variables
+        let supabase = null;
+        
+        // Initialize Supabase directly
+        function initSupabase() {
+            const url = window.ENV?.SUPABASE_URL || window.SUPABASE_URL;
+            const key = window.ENV?.SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY;
+            
+            if (!url || !key) {
+                updateStatus('connection-status', '❌ Missing Supabase URL or Anon Key!', true);
+                updateStatus('auth-status', '❌ Missing configuration', true);
+                updateStatus('db-status', '❌ Missing configuration', true);
+                updateStatus('price-status', '❌ Missing configuration', true);
+                updateStatus('full-status', '❌ Missing configuration', true);
+                return false;
+            }
+            
+            supabase = window.supabase.createClient(url, key);
+            return true;
+        }
         
         function updateStatus(elementId, message, isError = false) {
             const element = document.getElementById(elementId);
@@ -113,13 +130,13 @@
             try {
                 updateStatus('connection-status', 'Testing connection...', false);
                 
-                // Check if Supabase client is initialized
-                if (!auth.supabase) {
-                    throw new Error('Supabase client not initialized');
+                // Make sure Supabase is initialized
+                if (!supabase && !initSupabase()) {
+                    throw new Error('Failed to initialize Supabase client');
                 }
                 
                 // Test basic connection
-                const { data, error } = await auth.supabase
+                const { data, error } = await supabase
                     .from('games')
                     .select('count')
                     .limit(1);
@@ -138,8 +155,13 @@
             try {
                 updateStatus('auth-status', 'Testing anonymous auth...', false);
                 
+                // Make sure Supabase is initialized
+                if (!supabase && !initSupabase()) {
+                    throw new Error('Failed to initialize Supabase client');
+                }
+                
                 // Sign in anonymously
-                const { data, error } = await auth.supabase.auth.signInAnonymously();
+                const { data, error } = await supabase.auth.signInAnonymously();
                 
                 if (error) throw error;
                 
@@ -156,8 +178,13 @@
             try {
                 updateStatus('db-status', 'Testing database read...', false);
                 
+                // Make sure Supabase is initialized
+                if (!supabase && !initSupabase()) {
+                    throw new Error('Failed to initialize Supabase client');
+                }
+                
                 // Try to read from leaderboard (public view)
-                const { data, error } = await auth.supabase
+                const { data, error } = await supabase
                     .from('leaderboard')
                     .select('*')
                     .limit(5);
@@ -174,8 +201,13 @@
             try {
                 updateStatus('price-status', 'Testing price cache...', false);
                 
+                // Make sure Supabase is initialized
+                if (!supabase && !initSupabase()) {
+                    throw new Error('Failed to initialize Supabase client');
+                }
+                
                 // Try to read from prices_cache
-                const { data, error } = await auth.supabase
+                const { data, error } = await supabase
                     .from('prices_cache')
                     .select('*')
                     .order('updated_at', { ascending: false })
@@ -220,6 +252,15 @@
                 updateStatus('full-status', '✅ All tests passed! Your anon key is working perfectly!');
             }
         }
+        
+        // Initialize when page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            if (!initSupabase()) {
+                console.error('Failed to initialize Supabase');
+            } else {
+                console.log('Supabase initialized successfully');
+            }
+        });
     </script>
 </body>
 </html>
