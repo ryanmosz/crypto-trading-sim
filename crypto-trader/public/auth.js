@@ -178,5 +178,4 @@ export class Auth {
   // Add any other methods as needed
 }
 
-// Also export the auth object for backward compatibility
-export { auth }; 
+// auth and gameData are already exported above 
