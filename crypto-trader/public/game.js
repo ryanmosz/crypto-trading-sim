@@ -754,22 +754,30 @@ class SimulationSpeedScene extends Phaser.Scene {
 class AllocationScene extends Phaser.Scene {
     constructor() {
         super({ key: 'AllocationScene' });
+        this.auth = new Auth(); // Add Auth instance for Supabase access
     }
     
     init(data) {
         this.user = data.user;
         this.userName = data.user?.email || data.user || 'Player';
         this.scenarioKey = data.scenario || 'march_2020';
-        this.scenario = SCENARIOS[this.scenarioKey];
-        this.speed = data.speed || 'regular';
-        this.simulationTime = data.simulationTime || this.scenario.defaultSimulationTime;
-        this.allocations = {};
-        this.totalAllocated = 0;
         
         // Now mode specific data
         this.isNowMode = data.isNowMode || false;
         this.durationDays = data.durationDays || null;
         this.currentPrices = null;
+        
+        // For Now mode, don't try to look up a scenario
+        if (this.scenarioKey === 'now' || this.isNowMode) {
+            this.scenario = null;
+        } else {
+            this.scenario = SCENARIOS[this.scenarioKey];
+        }
+        
+        this.speed = data.speed || 'regular';
+        this.simulationTime = data.simulationTime || (this.scenario ? this.scenario.defaultSimulationTime : 60);
+        this.allocations = {};
+        this.totalAllocated = 0;
         
         // Initialize all cryptos to 0
         Object.keys(GAME_CONFIG.cryptos).forEach(symbol => {
@@ -777,7 +785,7 @@ class AllocationScene extends Phaser.Scene {
         });
     }
     
-    create() {
+    async create() {
         this.cameras.main.setBackgroundColor('#000000');
         
         // Header - white text
@@ -789,7 +797,16 @@ class AllocationScene extends Phaser.Scene {
         
         // Fetch current prices if in Now mode
         if (this.isNowMode) {
-            this.fetchCurrentPrices();
+            // Show loading text
+            const loadingText = this.add.text(450, 300, 'Loading current prices...', {
+                fontSize: '24px',
+                color: '#666666'
+            }).setOrigin(0.5);
+            
+            await this.fetchCurrentPrices();
+            
+            // Remove loading text
+            loadingText.destroy();
         }
         
         // Money remaining - white text
@@ -907,8 +924,15 @@ class AllocationScene extends Phaser.Scene {
     }
     
     createCryptoRow(symbol, crypto, y) {
-        const isAvailable = this.scenario.availableCryptos[symbol].available;
-        const reason = this.scenario.availableCryptos[symbol].reason;
+        // For Now mode, all cryptos are available
+        let isAvailable = true;
+        let reason = '';
+        
+        // For historical scenarios, check availability
+        if (!this.isNowMode && this.scenario.availableCryptos) {
+            isAvailable = this.scenario.availableCryptos[symbol].available;
+            reason = this.scenario.availableCryptos[symbol].reason;
+        }
         
         // Crypto icon placeholder
         const iconBg = this.add.circle(150, y, 25, isAvailable ? crypto.color : 0x333333);
@@ -934,9 +958,18 @@ class AllocationScene extends Phaser.Scene {
             return;
         }
         
-        // Current price - gray (using historical start price)
-        const historicalPrice = this.scenario.prices[symbol].start;
-        this.add.text(400, y, `$${historicalPrice.toLocaleString()}`, {
+        // Current price - gray (using historical start price or current price for Now mode)
+        let displayPrice = 0;
+        if (this.isNowMode && this.currentPrices && this.currentPrices[symbol]) {
+            displayPrice = this.currentPrices[symbol];
+        } else if (this.scenario && this.scenario.prices && this.scenario.prices[symbol]) {
+            displayPrice = this.scenario.prices[symbol].start;
+        } else {
+            // Fallback to a default if no price available
+            displayPrice = 0;
+        }
+        
+        this.add.text(400, y, displayPrice > 0 ? `$${displayPrice.toLocaleString()}` : 'Loading...', {
             fontSize: '18px',
             color: '#666666'
         }).setOrigin(0.5);
@@ -1097,7 +1130,7 @@ class AllocationScene extends Phaser.Scene {
     async fetchCurrentPrices() {
         try {
             // Check if we have cached prices first
-            const { data: cachedPrices, error: cacheError } = await supabase
+            const { data: cachedPrices, error: cacheError } = await this.auth.supabase
                 .from('prices_cache')
                 .select('*');
                 
