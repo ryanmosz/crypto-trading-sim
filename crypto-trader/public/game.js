@@ -1631,12 +1631,25 @@ class DashboardScene extends Phaser.Scene {
                 return;
             }
             
-            // Display past runs
+            // Display past runs - limit to 4 to fit on screen
             let yPos = 300;
-            data.forEach((run, index) => {
+            const maxGamesToShow = 4;
+            const gamesToShow = data.slice(0, maxGamesToShow);
+            
+            gamesToShow.forEach((run, index) => {
                 this.createPastRunDisplay(run, yPos);
                 yPos += 60;
             });
+            
+            // If there are more games, show a count
+            if (data.length > maxGamesToShow) {
+                const moreCount = data.length - maxGamesToShow;
+                this.add.text(450, yPos + 10, `+ ${moreCount} more game${moreCount > 1 ? 's' : ''}`, {
+                    fontSize: '14px',
+                    color: '#666666',
+                    fontStyle: 'italic'
+                }).setOrigin(0.5);
+            }
             
         } catch (error) {
             console.error('Error loading past runs:', error);
