@@ -153,6 +153,30 @@ export const gameData = {
   }
 };
 
-// Export for use in game
-window.supabaseAuth = auth;
-window.supabaseGameData = gameData; 
+// Create Auth class wrapper
+export class Auth {
+  constructor() {
+    this.supabase = supabase;
+  }
+  
+  async signUp(email, password) {
+    return auth.signUp(email, password);
+  }
+  
+  async signIn(email, password) {
+    return auth.signIn(email, password);
+  }
+  
+  async signOut() {
+    return auth.signOut();
+  }
+  
+  async getCurrentUser() {
+    return auth.getCurrentUser();
+  }
+  
+  // Add any other methods as needed
+}
+
+// Also export the original objects for backward compatibility
+export { auth, gameData }; 
