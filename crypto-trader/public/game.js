@@ -1891,7 +1891,7 @@ class DashboardScene extends Phaser.Scene {
         // ===== DETAILS VIEW CONTENT =====
         
         // Title
-        const detailsTitle = this.add.text(350, 130, `Allocation Details`, {
+        const detailsTitle = this.add.text(450, 130, `Allocation Details`, {
             fontSize: '24px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
@@ -1901,7 +1901,7 @@ class DashboardScene extends Phaser.Scene {
         
         // Allocations
         let yPos = 170;
-        const allocHeader = this.add.text(350, yPos, 'Investment Performance:', {
+        const allocHeader = this.add.text(450, yPos, 'Investment Performance:', {
             fontSize: '18px',
             color: '#00ffff'
         }).setOrigin(0.5).setVisible(false);
@@ -1909,14 +1909,14 @@ class DashboardScene extends Phaser.Scene {
         modalElements.push(allocHeader);
         
         // Column headers
-        const startHeader = this.add.text(280, yPos + 30, 'Initial', {
+        const startHeader = this.add.text(380, yPos + 30, 'Initial', {
             fontSize: '14px',
             color: '#666666'
         }).setOrigin(0.5).setVisible(false);
         detailsViewElements.push(startHeader);
         modalElements.push(startHeader);
         
-        const endHeader = this.add.text(430, yPos + 30, 'Final', {
+        const endHeader = this.add.text(530, yPos + 30, 'Final', {
             fontSize: '14px',
             color: '#666666'
         }).setOrigin(0.5).setVisible(false);
@@ -1966,7 +1966,7 @@ class DashboardScene extends Phaser.Scene {
                 const cryptoInfo = GAME_CONFIG.cryptos[symbol];
                 
                 // Crypto name
-                const allocText = this.add.text(160, yPos, `${symbol}:`, {
+                const allocText = this.add.text(260, yPos, `${symbol}:`, {
                     fontSize: '16px',
                     fontFamily: 'Arial Black',
                     color: '#ffffff'
@@ -1975,7 +1975,7 @@ class DashboardScene extends Phaser.Scene {
                 modalElements.push(allocText);
                 
                 // Initial investment
-                const initialText = this.add.text(280, yPos, `$${data.initialInvestment.toLocaleString()}`, {
+                const initialText = this.add.text(380, yPos, `$${data.initialInvestment.toLocaleString()}`, {
                     fontSize: '16px',
                     color: '#666666'
                 }).setOrigin(0.5).setVisible(false);
@@ -1983,7 +1983,7 @@ class DashboardScene extends Phaser.Scene {
                 modalElements.push(initialText);
                 
                 // Arrow
-                const arrowText = this.add.text(350, yPos, `→`, {
+                const arrowText = this.add.text(450, yPos, `→`, {
                     fontSize: '16px',
                     color: '#666666'
                 }).setOrigin(0.5).setVisible(false);
@@ -1991,7 +1991,7 @@ class DashboardScene extends Phaser.Scene {
                 modalElements.push(arrowText);
                 
                 // Final value
-                const finalText = this.add.text(430, yPos, `$${Math.round(data.finalValue).toLocaleString()}`, {
+                const finalText = this.add.text(530, yPos, `$${Math.round(data.finalValue).toLocaleString()}`, {
                     fontSize: '16px',
                     color: data.change >= 0 ? '#00ffff' : '#ff1493'
                 }).setOrigin(0.5).setVisible(false);
@@ -1999,7 +1999,7 @@ class DashboardScene extends Phaser.Scene {
                 modalElements.push(finalText);
                 
                 // Percentage change
-                const changeText = this.add.text(540, yPos, `(${data.change >= 0 ? '+' : ''}${data.change.toFixed(1)}%)`, {
+                const changeText = this.add.text(640, yPos, `(${data.change >= 0 ? '+' : ''}${data.change.toFixed(1)}%)`, {
                     fontSize: '14px',
                     color: data.change >= 0 ? '#00ffff' : '#ff1493'
                 }).setOrigin(0.5).setVisible(false);
@@ -2013,7 +2013,7 @@ class DashboardScene extends Phaser.Scene {
             yPos += 15;
             
             // Divider line
-            const divider = this.add.rectangle(350, yPos, 400, 1, 0x666666)
+            const divider = this.add.rectangle(450, yPos, 400, 1, 0x666666)
                 .setVisible(false);
             detailsViewElements.push(divider);
             modalElements.push(divider);
@@ -2021,7 +2021,7 @@ class DashboardScene extends Phaser.Scene {
             yPos += 15;
             
             // Total label
-            const totalLabel = this.add.text(160, yPos, 'TOTAL:', {
+            const totalLabel = this.add.text(260, yPos, 'TOTAL:', {
                 fontSize: '16px',
                 fontFamily: 'Arial Black',
                 color: '#ffffff'
@@ -2030,7 +2030,7 @@ class DashboardScene extends Phaser.Scene {
             modalElements.push(totalLabel);
             
             // Total initial
-            const totalInitial = this.add.text(280, yPos, `$${GAME_CONFIG.startingMoney.toLocaleString()}`, {
+            const totalInitial = this.add.text(380, yPos, `$${GAME_CONFIG.startingMoney.toLocaleString()}`, {
                 fontSize: '16px',
                 fontFamily: 'Arial Black',
                 color: '#666666'
@@ -2039,7 +2039,7 @@ class DashboardScene extends Phaser.Scene {
             modalElements.push(totalInitial);
             
             // Total arrow
-            const totalArrow = this.add.text(350, yPos, `→`, {
+            const totalArrow = this.add.text(450, yPos, `→`, {
                 fontSize: '16px',
                 color: '#ffffff'
             }).setOrigin(0.5).setVisible(false);
@@ -2047,7 +2047,7 @@ class DashboardScene extends Phaser.Scene {
             modalElements.push(totalArrow);
             
             // Total final
-            const totalFinal = this.add.text(430, yPos, `$${Math.round(actualFinalValue).toLocaleString()}`, {
+            const totalFinal = this.add.text(530, yPos, `$${Math.round(actualFinalValue).toLocaleString()}`, {
                 fontSize: '16px',
                 fontFamily: 'Arial Black',
                 color: actualProfit >= 0 ? '#00ffff' : '#ff1493'
@@ -2056,7 +2056,7 @@ class DashboardScene extends Phaser.Scene {
             modalElements.push(totalFinal);
             
             // Total percentage
-            const totalPercent = this.add.text(540, yPos, `(${actualProfit >= 0 ? '+' : ''}${actualProfitPercent.toFixed(1)}%)`, {
+            const totalPercent = this.add.text(640, yPos, `(${actualProfit >= 0 ? '+' : ''}${actualProfitPercent.toFixed(1)}%)`, {
                 fontSize: '14px',
                 fontFamily: 'Arial Black',
                 color: actualProfit >= 0 ? '#00ffff' : '#ff1493'
@@ -2066,7 +2066,7 @@ class DashboardScene extends Phaser.Scene {
             
             // Show warning if saved value doesn't match recalculated value
             if (Math.abs(run.final_value - actualFinalValue) > 1000) {
-                const warningText = this.add.text(350, yPos + 30, '⚠ Note: Values recalculated from historical data', {
+                const warningText = this.add.text(450, yPos + 30, '⚠ Note: Values recalculated from historical data', {
                     fontSize: '12px',
                     color: '#ff9900',
                     fontStyle: 'italic'
@@ -2077,14 +2077,14 @@ class DashboardScene extends Phaser.Scene {
         }
         
         // Back button (details view)
-        const backBtn = this.add.rectangle(350, 480, 100, 35, 0x333333)
+        const backBtn = this.add.rectangle(450, 450, 100, 35, 0x333333)
             .setStrokeStyle(2, 0x666666)
             .setInteractive({ useHandCursor: true })
             .setVisible(false);
         detailsViewElements.push(backBtn);
         modalElements.push(backBtn);
             
-        const backText = this.add.text(350, 480, 'BACK', {
+        const backText = this.add.text(450, 450, 'BACK', {
             fontSize: '16px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
