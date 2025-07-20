@@ -74,21 +74,26 @@ Past game runs are successfully saved to Supabase and displayed on the dashboard
 - Proper UI layout preventing overlap
 
 #### M2 - Now Mode (July 20, 2025) 🏗️
-**Status: In Progress (60% complete)**
+**Status: In Progress (80% complete)**
 
 **Completed:**
 - ✅ Database tables created (active_games, price_history, prices_cache)
+- ✅ Database functions for updating values and completing games
 - ✅ Now mode setup scene with duration selection
 - ✅ Allocation scene modified to handle current prices
 - ✅ Now mode result scene saves games to database
 - ✅ Dashboard shows active games with performance
+- ✅ Active game detail view with full breakdown
+- ✅ Manual price update mechanism for testing
+- ✅ Edge function structure created
 
 **Remaining:**
-- ⏳ Price fetching API integration
-- ⏳ Background job for price updates
-- ⏳ Auto-completion when games expire
-- ⏳ Active game detail view
-- ⏳ Price history tracking
+- ⏳ Deploy edge function with cron schedule
+- ⏳ Real CoinGecko API integration
+- ⏳ Auto-completion notifications
+- ⏳ Price history charts
+
+**Testing Guide:** See NOW_MODE_TESTING.md for complete testing instructions
 
 #### M3 - Polish Pass
 **Status: Not Started**

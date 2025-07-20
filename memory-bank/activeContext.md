@@ -80,31 +80,46 @@
 
 ### M2 - Now Mode Implementation (In Progress)
 
-**Completed Today:**
+**Completed Today (80% done):**
 1. Database setup:
    - Created `active_games` table for ongoing games
    - Created `price_history` table for tracking price changes
    - Created `prices_cache` table for current crypto prices
    - Set up proper RLS policies
+   - Added functions: `update_active_game_values()` and `complete_expired_games()`
 
 2. Frontend implementation:
    - Created `NowModeSetupScene` for duration selection (30/60/90 days)
    - Created `NowModeResultScene` to confirm game start and save to DB
    - Modified `AllocationScene` to handle Now mode with current prices
    - Updated `ScenarioSelectScene` to route to Now mode setup
+   - **NEW: Created `ActiveGameViewScene` for detailed game view**
 
 3. Dashboard updates:
    - Added "Active Games" section above past games
    - Display active games with time remaining and performance
    - Show current value and profit/loss percentage
-   - Placeholder for viewing active game details
+   - **NEW: VIEW button now shows full game details**
 
-**Still Needed:**
-1. Price fetching mechanism (API integration or manual updates)
-2. Background job to update prices and game values
-3. Game completion handler (auto-complete when time expires)
-4. Active game detail view scene
-5. Price history tracking for charts
+4. Price update mechanism:
+   - **NEW: Manual price update button for testing (±10% changes)**
+   - **NEW: Database functions to recalculate all game values**
+   - **NEW: Edge function structure for automated updates**
+
+**Still Needed (20%):**
+1. Deploy edge function and set up cron schedule
+2. Real CoinGecko API integration
+3. Auto-completion notifications
+4. Price history charts
+
+### Testing Instructions
+
+See NOW_MODE_TESTING.md for detailed testing guide.
+Key features to test:
+- Start a Now mode game
+- View active game details
+- Update prices manually
+- Check performance calculations
 
 ### UI Polish Status
 
