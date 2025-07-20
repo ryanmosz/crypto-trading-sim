@@ -1487,6 +1487,17 @@ class ResultsScene extends Phaser.Scene {
             color: '#00ffff'
         }).setOrigin(0.5);
         
+        // Fun message - white (moved down to avoid overlap with historical note)
+        const messages = isWinner ? 
+            ['You survived Black Thursday!', 'Better than most traders!', 'Risk management pro!'] :
+            ['Black Thursday got you!', 'Welcome to crypto volatility!', 'Try a defensive strategy!'];
+        const message = messages[Math.floor(Math.random() * messages.length)];
+        
+        this.add.text(450, 420, message, {
+            fontSize: '24px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
         // Back to Dashboard button
         const dashboardBtn = this.add.rectangle(450, 500, 250, 50, 0x000000, 1)
             .setStrokeStyle(2, 0x666666)
@@ -1514,17 +1525,6 @@ class ResultsScene extends Phaser.Scene {
                     this.scene.start('LoginScene');
                 }
             });
-        
-        // Fun message - white
-        const messages = isWinner ? 
-            ['You survived Black Thursday!', 'Better than most traders!', 'Risk management pro!'] :
-            ['Black Thursday got you!', 'Welcome to crypto volatility!', 'Try a defensive strategy!'];
-        const message = messages[Math.floor(Math.random() * messages.length)];
-        
-        this.add.text(450, 440, message, {
-            fontSize: '24px',
-            color: '#ffffff'
-        }).setOrigin(0.5);
     }
     
     async savePastRun() {
