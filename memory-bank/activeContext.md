@@ -53,6 +53,11 @@
     - Shows page indicator (e.g. "Page 1 of 3")
     - Arrows scale on hover for better UX
     - All elements grouped for clean page switching
+14. Fixed paging controls being cut off at bottom:
+    - Moved all controls to single horizontal line
+    - Up arrow (x=420), page text (x=450), down arrow (x=480)
+    - Positioned just 5px below last game
+    - Ensures everything fits within 600px canvas height
 
 ## Game Saving Issue
 - Test save works but real games don't save

@@ -32,6 +32,7 @@ Phase 1 (Historical trading) is ~85% complete with core gameplay functional but 
 - Fixed past games list value overlap with proper spacing and alignment
 - Limited past games to 4 most recent to prevent Sign Out button from being pushed off screen
 - Added paging functionality with up/down navigation for accessing all past games
+- Fixed paging controls positioning to prevent cutoff at screen bottom
 
 #### M0 - Auth + Backend Infrastructure (July 19, 2025)
 - **Supabase Project**: Created and fully configured
