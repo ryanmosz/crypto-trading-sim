@@ -2079,8 +2079,9 @@ class DashboardScene extends Phaser.Scene {
     }
     
     displayCurrentPage() {
-        // Clear existing page displays but NOT the entire content group
+        // Remove old page display group from content group before destroying
         if (this.pageDisplayGroup) {
+            this.contentGroup.remove(this.pageDisplayGroup);
             this.pageDisplayGroup.destroy(true);
         }
         this.pageDisplayGroup = this.add.group();
@@ -2121,7 +2122,7 @@ class DashboardScene extends Phaser.Scene {
                 .on('pointerout', function() { this.setScale(1); })
                 .on('pointerdown', () => {
                     this.currentPage--;
-                    this.showPastGamesContent(); // Refresh content properly
+                    this.displayCurrentPage(); // Just update display
                 });
                 this.pageDisplayGroup.add(upArrow);
             }
@@ -2137,7 +2138,7 @@ class DashboardScene extends Phaser.Scene {
                 .on('pointerout', function() { this.setScale(1); })
                 .on('pointerdown', () => {
                     this.currentPage++;
-                    this.showPastGamesContent(); // Refresh content properly
+                    this.displayCurrentPage(); // Just update display
                 });
                 this.pageDisplayGroup.add(downArrow);
             }
