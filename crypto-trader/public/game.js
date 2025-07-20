@@ -390,11 +390,13 @@ class LoginScene extends Phaser.Scene {
                 user = await this.auth.signIn(email, password);
             }
             
-            if (user) {
+            if (user && user.id) {
                 // Clean up form
                 this.formContainer.remove();
                 // Go to dashboard
                 this.scene.start('DashboardScene', { user });
+            } else {
+                throw new Error('Authentication failed - no user returned');
             }
         } catch (error) {
             this.showError(error.message || 'Authentication failed');
@@ -1351,6 +1353,13 @@ class DashboardScene extends Phaser.Scene {
     }
     
     async create() {
+        // Make sure we have a valid user
+        if (!this.user || !this.user.email) {
+            console.error('No valid user for dashboard');
+            this.scene.start('LoginScene');
+            return;
+        }
+        
         // Black background
         this.cameras.main.setBackgroundColor('#000000');
         
@@ -1420,6 +1429,13 @@ class DashboardScene extends Phaser.Scene {
     
     async loadPastRuns() {
         try {
+            // Make sure we have a valid user
+            if (!this.user || !this.user.id) {
+                console.error('No valid user in dashboard');
+                this.scene.start('LoginScene');
+                return;
+            }
+            
             // Query past runs from Supabase
             const { data, error } = await this.auth.supabase
                 .from('past_runs')
