@@ -4055,10 +4055,15 @@ class ActiveGameViewScene extends Phaser.Scene {
         }).setOrigin(0.5);
         
         try {
-            // Load all participants
+            // Load all participants with their usernames
             const { data: participants, error } = await this.auth.supabase
                 .from('game_participants')
-                .select('*')
+                .select(`
+                    *,
+                    profiles:user_id (
+                        username
+                    )
+                `)
                 .eq('game_id', this.gameData.id)
                 .order('current_value', { ascending: false });
                 
@@ -4070,6 +4075,7 @@ class ActiveGameViewScene extends Phaser.Scene {
             let yPos = 250;
             participants.forEach((participant, index) => {
                 const isMe = participant.user_id === this.user.id;
+                const username = participant.profiles?.username || 'Anonymous';
                 const value = participant.current_value || 10000000;
                 const profit = ((value - 10000000) / 10000000) * 100;
                 
@@ -4086,8 +4092,8 @@ class ActiveGameViewScene extends Phaser.Scene {
                     fontFamily: 'Arial Black'
                 }).setOrigin(0, 0.5);
                 
-                // Player email
-                this.add.text(250, yPos, 'Anonymous', {
+                // Player name
+                this.add.text(250, yPos, username, {
                     fontSize: '18px',
                     color: isMe ? '#00ffff' : '#ffffff'
                 }).setOrigin(0, 0.5);
@@ -4371,10 +4377,15 @@ class JoinGameScene extends Phaser.Scene {
     
     async loadParticipants(loadingText) {
         try {
-            // Get game participants
+            // Get game participants with usernames
             const { data: participants, error } = await this.auth.supabase
                 .from('game_participants')
-                .select('*')
+                .select(`
+                    *,
+                    profiles:user_id (
+                        username
+                    )
+                `)
                 .eq('game_id', this.game.id)
                 .order('current_value', { ascending: false });
                 
@@ -4397,12 +4408,13 @@ class JoinGameScene extends Phaser.Scene {
                 // Display participants
                 let yPos = 250;
                 participants.forEach((participant, index) => {
-                    const email = participant.profiles?.email || 'Anonymous';
+                    const isMe = participant.user_id === this.user.id;
+                    const username = participant.profiles?.username || 'Anonymous';
                     const value = participant.current_value || 10000000;
                     const profit = ((value - 10000000) / 10000000) * 100;
                     
                     // Rank and email
-                    this.add.text(250, yPos, `${index + 1}. ${email}`, {
+                    this.add.text(250, yPos, `${index + 1}. ${username}`, {
                         fontSize: '16px',
                         color: '#ffffff'
                     }).setOrigin(0, 0.5);
