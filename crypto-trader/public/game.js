@@ -1471,6 +1471,9 @@ class DashboardScene extends Phaser.Scene {
     constructor() {
         super({ key: 'DashboardScene' });
         this.auth = new Auth();
+        this.currentPage = 0;
+        this.gamesPerPage = 4;
+        this.allGames = [];
     }
     
     init(data) {
@@ -1631,25 +1634,11 @@ class DashboardScene extends Phaser.Scene {
                 return;
             }
             
-            // Display past runs - limit to 4 to fit on screen
-            let yPos = 300;
-            const maxGamesToShow = 4;
-            const gamesToShow = data.slice(0, maxGamesToShow);
+            // Store all games for paging
+            this.allGames = data;
             
-            gamesToShow.forEach((run, index) => {
-                this.createPastRunDisplay(run, yPos);
-                yPos += 60;
-            });
-            
-            // If there are more games, show a count
-            if (data.length > maxGamesToShow) {
-                const moreCount = data.length - maxGamesToShow;
-                this.add.text(450, yPos + 10, `+ ${moreCount} more game${moreCount > 1 ? 's' : ''}`, {
-                    fontSize: '14px',
-                    color: '#666666',
-                    fontStyle: 'italic'
-                }).setOrigin(0.5);
-            }
+            // Display current page
+            this.displayCurrentPage();
             
         } catch (error) {
             console.error('Error loading past runs:', error);
@@ -1658,11 +1647,75 @@ class DashboardScene extends Phaser.Scene {
         }
     }
     
-    createPastRunDisplay(run, y) {
+    displayCurrentPage() {
+        // Clear existing game displays if any
+        if (this.gameDisplayGroup) {
+            this.gameDisplayGroup.destroy(true);
+        }
+        this.gameDisplayGroup = this.add.group();
+        
+        // Calculate page info
+        const totalPages = Math.ceil(this.allGames.length / this.gamesPerPage);
+        const startIndex = this.currentPage * this.gamesPerPage;
+        const endIndex = Math.min(startIndex + this.gamesPerPage, this.allGames.length);
+        const gamesToShow = this.allGames.slice(startIndex, endIndex);
+        
+        // Display games
+        let yPos = 300;
+        gamesToShow.forEach((run, index) => {
+            this.createPastRunDisplay(run, yPos, this.gameDisplayGroup);
+            yPos += 60;
+        });
+        
+        // Show paging controls if there are multiple pages
+        if (totalPages > 1) {
+            // Up arrow (previous page)
+            if (this.currentPage > 0) {
+                const upArrow = this.add.text(450, yPos + 10, '▲', {
+                    fontSize: '20px',
+                    color: '#00ffff'
+                }).setOrigin(0.5)
+                .setInteractive({ useHandCursor: true })
+                .on('pointerover', function() { this.setScale(1.2); })
+                .on('pointerout', function() { this.setScale(1); })
+                .on('pointerdown', () => {
+                    this.currentPage--;
+                    this.displayCurrentPage();
+                });
+                this.gameDisplayGroup.add(upArrow);
+            }
+            
+            // Page indicator
+            const pageText = this.add.text(450, yPos + 35, `Page ${this.currentPage + 1} of ${totalPages}`, {
+                fontSize: '14px',
+                color: '#666666'
+            }).setOrigin(0.5);
+            this.gameDisplayGroup.add(pageText);
+            
+            // Down arrow (next page)
+            if (this.currentPage < totalPages - 1) {
+                const downArrow = this.add.text(450, yPos + 60, '▼', {
+                    fontSize: '20px',
+                    color: '#00ffff'
+                }).setOrigin(0.5)
+                .setInteractive({ useHandCursor: true })
+                .on('pointerover', function() { this.setScale(1.2); })
+                .on('pointerout', function() { this.setScale(1); })
+                .on('pointerdown', () => {
+                    this.currentPage++;
+                    this.displayCurrentPage();
+                });
+                this.gameDisplayGroup.add(downArrow);
+            }
+        }
+    }
+    
+    createPastRunDisplay(run, y, group) {
         // Background
         const bg = this.add.rectangle(450, y, 720, 50, 0x111111)
             .setStrokeStyle(1, 0x333333)
             .setInteractive({ useHandCursor: true });
+        group.add(bg);
         
         // Scenario name - handle both old and new data formats
         let scenarioName = SCENARIOS[run.scenario_key]?.displayName;
@@ -1681,10 +1734,11 @@ class DashboardScene extends Phaser.Scene {
             }
         }
         
-        this.add.text(120, y, scenarioName, {
+        const scenarioText = this.add.text(120, y, scenarioName, {
             fontSize: '18px',
             color: '#ffffff'
         }).setOrigin(0, 0.5);
+        group.add(scenarioText);
         
         // Final value
         const profit = run.final_value - GAME_CONFIG.startingMoney;
@@ -1692,25 +1746,28 @@ class DashboardScene extends Phaser.Scene {
         const profitColor = profit >= 0 ? '#00ffff' : '#ff1493';
         
         // Position dollar amount further left
-        this.add.text(480, y, `$${run.final_value.toLocaleString()}`, {
+        const valueText = this.add.text(480, y, `$${run.final_value.toLocaleString()}`, {
             fontSize: '18px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
         }).setOrigin(1, 0.5);  // Right-align the dollar amount
+        group.add(valueText);
         
         // Position percentage with more space
-        this.add.text(530, y, `${profit >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
+        const percentText = this.add.text(530, y, `${profit >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
             fontSize: '18px',
             fontFamily: 'Arial Black',
             color: profitColor
         }).setOrigin(0, 0.5);  // Left-align the percentage
+        group.add(percentText);
         
         // Date - moved to far right edge
         const date = new Date(run.created_at);
-        this.add.text(780, y, date.toLocaleDateString(), {
+        const dateText = this.add.text(780, y, date.toLocaleDateString(), {
             fontSize: '14px',
             color: '#666666'
         }).setOrigin(1, 0.5);
+        group.add(dateText);
         
         // Hover effect
         bg.on('pointerover', () => {
