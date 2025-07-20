@@ -206,6 +206,11 @@ export class Auth {
     return auth.getCurrentUser();
   }
   
+  async getUserProfile(userId) {
+    await this.init();
+    return auth.getUserProfile(userId);
+  }
+  
   // Add any other methods as needed
 }
 

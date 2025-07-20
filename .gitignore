@@ -67,3 +67,4 @@ docs/_site/
 .parcel-cache/
 .cache/
 brainlift/
+.vercel

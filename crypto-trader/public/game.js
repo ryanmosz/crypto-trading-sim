@@ -1,5 +1,5 @@
 // Import auth module (v2 - fixed auth initialization)
-import { Auth } from './auth.js';
+import { Auth, auth } from './auth.js';
 
 // Tutorial Overlay System
 class TutorialOverlay {
@@ -2385,7 +2385,17 @@ class DashboardScene extends Phaser.Scene {
     }
     
     showTabContent() {
-        // Clear existing content
+        // Clear existing content more thoroughly
+        if (this.pageDisplayGroup) {
+            this.pageDisplayGroup.clear(true, true);
+            this.pageDisplayGroup.destroy(true);
+            this.pageDisplayGroup = null;
+        }
+        
+        // Clear all children from contentGroup
+        this.contentGroup.getChildren().forEach(child => {
+            child.destroy();
+        });
         this.contentGroup.clear(true, true);
         
         switch (this.activeTab) {
@@ -2416,6 +2426,10 @@ class DashboardScene extends Phaser.Scene {
         if (!this.contentGroup) {
             this.contentGroup = this.add.group();
         }
+        
+        // Create a background to cover any previous content
+        const contentBg = this.add.rectangle(450, this.contentY + 150, 800, 350, 0x000000, 1);
+        this.contentGroup.add(contentBg);
         
         // Large play button
         const playButton = this.add.rectangle(450, this.contentY + 80, 400, 80, 0x00ffff)
@@ -2485,6 +2499,10 @@ class DashboardScene extends Phaser.Scene {
         if (!this.contentGroup) {
             this.contentGroup = this.add.group();
         }
+        
+        // Create a background to cover any previous content
+        const contentBg = this.add.rectangle(450, this.contentY + 150, 800, 350, 0x000000, 1);
+        this.contentGroup.add(contentBg);
         
         // Loading text
         const loadingText = this.add.text(450, this.contentY + 40, 'Loading active games...', {
@@ -2625,6 +2643,10 @@ class DashboardScene extends Phaser.Scene {
         if (!this.contentGroup) {
             this.contentGroup = this.add.group();
         }
+        
+        // Create a background to cover any previous content
+        const contentBg = this.add.rectangle(450, this.contentY + 150, 800, 350, 0x000000, 1);
+        this.contentGroup.add(contentBg);
         
         // Loading text
         const loadingText = this.add.text(450, this.contentY + 40, 'Loading past games...', {
@@ -2822,6 +2844,11 @@ class DashboardScene extends Phaser.Scene {
             if (this.contentGroup) {
                 this.contentGroup.remove(this.pageDisplayGroup);
             }
+            // Destroy all children individually first
+            this.pageDisplayGroup.getChildren().forEach(child => {
+                child.destroy();
+            });
+            this.pageDisplayGroup.clear(true, true);
             this.pageDisplayGroup.destroy(true);
         }
         this.pageDisplayGroup = this.add.group();
