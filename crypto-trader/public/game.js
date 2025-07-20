@@ -1718,26 +1718,28 @@ class DashboardScene extends Phaser.Scene {
         const tabWidth = 200;
         const tabHeight = 50;
         const tabSpacing = 20;
-        const startX = 450 - (tabWidth * 1.5 + tabSpacing); // Center 3 tabs
+        // Fix centering: 3 tabs total width = 3*200 + 2*20 = 640
+        const totalWidth = (tabWidth * 3) + (tabSpacing * 2);
+        const startX = 450 - (totalWidth / 2); // Center properly
         
         // Tab data
         const tabs = [
-            { key: 'new', label: 'NEW GAME', x: startX },
-            { key: 'active', label: 'ACTIVE', x: startX + tabWidth + tabSpacing },
-            { key: 'past', label: 'PAST', x: startX + (tabWidth + tabSpacing) * 2 }
+            { key: 'new', label: 'NEW GAME', x: startX + (tabWidth / 2) },
+            { key: 'active', label: 'ACTIVE', x: startX + tabWidth + tabSpacing + (tabWidth / 2) },
+            { key: 'past', label: 'PAST', x: startX + (tabWidth + tabSpacing) * 2 + (tabWidth / 2) }
         ];
         
         // Create tab buttons
         tabs.forEach(tab => {
             const isActive = this.activeTab === tab.key;
             
-            // Tab background
+            // Tab background - use x as center
             const tabBg = this.add.rectangle(tab.x, tabY, tabWidth, tabHeight, 
                 isActive ? 0x00ffff : 0x111111)
                 .setStrokeStyle(2, isActive ? 0x00ffff : 0x333333)
                 .setInteractive({ useHandCursor: true });
             
-            // Tab text
+            // Tab text - centered on tab
             const tabText = this.add.text(tab.x, tabY, tab.label, {
                 fontSize: '20px',
                 fontFamily: 'Arial Black',
@@ -2044,7 +2046,7 @@ class DashboardScene extends Phaser.Scene {
     }
     
     displayCurrentPage() {
-        // Clear existing game displays if any
+        // Clear existing page displays but NOT the entire content group
         if (this.pageDisplayGroup) {
             this.pageDisplayGroup.destroy(true);
         }
@@ -2059,24 +2061,21 @@ class DashboardScene extends Phaser.Scene {
         // Display games
         let yPos = this.contentY + 40;
         gamesToShow.forEach((run, index) => {
-            this.createPastRunDisplay(run, yPos, this.pageDisplayGroup);
+            this.createPastRunDisplay(run, yPos);
             yPos += 60;
         });
         
-        // Add page display group to content group
-        this.contentGroup.add(this.pageDisplayGroup);
-        
         // Show paging controls if there are multiple pages
         if (totalPages > 1) {
-            // Position paging controls compactly to fit on screen
-            const pagingY = yPos + 5;  // Start paging controls right after games
+            // Position paging controls at fixed position
+            const pagingY = this.contentY + 300;  // Fixed position for paging
             
             // Page indicator in center
             const pageText = this.add.text(450, pagingY, `Page ${this.currentPage + 1} of ${totalPages}`, {
                 fontSize: '13px',
                 color: '#666666'
             }).setOrigin(0.5);
-            this.contentGroup.add(pageText);
+            this.pageDisplayGroup.add(pageText);
             
             // Up arrow (previous page) - positioned left with proper spacing
             if (this.currentPage > 0) {
@@ -2089,9 +2088,9 @@ class DashboardScene extends Phaser.Scene {
                 .on('pointerout', function() { this.setScale(1); })
                 .on('pointerdown', () => {
                     this.currentPage--;
-                    this.displayCurrentPage();
+                    this.showPastGamesContent(); // Refresh content properly
                 });
-                this.contentGroup.add(upArrow);
+                this.pageDisplayGroup.add(upArrow);
             }
             
             // Down arrow (next page) - positioned right with proper spacing
@@ -2105,19 +2104,22 @@ class DashboardScene extends Phaser.Scene {
                 .on('pointerout', function() { this.setScale(1); })
                 .on('pointerdown', () => {
                     this.currentPage++;
-                    this.displayCurrentPage();
+                    this.showPastGamesContent(); // Refresh content properly
                 });
-                this.contentGroup.add(downArrow);
+                this.pageDisplayGroup.add(downArrow);
             }
         }
+        
+        // Add page display group to content group
+        this.contentGroup.add(this.pageDisplayGroup);
     }
     
-    createPastRunDisplay(run, y, group) {
+    createPastRunDisplay(run, y) {
         // Background
         const bg = this.add.rectangle(450, y, 720, 50, 0x111111)
             .setStrokeStyle(1, 0x333333)
             .setInteractive({ useHandCursor: true });
-        group.add(bg);
+        this.pageDisplayGroup.add(bg);
         
         // Scenario name - handle both old and new data formats
         let scenarioName = SCENARIOS[run.scenario_key]?.displayName;
@@ -2140,7 +2142,7 @@ class DashboardScene extends Phaser.Scene {
             fontSize: '18px',
             color: '#ffffff'
         }).setOrigin(0, 0.5);
-        group.add(scenarioText);
+        this.pageDisplayGroup.add(scenarioText);
         
         // Final value
         const profit = run.final_value - GAME_CONFIG.startingMoney;
@@ -2153,7 +2155,7 @@ class DashboardScene extends Phaser.Scene {
             fontFamily: 'Arial Black',
             color: '#ffffff'
         }).setOrigin(1, 0.5);  // Right-align the dollar amount
-        group.add(valueText);
+        this.pageDisplayGroup.add(valueText);
         
         // Position percentage with more space
         const percentText = this.add.text(530, y, `${profit >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
@@ -2161,7 +2163,7 @@ class DashboardScene extends Phaser.Scene {
             fontFamily: 'Arial Black',
             color: profitColor
         }).setOrigin(0, 0.5);  // Left-align the percentage
-        group.add(percentText);
+        this.pageDisplayGroup.add(percentText);
         
         // Date - moved to far right edge
         const date = new Date(run.created_at);
@@ -2169,7 +2171,7 @@ class DashboardScene extends Phaser.Scene {
             fontSize: '14px',
             color: '#666666'
         }).setOrigin(1, 0.5);
-        group.add(dateText);
+        this.pageDisplayGroup.add(dateText);
         
         // Hover effect
         bg.on('pointerover', () => {
@@ -3216,41 +3218,41 @@ class LeaderboardScene extends Phaser.Scene {
             
             // Headers
             const headerY = 140;
-            this.add.text(100, headerY, 'Rank', {
+            this.add.text(80, headerY, 'Rank', {
                 fontSize: '16px',
                 fontFamily: 'Arial Black',
                 color: '#ffffff'
             }).setOrigin(0, 0.5);
             
-            this.add.text(200, headerY, 'Player', {
+            this.add.text(160, headerY, 'Player', {
                 fontSize: '16px',
                 fontFamily: 'Arial Black',
                 color: '#ffffff'
             }).setOrigin(0, 0.5);
             
-            this.add.text(450, headerY, 'Games', {
+            this.add.text(400, headerY, 'Games', {
                 fontSize: '16px',
                 fontFamily: 'Arial Black',
                 color: '#ffffff'
             }).setOrigin(0.5);
             
-            this.add.text(550, headerY, 'Win Rate', {
+            this.add.text(500, headerY, 'Win Rate', {
                 fontSize: '16px',
                 fontFamily: 'Arial Black',
                 color: '#ffffff'
             }).setOrigin(0.5);
             
-            this.add.text(700, headerY, 'Avg Profit', {
+            this.add.text(620, headerY, 'Avg Profit', {
                 fontSize: '16px',
                 fontFamily: 'Arial Black',
                 color: '#ffffff'
             }).setOrigin(0.5);
             
-            this.add.text(800, headerY, 'Best Game', {
+            this.add.text(760, headerY, 'Best Game', {
                 fontSize: '16px',
                 fontFamily: 'Arial Black',
                 color: '#ffffff'
-            }).setOrigin(1, 0.5);
+            }).setOrigin(0.5);
             
             // Display leaderboard entries
             let yPos = 180;
@@ -3269,7 +3271,7 @@ class LeaderboardScene extends Phaser.Scene {
                 else if (entry.rank === 2) rankDisplay = '🥈';
                 else if (entry.rank === 3) rankDisplay = '🥉';
                 
-                this.add.text(100, yPos, rankDisplay, {
+                this.add.text(80, yPos, rankDisplay, {
                     fontSize: entry.rank <= 3 ? '20px' : '16px',
                     fontFamily: 'Arial Black',
                     color: entry.rank === 1 ? '#ffd700' : 
@@ -3279,20 +3281,20 @@ class LeaderboardScene extends Phaser.Scene {
                 
                 // Username (truncate if too long)
                 let displayName = entry.username;
-                if (displayName.length > 20) {
-                    displayName = displayName.substring(0, 17) + '...';
+                if (displayName.length > 15) {
+                    displayName = displayName.substring(0, 12) + '...';
                 }
                 if (isCurrentUser) {
                     displayName += ' (You)';
                 }
                 
-                this.add.text(200, yPos, displayName, {
+                this.add.text(160, yPos, displayName, {
                     fontSize: '14px',
                     color: isCurrentUser ? '#00ffff' : '#ffffff'
                 }).setOrigin(0, 0.5);
                 
                 // Games played
-                this.add.text(450, yPos, entry.total_games.toString(), {
+                this.add.text(400, yPos, entry.total_games.toString(), {
                     fontSize: '14px',
                     color: '#ffffff'
                 }).setOrigin(0.5);
@@ -3300,7 +3302,7 @@ class LeaderboardScene extends Phaser.Scene {
                 // Win rate
                 const winRate = (entry.winning_games / entry.total_games * 100).toFixed(0);
                 const winRateColor = winRate >= 50 ? '#00ff00' : '#ff0066';
-                this.add.text(550, yPos, `${winRate}%`, {
+                this.add.text(500, yPos, `${winRate}%`, {
                     fontSize: '14px',
                     fontFamily: 'Arial Black',
                     color: winRateColor
@@ -3308,7 +3310,7 @@ class LeaderboardScene extends Phaser.Scene {
                 
                 // Average profit
                 const avgProfitColor = entry.avg_profit_percent >= 0 ? '#00ff00' : '#ff0066';
-                this.add.text(700, yPos, `${entry.avg_profit_percent >= 0 ? '+' : ''}${entry.avg_profit_percent}%`, {
+                this.add.text(620, yPos, `${entry.avg_profit_percent >= 0 ? '+' : ''}${entry.avg_profit_percent}%`, {
                     fontSize: '14px',
                     fontFamily: 'Arial Black',
                     color: avgProfitColor
@@ -3316,11 +3318,11 @@ class LeaderboardScene extends Phaser.Scene {
                 
                 // Best game
                 const bestColor = entry.best_game >= 0 ? '#00ff00' : '#ff0066';
-                this.add.text(800, yPos, `${entry.best_game >= 0 ? '+' : ''}${entry.best_game}%`, {
+                this.add.text(760, yPos, `${entry.best_game >= 0 ? '+' : ''}${entry.best_game}%`, {
                     fontSize: '14px',
                     fontFamily: 'Arial Black',
                     color: bestColor
-                }).setOrigin(1, 0.5);
+                }).setOrigin(0.5);
                 
                 yPos += 40;
             });
@@ -3365,7 +3367,7 @@ class LeaderboardScene extends Phaser.Scene {
             .setStrokeStyle(2, strokeColor);
         
         // Rank
-        this.add.text(100, yPos, `#${entry.rank}`, {
+        this.add.text(80, yPos, `#${entry.rank}`, {
             fontSize: '16px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
@@ -3373,18 +3375,18 @@ class LeaderboardScene extends Phaser.Scene {
         
         // Username
         let displayName = entry.username;
-        if (displayName.length > 20) {
-            displayName = displayName.substring(0, 17) + '...';
+        if (displayName.length > 15) {
+            displayName = displayName.substring(0, 12) + '...';
         }
         displayName += ' (You)';
         
-        this.add.text(200, yPos, displayName, {
+        this.add.text(160, yPos, displayName, {
             fontSize: '14px',
             color: '#00ffff'
         }).setOrigin(0, 0.5);
         
         // Games played
-        this.add.text(450, yPos, entry.total_games.toString(), {
+        this.add.text(400, yPos, entry.total_games.toString(), {
             fontSize: '14px',
             color: '#ffffff'
         }).setOrigin(0.5);
@@ -3392,7 +3394,7 @@ class LeaderboardScene extends Phaser.Scene {
         // Win rate
         const winRate = (entry.winning_games / entry.total_games * 100).toFixed(0);
         const winRateColor = winRate >= 50 ? '#00ff00' : '#ff0066';
-        this.add.text(550, yPos, `${winRate}%`, {
+        this.add.text(500, yPos, `${winRate}%`, {
             fontSize: '14px',
             fontFamily: 'Arial Black',
             color: winRateColor
@@ -3400,7 +3402,7 @@ class LeaderboardScene extends Phaser.Scene {
         
         // Average profit
         const avgProfitColor = entry.avg_profit_percent >= 0 ? '#00ff00' : '#ff0066';
-        this.add.text(700, yPos, `${entry.avg_profit_percent >= 0 ? '+' : ''}${entry.avg_profit_percent}%`, {
+        this.add.text(620, yPos, `${entry.avg_profit_percent >= 0 ? '+' : ''}${entry.avg_profit_percent}%`, {
             fontSize: '14px',
             fontFamily: 'Arial Black',
             color: avgProfitColor
@@ -3408,11 +3410,11 @@ class LeaderboardScene extends Phaser.Scene {
         
         // Best game
         const bestColor = entry.best_game >= 0 ? '#00ff00' : '#ff0066';
-        this.add.text(800, yPos, `${entry.best_game >= 0 ? '+' : ''}${entry.best_game}%`, {
+        this.add.text(760, yPos, `${entry.best_game >= 0 ? '+' : ''}${entry.best_game}%`, {
             fontSize: '14px',
             fontFamily: 'Arial Black',
             color: bestColor
-        }).setOrigin(1, 0.5);
+        }).setOrigin(0.5);
     }
 }
 
