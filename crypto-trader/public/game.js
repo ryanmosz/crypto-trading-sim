@@ -1337,54 +1337,33 @@ class ResultsScene extends Phaser.Scene {
             color: '#00ffff'
         }).setOrigin(0.5);
         
-        // Play again button - cyan accent
-        const playAgainBtn = this.add.rectangle(350, 500, 180, 50, 0x000000, 1)
+        // Back to Dashboard button
+        const dashboardBtn = this.add.rectangle(450, 500, 250, 50, 0x000000, 1)
             .setStrokeStyle(2, 0x666666)
             .setInteractive({ useHandCursor: true });
             
-        const playAgainText = this.add.text(350, 500, 'PLAY AGAIN', {
+        const dashboardText = this.add.text(450, 500, 'BACK TO DASHBOARD', {
             fontSize: '20px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
         }).setOrigin(0.5);
         
-        playAgainBtn
+        dashboardBtn
             .on('pointerover', () => {
-                playAgainBtn.setStrokeStyle(2, 0x00ffff);
-                playAgainText.setColor('#00ffff');
+                dashboardBtn.setStrokeStyle(2, 0x00ffff);
+                dashboardText.setColor('#00ffff');
             })
             .on('pointerout', () => {
-                playAgainBtn.setStrokeStyle(2, 0x666666);
-                playAgainText.setColor('#ffffff');
+                dashboardBtn.setStrokeStyle(2, 0x666666);
+                dashboardText.setColor('#ffffff');
             })
-            .on('pointerdown', () => this.scene.start('ScenarioSelectScene', { user: this.user }));
-        
-        // New strategy button - pink accent
-        const newStrategyBtn = this.add.rectangle(550, 500, 180, 50, 0x000000, 1)
-            .setStrokeStyle(2, 0x666666)
-            .setInteractive({ useHandCursor: true });
-            
-        const tryAgainText = this.add.text(550, 500, 'TRY AGAIN', {
-            fontSize: '20px',
-            fontFamily: 'Arial Black',
-            color: '#ffffff'
-        }).setOrigin(0.5);
-        
-        newStrategyBtn
-            .on('pointerover', () => {
-                newStrategyBtn.setStrokeStyle(2, 0xff1493);
-                tryAgainText.setColor('#ff1493');
-            })
-            .on('pointerout', () => {
-                newStrategyBtn.setStrokeStyle(2, 0x666666);
-                tryAgainText.setColor('#ffffff');
-            })
-            .on('pointerdown', () => this.scene.start('AllocationScene', { 
-                user: this.user,
-                scenario: this.scenarioKey,
-                speed: 'regular',
-                simulationTime: 30
-            }));
+            .on('pointerdown', () => {
+                if (this.user && this.user.id) {
+                    this.scene.start('DashboardScene', { user: this.user });
+                } else {
+                    this.scene.start('LoginScene');
+                }
+            });
         
         // Fun message - white
         const messages = isWinner ? 
@@ -1400,6 +1379,13 @@ class ResultsScene extends Phaser.Scene {
     
     async savePastRun() {
         try {
+            console.log('Attempting to save game with:', {
+                user_id: this.user.id,
+                scenario_key: this.scenarioKey,
+                allocations: this.allocations,
+                totalValue: this.totalValue
+            });
+            
             const profit = this.totalValue - GAME_CONFIG.startingMoney;
             const profitPercent = (profit / GAME_CONFIG.startingMoney) * 100;
             
@@ -1411,13 +1397,14 @@ class ResultsScene extends Phaser.Scene {
                     allocations: this.allocations,
                     final_value: this.totalValue,
                     profit_amount: profit,
-                    profit_percent: profitPercent
+                    profit_percent: profitPercent,
+                    created_at: new Date().toISOString()
                 })
                 .select();
             
             if (error) throw error;
             
-            console.log('Game saved successfully!');
+            console.log('Game saved successfully!', data);
         } catch (error) {
             console.error('Error saving game:', error);
         }
@@ -1532,6 +1519,8 @@ class DashboardScene extends Phaser.Scene {
                 return;
             }
             
+            console.log('Loading past runs for user:', this.user.id);
+            
             // Query past runs from Supabase
             const { data, error } = await this.auth.supabase
                 .from('past_runs')
@@ -1541,6 +1530,8 @@ class DashboardScene extends Phaser.Scene {
                 .limit(10);
             
             if (error) throw error;
+            
+            console.log('Past runs loaded:', data);
             
             this.loadingText.destroy();
             
