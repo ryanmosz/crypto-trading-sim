@@ -263,7 +263,7 @@ class LoginScene extends Phaser.Scene {
         }).setOrigin(0.5);
         
         // Subtitle - white text
-        this.add.text(450, 150, 'Like fantasy football for crypto!!', {
+        this.add.text(450, 150, 'Like Fantasy Football For Crypto!!', {
             fontSize: '20px',
             color: '#ffffff'
         }).setOrigin(0.5);
@@ -1899,43 +1899,156 @@ class DashboardScene extends Phaser.Scene {
         modalElements.push(detailsTitle);
         
         // Allocations
-        let yPos = 180;
-        const allocHeader = this.add.text(450, yPos, 'Your Investment Allocations:', {
-            fontSize: '18px',
+        let yPos = 170;
+        const allocHeader = this.add.text(450, yPos, 'Investment Performance:', {
+            fontSize: '20px',
             color: '#00ffff'
         }).setOrigin(0.5).setVisible(false);
         detailsViewElements.push(allocHeader);
         modalElements.push(allocHeader);
         
-        yPos += 40;
+        // Column headers
+        const startHeader = this.add.text(350, yPos + 30, 'Initial', {
+            fontSize: '14px',
+            color: '#666666'
+        }).setOrigin(0.5).setVisible(false);
+        detailsViewElements.push(startHeader);
+        modalElements.push(startHeader);
+        
+        const endHeader = this.add.text(550, yPos + 30, 'Final', {
+            fontSize: '14px',
+            color: '#666666'
+        }).setOrigin(0.5).setVisible(false);
+        detailsViewElements.push(endHeader);
+        modalElements.push(endHeader);
+        
+        yPos += 60;
         if (run.allocations) {
+            // Calculate individual crypto performance
+            const cryptoResults = {};
+            const scenarioData = SCENARIOS[run.scenario_key];
+            
+            // Calculate each crypto's final value
             Object.entries(run.allocations).forEach(([symbol, blocks]) => {
                 if (blocks > 0) {
-                    const cryptoInfo = GAME_CONFIG.cryptos[symbol];
-                    const allocText = this.add.text(200, yPos, `${symbol} (${cryptoInfo.name}):`, {
-                        fontSize: '16px',
-                        color: '#ffffff'
-                    }).setOrigin(0, 0.5).setVisible(false);
-                    detailsViewElements.push(allocText);
-                    modalElements.push(allocText);
+                    const initialInvestment = blocks * 1000000;
+                    const startPrice = scenarioData.prices[symbol].start;
+                    const endPrice = scenarioData.prices[symbol].end;
+                    const units = initialInvestment / startPrice;
+                    const finalValue = units * endPrice;
+                    const change = ((finalValue / initialInvestment) - 1) * 100;
                     
-                    const blockText = this.add.text(450, yPos, `${blocks} blocks`, {
-                        fontSize: '16px',
-                        color: '#666666'
-                    }).setOrigin(0.5).setVisible(false);
-                    detailsViewElements.push(blockText);
-                    modalElements.push(blockText);
-                    
-                    const valueText = this.add.text(650, yPos, `$${(blocks * 1000000).toLocaleString()}`, {
-                        fontSize: '16px',
-                        color: '#00ffff'
-                    }).setOrigin(1, 0.5).setVisible(false);
-                    detailsViewElements.push(valueText);
-                    modalElements.push(valueText);
-                    
-                    yPos += 30;
+                    cryptoResults[symbol] = {
+                        blocks,
+                        initialInvestment,
+                        finalValue,
+                        change
+                    };
                 }
             });
+            
+            // Display each crypto's performance
+            Object.entries(cryptoResults).forEach(([symbol, data]) => {
+                const cryptoInfo = GAME_CONFIG.cryptos[symbol];
+                
+                // Crypto name
+                const allocText = this.add.text(150, yPos, `${symbol}:`, {
+                    fontSize: '16px',
+                    fontFamily: 'Arial Black',
+                    color: '#ffffff'
+                }).setOrigin(0, 0.5).setVisible(false);
+                detailsViewElements.push(allocText);
+                modalElements.push(allocText);
+                
+                // Initial investment
+                const initialText = this.add.text(350, yPos, `$${data.initialInvestment.toLocaleString()}`, {
+                    fontSize: '16px',
+                    color: '#666666'
+                }).setOrigin(0.5).setVisible(false);
+                detailsViewElements.push(initialText);
+                modalElements.push(initialText);
+                
+                // Arrow
+                const arrowText = this.add.text(450, yPos, `→`, {
+                    fontSize: '16px',
+                    color: '#ffffff'
+                }).setOrigin(0.5).setVisible(false);
+                detailsViewElements.push(arrowText);
+                modalElements.push(arrowText);
+                
+                // Final value
+                const finalText = this.add.text(550, yPos, `$${Math.round(data.finalValue).toLocaleString()}`, {
+                    fontSize: '16px',
+                    color: data.change >= 0 ? '#00ffff' : '#ff1493'
+                }).setOrigin(0.5).setVisible(false);
+                detailsViewElements.push(finalText);
+                modalElements.push(finalText);
+                
+                // Percentage change
+                const changeText = this.add.text(680, yPos, `(${data.change >= 0 ? '+' : ''}${data.change.toFixed(1)}%)`, {
+                    fontSize: '14px',
+                    color: data.change >= 0 ? '#00ffff' : '#ff1493'
+                }).setOrigin(1, 0.5).setVisible(false);
+                detailsViewElements.push(changeText);
+                modalElements.push(changeText);
+                
+                yPos += 30;
+            });
+            
+            // Add total summary
+            yPos += 20;
+            
+            // Divider line
+            const divider = this.add.rectangle(450, yPos, 400, 1, 0x666666)
+                .setVisible(false);
+            detailsViewElements.push(divider);
+            modalElements.push(divider);
+            
+            yPos += 20;
+            
+            // Total label
+            const totalLabel = this.add.text(150, yPos, 'TOTAL:', {
+                fontSize: '16px',
+                fontFamily: 'Arial Black',
+                color: '#ffffff'
+            }).setOrigin(0, 0.5).setVisible(false);
+            detailsViewElements.push(totalLabel);
+            modalElements.push(totalLabel);
+            
+            // Total initial
+            const totalInitial = this.add.text(350, yPos, `$${GAME_CONFIG.startingMoney.toLocaleString()}`, {
+                fontSize: '16px',
+                fontFamily: 'Arial Black',
+                color: '#666666'
+            }).setOrigin(0.5).setVisible(false);
+            detailsViewElements.push(totalInitial);
+            modalElements.push(totalInitial);
+            
+            // Total arrow
+            const totalArrow = this.add.text(450, yPos, `→`, {
+                fontSize: '16px',
+                color: '#ffffff'
+            }).setOrigin(0.5).setVisible(false);
+            detailsViewElements.push(totalArrow);
+            modalElements.push(totalArrow);
+            
+            // Total final
+            const totalFinal = this.add.text(550, yPos, `$${run.final_value.toLocaleString()}`, {
+                fontSize: '16px',
+                fontFamily: 'Arial Black',
+                color: profit >= 0 ? '#00ffff' : '#ff1493'
+            }).setOrigin(0.5).setVisible(false);
+            detailsViewElements.push(totalFinal);
+            modalElements.push(totalFinal);
+            
+            // Total percentage
+            const totalPercent = this.add.text(680, yPos, `(${profit >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%)`, {
+                fontSize: '14px',
+                fontFamily: 'Arial Black',
+                color: profit >= 0 ? '#00ffff' : '#ff1493'
+            }).setOrigin(1, 0.5).setVisible(false);
+            detailsViewElements.push(totalPercent);
+            modalElements.push(totalPercent);
         }
         
         // Back button (details view)
