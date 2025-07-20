@@ -3391,25 +3391,24 @@ class LeaderboardScene extends Phaser.Scene {
             // Your stats summary if not in top 10
             const userInTop10 = data.some(entry => entry.username === this.user.email);
             if (!userInTop10) {
-                // Query user's specific stats
-                const { data: userStats, error: userError } = await this.auth.supabase
-                    .from('leaderboard')
-                    .select('*')
-                    .eq('username', this.user.email)
-                    .single();
+                // Note: Can't query individual stats from the leaderboard view
+                // because it's pre-aggregated. Would need a separate function/view.
+                // For now, just show a message
                 
-                if (userStats && !userError) {
-                    // Separator
-                    this.add.text(450, yPos + 20, '···', {
-                        fontSize: '20px',
-                        color: '#666666'
-                    }).setOrigin(0.5);
-                    
-                    yPos += 50;
-                    
-                    // Your stats
-                    this.displayLeaderboardEntry(userStats, yPos, true);
-                }
+                // Separator
+                this.add.text(450, yPos + 20, '···', {
+                    fontSize: '20px',
+                    color: '#666666'
+                }).setOrigin(0.5);
+                
+                yPos += 50;
+                
+                // Your stats message
+                this.add.text(450, yPos, 'Play more games to appear on the leaderboard!', {
+                    fontSize: '18px',
+                    color: '#ffff00',
+                    fontStyle: 'italic'
+                }).setOrigin(0.5);
             }
             
         } catch (error) {
