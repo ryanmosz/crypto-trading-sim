@@ -134,13 +134,6 @@ class TutorialManager {
                 position: 'top'
             },
             {
-                scene: 'ScenarioSelectScene',
-                elementId: 'scenarioCard',
-                x: 225, y: 250, w: 200, h: 280,
-                text: "Choose a historical event to trade through. Each scenario presents different market conditions!",
-                position: 'top'
-            },
-            {
                 scene: 'AllocationScene',
                 elementId: 'allocations',
                 x: 450, y: 150, w: 600, h: 60,
@@ -178,6 +171,22 @@ class TutorialManager {
                 elementId: 'leaderboard',
                 x: 740, y: 40, w: 120, h: 40,
                 text: "Check the LEADERBOARD to see top traders and learn from their strategies!"
+            },
+            {
+                scene: 'DashboardScene',
+                elementId: 'newGameBtn',
+                button: true,
+                x: 450, y: 300, w: 250, h: 80,
+                text: "Let's start a NEW GAME! Click this button to begin trading.",
+                position: 'bottom',
+                autoAdvance: true
+            },
+            {
+                scene: 'AllocationScene',
+                elementId: 'allocations',
+                x: 450, y: 250, w: 800, h: 250,
+                text: "Allocate your $10M across different cryptocurrencies. Consider the risks!",
+                position: 'top'
             }
         ];
         

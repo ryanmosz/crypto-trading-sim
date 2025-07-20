@@ -55,14 +55,7 @@ The tutorial uses a spotlight overlay system that highlights UI elements and sho
 - **Text Position**: top
 - **Notes**: Final call to action
 
-### Step 6: Choose Scenario
-- **Scene**: ScenarioSelectScene
-- **Element**: First scenario card
-- **Position**: x: 225, y: 250, w: 200, h: 280
-- **Text**: "Choose a historical event to trade through. Each scenario presents different market conditions!"
-- **Text Position**: top
-
-### Step 7: Make Allocations
+### Step 6: Make Allocations
 - **Scene**: AllocationScene
 - **Element**: Allocation sliders area
 - **Position**: x: 450, y: 150, w: 600, h: 60
