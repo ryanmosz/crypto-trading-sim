@@ -79,6 +79,11 @@
 ## Current Work
 
 ### Just Completed
+- Fixed "Solana unavailable" error when clicking Update Prices:
+  - Added SOL (Solana) to all crypto mappings (was missing)
+  - Removed DOGE from all files (not used in game)
+  - Updated API integration, edge function, and fallback prices
+  - All crypto lists now match GAME_CONFIG: BTC, ETH, BNB, SOL, XRP
 - Fixed TypeError when locking in Now mode allocations
   - Added price validation and default values
   - Display "Price unavailable" for missing prices instead of crashing

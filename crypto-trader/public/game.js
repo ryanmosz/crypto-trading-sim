@@ -1109,6 +1109,11 @@ class AllocationScene extends Phaser.Scene {
     
     async fetchCurrentPrices() {
         try {
+            // Ensure Auth is initialized
+            if (!this.auth.supabase) {
+                await this.auth.init();
+            }
+            
             // Check if we have cached prices first
             const { data: cachedPrices, error: cacheError } = await this.auth.supabase
                 .from('prices_cache')
@@ -1121,10 +1126,20 @@ class AllocationScene extends Phaser.Scene {
                     this.currentPrices[row.symbol] = row.price;
                 });
                 console.log('Loaded prices from cache:', this.currentPrices);
+                
+                // Ensure we have all required cryptos
+                const requiredCryptos = Object.keys(GAME_CONFIG.cryptos);
+                for (const symbol of requiredCryptos) {
+                    if (!this.currentPrices[symbol]) {
+                        console.warn(`Missing price for ${symbol}, using default`);
+                        const defaults = this.getDefaultPrices();
+                        this.currentPrices[symbol] = defaults[symbol] || 0;
+                    }
+                }
             } else {
                 // Use default prices if no cache available
+                console.log('No cached prices available, using defaults');
                 this.currentPrices = this.getDefaultPrices();
-                console.log('Using default prices:', this.currentPrices);
             }
         } catch (error) {
             console.error('Error fetching prices:', error);
@@ -2573,6 +2588,7 @@ class DashboardScene extends Phaser.Scene {
 class NowModeSetupScene extends Phaser.Scene {
     constructor() {
         super({ key: 'NowModeSetupScene' });
+        this.auth = new Auth(); // Add Auth instance
     }
     
     init(data) {
@@ -2608,6 +2624,20 @@ class NowModeSetupScene extends Phaser.Scene {
             color: '#00ff00'
         }).setOrigin(0.5);
         
+        // Last update text
+        const lastUpdateText = this.add.text(750, 70, '', {
+            fontSize: '10px',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
+        // Check for last update time
+        const lastUpdate = localStorage.getItem('lastPriceUpdate');
+        if (lastUpdate) {
+            const date = new Date(lastUpdate);
+            const timeStr = date.toLocaleTimeString();
+            lastUpdateText.setText(`Last update: ${timeStr}`);
+        }
+        
         updatePricesBtn
             .on('pointerover', () => {
                 updatePricesBtn.setStrokeStyle(2, 0xffffff);
@@ -2623,14 +2653,23 @@ class NowModeSetupScene extends Phaser.Scene {
                 updatePricesText.setText('UPDATING...');
                 console.log('Fetching latest prices from CoinGecko...');
                 try {
-                    // Call the API integration to update prices
-                    const priceManager = window.CryptoPriceManager || {};
-                    if (priceManager.updatePrices) {
-                        await priceManager.updatePrices();
+                    // Use CryptoAPI with the auth's supabase client
+                    if (!this.auth.supabase) {
+                        await this.auth.init();
+                    }
+                    
+                    if (window.CryptoAPI && window.CryptoAPI.updatePricesInCache) {
+                        await window.CryptoAPI.updatePricesInCache(this.auth.supabase);
                         console.log('Prices updated successfully!');
                         updatePricesText.setText('UPDATED!');
+                        
+                        // Store last update time
+                        const now = new Date().toISOString();
+                        localStorage.setItem('lastPriceUpdate', now);
+                        const timeStr = new Date(now).toLocaleTimeString();
+                        lastUpdateText.setText(`Last update: ${timeStr}`);
                     } else {
-                        console.warn('Price manager not available');
+                        console.error('CryptoAPI not available');
                         updatePricesText.setText('ERROR');
                     }
                     

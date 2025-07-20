@@ -40,9 +40,21 @@ async function fetchCurrentPrices() {
         for (const [symbol, geckoId] of Object.entries(CRYPTO_ID_MAP)) {
             if (data[geckoId] && data[geckoId].usd) {
                 prices[symbol] = data[geckoId].usd;
+            } else {
+                console.warn(`No price data for ${symbol} (${geckoId})`);
+                // Use fallback price for missing data
+                const fallbacks = {
+                    BTC: 98500,
+                    ETH: 3850,
+                    BNB: 725,
+                    SOL: 180,
+                    XRP: 2.40
+                };
+                prices[symbol] = fallbacks[symbol] || 0;
             }
         }
         
+        console.log('Fetched prices:', prices);
         return prices;
     } catch (error) {
         console.error('Error fetching prices from CoinGecko:', error);
@@ -74,14 +86,16 @@ async function updatePricesInCache(supabase) {
                 
             if (error) {
                 console.error(`Error updating ${symbol} price:`, error);
+            } else {
+                console.log(`Updated ${symbol}: $${price}`);
             }
         }
         
-        console.log('Prices updated in cache:', prices);
+        console.log('All prices updated in cache:', prices);
         return prices;
     } catch (error) {
-        console.error('Error updating prices in cache:', error);
-        return null;
+        console.error('Error updating prices:', error);
+        throw error;
     }
 }
 
