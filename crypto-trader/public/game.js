@@ -1380,27 +1380,21 @@ class ResultsScene extends Phaser.Scene {
     
     async savePastRun() {
         try {
-            console.log('Attempting to save game with:', {
+            const saveData = {
                 user_id: this.user.id,
                 scenario_key: this.scenarioKey,
                 allocations: this.allocations,
-                totalValue: this.totalValue
-            });
+                final_value: this.totalValue
+            };
+            
+            console.log('Attempting to save game with:', saveData);
             
             const profit = this.totalValue - GAME_CONFIG.startingMoney;
             const profitPercent = (profit / GAME_CONFIG.startingMoney) * 100;
             
             const { data, error } = await this.auth.supabase
                 .from('past_runs')
-                .insert({
-                    user_id: this.user.id,
-                    scenario_key: this.scenarioKey,
-                    allocations: this.allocations,
-                    final_value: this.totalValue,
-                    profit_amount: profit,
-                    profit_percent: profitPercent,
-                    created_at: new Date().toISOString()
-                })
+                .insert(saveData)
                 .select();
             
             if (error) throw error;
@@ -1522,10 +1516,7 @@ class DashboardScene extends Phaser.Scene {
                     user_id: this.user.id,
                     scenario_key: 'march_2020',
                     allocations: {BTC: 5, ETH: 3, BNB: 2},
-                    final_value: 12500000,
-                    profit_amount: 2500000,
-                    profit_percent: 25,
-                    created_at: new Date().toISOString()
+                    final_value: 12500000
                 };
                 
                 const { data, error } = await this.auth.supabase
@@ -1590,6 +1581,7 @@ class DashboardScene extends Phaser.Scene {
         } catch (error) {
             console.error('Error loading past runs:', error);
             this.loadingText.setText('Error loading game history');
+            this.loadingText.setColor('#ff0000');
         }
     }
     
@@ -1607,8 +1599,8 @@ class DashboardScene extends Phaser.Scene {
         }).setOrigin(0, 0.5);
         
         // Final value
-        const profit = run.final_value - 10000000;
-        const profitPercent = (profit / 10000000) * 100;
+        const profit = run.final_value - GAME_CONFIG.startingMoney;
+        const profitPercent = (profit / GAME_CONFIG.startingMoney) * 100;
         const profitColor = profit >= 0 ? '#00ffff' : '#ff1493';
         
         this.add.text(450, y, `$${run.final_value.toLocaleString()}`, {
