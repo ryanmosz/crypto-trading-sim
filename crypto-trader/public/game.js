@@ -1810,15 +1810,21 @@ class DashboardScene extends Phaser.Scene {
     }
     
     createActiveGameDisplay(game, y) {
-        // Background
-        const bg = this.add.rectangle(450, y, 720, 50, 0x111111)
-            .setStrokeStyle(1, 0x00ffff)
-            .setInteractive({ useHandCursor: true });
-        
         // Calculate days remaining
         const now = new Date();
         const endsAt = new Date(game.ends_at);
         const daysRemaining = Math.ceil((endsAt - now) / (1000 * 60 * 60 * 24));
+        
+        // Determine urgency colors
+        const isExpiringSoon = daysRemaining <= 7;
+        const isExpiring = daysRemaining <= 3;
+        const borderColor = isExpiring ? 0xff1493 : (isExpiringSoon ? 0xffff00 : 0x00ffff);
+        const timeColor = isExpiring ? '#ff1493' : (isExpiringSoon ? '#ffff00' : '#00ffff');
+        
+        // Background with urgency-based border
+        const bg = this.add.rectangle(450, y, 720, 50, 0x111111)
+            .setStrokeStyle(isExpiring ? 2 : 1, borderColor)
+            .setInteractive({ useHandCursor: true });
         
         // Calculate performance
         const startValue = game.starting_money || 10000000;
@@ -1833,10 +1839,18 @@ class DashboardScene extends Phaser.Scene {
             color: '#ffffff'
         }).setOrigin(0, 0.5);
         
-        // Time remaining
-        this.add.text(320, y, `${daysRemaining} days left`, {
+        // Time remaining with urgency indicator
+        let timeText = `${daysRemaining} days left`;
+        if (isExpiring) {
+            timeText = `⚠️ ${daysRemaining} days left!`;
+        } else if (daysRemaining === 0) {
+            timeText = '⏰ ENDS TODAY!';
+        }
+        
+        this.add.text(320, y, timeText, {
             fontSize: '16px',
-            color: '#00ffff'
+            fontFamily: isExpiringSoon ? 'Arial Black' : 'Arial',
+            color: timeColor
         }).setOrigin(0, 0.5);
         
         // Current value
@@ -2875,6 +2889,9 @@ class ActiveGameViewScene extends Phaser.Scene {
             }).setOrigin(0, 0.5);
         }
         
+        // Performance History Chart
+        this.createPerformanceChart(yPos + 50);
+        
         // Last updated
         if (this.gameData.last_updated) {
             const lastUpdated = new Date(this.gameData.last_updated);
@@ -2909,6 +2926,98 @@ class ActiveGameViewScene extends Phaser.Scene {
             .on('pointerdown', () => {
                 this.scene.start('DashboardScene', { user: this.user });
             });
+    }
+    
+    createPerformanceChart(startY) {
+        // Chart title
+        this.add.text(450, startY, 'Performance Trend', {
+            fontSize: '18px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        // Chart area
+        const chartX = 200;
+        const chartY = startY + 30;
+        const chartWidth = 500;
+        const chartHeight = 80;
+        
+        // Chart background
+        this.add.rectangle(chartX + chartWidth/2, chartY + chartHeight/2, chartWidth, chartHeight, 0x111111)
+            .setStrokeStyle(1, 0x333333);
+        
+        // Generate sample data points (in real app, this would come from price_history table)
+        const dataPoints = this.generateSampleData();
+        
+        // Draw the line chart
+        const graphics = this.add.graphics();
+        graphics.lineStyle(2, 0x00ffff);
+        
+        // Scale the data to fit the chart
+        const minValue = Math.min(...dataPoints);
+        const maxValue = Math.max(...dataPoints);
+        const valueRange = maxValue - minValue || 1;
+        
+        // Draw the line
+        graphics.beginPath();
+        dataPoints.forEach((value, index) => {
+            const x = chartX + (index / (dataPoints.length - 1)) * chartWidth;
+            const y = chartY + chartHeight - ((value - minValue) / valueRange) * chartHeight;
+            
+            if (index === 0) {
+                graphics.moveTo(x, y);
+            } else {
+                graphics.lineTo(x, y);
+            }
+            
+            // Add dots at data points
+            graphics.fillStyle(0x00ffff);
+            graphics.fillCircle(x, y, 3);
+        });
+        graphics.strokePath();
+        
+        // Add value labels
+        const startValue = dataPoints[0];
+        const endValue = dataPoints[dataPoints.length - 1];
+        const percentChange = ((endValue - startValue) / startValue) * 100;
+        const changeColor = percentChange >= 0 ? '#00ff00' : '#ff0066';
+        
+        // Start value
+        this.add.text(chartX - 10, chartY + chartHeight/2, `$${(startValue/1000000).toFixed(1)}M`, {
+            fontSize: '12px',
+            color: '#666666'
+        }).setOrigin(1, 0.5);
+        
+        // End value
+        this.add.text(chartX + chartWidth + 10, chartY + chartHeight/2, `$${(endValue/1000000).toFixed(1)}M`, {
+            fontSize: '12px',
+            color: changeColor
+        }).setOrigin(0, 0.5);
+        
+        // Performance indicator
+        this.add.text(450, chartY + chartHeight + 15, `${percentChange >= 0 ? '+' : ''}${percentChange.toFixed(1)}% since start`, {
+            fontSize: '14px',
+            color: changeColor
+        }).setOrigin(0.5);
+    }
+    
+    generateSampleData() {
+        // Generate sample performance data
+        // In real app, this would fetch from price_history table
+        const startValue = this.gameData.starting_money || 10000000;
+        const currentValue = this.gameData.current_value || startValue;
+        const numPoints = 10;
+        const data = [startValue];
+        
+        // Generate smooth curve towards current value
+        for (let i = 1; i < numPoints - 1; i++) {
+            const progress = i / (numPoints - 1);
+            const noise = (Math.random() - 0.5) * 0.1; // ±5% variation
+            const value = startValue + (currentValue - startValue) * progress * (1 + noise);
+            data.push(value);
+        }
+        data.push(currentValue);
+        
+        return data;
     }
 }
 
