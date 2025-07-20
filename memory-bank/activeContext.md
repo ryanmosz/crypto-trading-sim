@@ -122,25 +122,15 @@
 
 ### Recent Major Changes
 
-### M2 - Now Mode Implementation (98% Complete) 🚀
+### M2 - Now Mode Implementation (100% Complete) ✅
 
-**UPDATE: Edge Functions Deployed!** ✅
+**ALL FEATURES WORKING!** 🎉
 - Both `fetch-prices` and `update-game-prices` are deployed
 - Cron jobs are scheduled and active:
   - Job 1: fetch-crypto-prices (every 5 minutes)
   - Job 2: update-game-prices (hourly)
-
-**Final 2% - Set API Key:**
-```bash
-supabase secrets set COINGECKO_API_KEY=CG-PkKqSj9jtXcCR53uBnnYyNVf
-```
-
-**UI Improvements!** ✅
-- Dashboard redesigned with tab system
-- Fixed centering of NEW GAME, ACTIVE, PAST tabs
-- Fixed paging controls on Past tab
-- Fixed leaderboard column overlap
-- Now mode allocation scene errors fixed
+- API key is set and real prices are fetching
+- All auth bugs fixed - Now mode saves work perfectly!
 
 **Complete Feature List:**
 - ✅ Historical trading scenarios
