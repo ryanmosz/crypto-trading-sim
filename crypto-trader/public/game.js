@@ -2262,7 +2262,10 @@ class DashboardScene extends Phaser.Scene {
             // Query ALL active games (both single player and multiplayer)
             const { data: allGames, error: gamesError } = await this.auth.supabase
                 .from('active_games')
-                .select('*')
+                .select(`
+                    *,
+                    profiles:user_id (username)
+                `)
                 .eq('is_complete', false)
                 .order('created_at', { ascending: false });
             
@@ -2488,10 +2491,19 @@ class DashboardScene extends Phaser.Scene {
         
         this.contentGroup.add(remainingDisplay);
         
+        // Show creator for multiplayer games
+        if (isMultiplayer && game.profiles?.username) {
+            const creatorText = this.add.text(430, y, `by ${game.profiles.username}`, {
+                fontSize: '12px',
+                color: '#888888'
+            }).setOrigin(0, 0.5);
+            this.contentGroup.add(creatorText);
+        }
+        
         if (isJoinable) {
             // For joinable games, show participant count
             const participantText = `${game.participant_count || 1} player${(game.participant_count || 1) > 1 ? 's' : ''}`;
-            const participantDisplay = this.add.text(500, y, participantText, {
+            const participantDisplay = this.add.text(600, y, participantText, {
                 fontSize: '16px',
                 color: '#ffffff'
             }).setOrigin(0.5);
