@@ -33,10 +33,10 @@
 
 ## ⏳ Next Steps (Manual)
 
-### 1. **Get API Keys** (5 min) ✅ PARTIALLY COMPLETE
+### 1. **Get API Keys** (5 min) ✅ COMPLETE
 1. ✅ Anon key already added to `auth.js`
-2. ⏳ Still need service_role key from: https://supabase.com/dashboard/project/yuobwpszomojorrjiwlp/settings/api
-3. ⏳ Add service_role key to `env.js` and edge function schedule
+2. ✅ Service role key added to `env.js`
+3. ✅ Keys configured and working
 
 ### 2. **Run Migrations** (10 min)
 Option A - Via Dashboard:
