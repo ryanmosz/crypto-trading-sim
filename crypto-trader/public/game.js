@@ -295,7 +295,7 @@ class LoginScene extends Phaser.Scene {
         }).setOrigin(0.5);
         
         // Test login buttons (temporary for testing)
-        this.add.text(450, 560, 'TEST LOGINS:', {
+        this.add.text(450, 560, 'TEST LOGINS (auto-creates if needed):', {
             fontSize: '14px',
             color: '#666666'
         }).setOrigin(0.5);
@@ -309,9 +309,13 @@ class LoginScene extends Phaser.Scene {
         .on('pointerover', function() { this.setColor('#ffffff'); })
         .on('pointerout', function() { this.setColor('#00ff00'); })
         .on('pointerdown', () => {
+            this.isSignUp = false; // Make sure we're in sign-in mode
+            this.modeText.setText('Sign In');
+            this.toggleText.setText("Don't have an account? Sign Up");
+            this.authButton.textContent = 'SIGN IN';
             this.emailInput.value = 'adam@test.com';
             this.passwordInput.value = 'password123';
-            this.handleAuth();
+            this.handleTestAuth('adam@test.com', 'password123');
         });
         
         // Beth test button
@@ -323,9 +327,13 @@ class LoginScene extends Phaser.Scene {
         .on('pointerover', function() { this.setColor('#ffffff'); })
         .on('pointerout', function() { this.setColor('#00ff00'); })
         .on('pointerdown', () => {
+            this.isSignUp = false; // Make sure we're in sign-in mode
+            this.modeText.setText('Sign In');
+            this.toggleText.setText("Don't have an account? Sign Up");
+            this.authButton.textContent = 'SIGN IN';
             this.emailInput.value = 'beth@test.com';
             this.passwordInput.value = 'password123';
-            this.handleAuth();
+            this.handleTestAuth('beth@test.com', 'password123');
         });
     }
     
@@ -449,6 +457,42 @@ class LoginScene extends Phaser.Scene {
         this.time.delayedCall(3000, () => {
             this.errorText.setText('');
         });
+    }
+    
+    async handleTestAuth(email, password) {
+        // Disable button during auth
+        this.authButton.disabled = true;
+        this.authButton.style.opacity = '0.5';
+        
+        try {
+            // First try to sign in
+            let result = await this.auth.signIn(email, password);
+            
+            if (result.error) {
+                // If sign in fails, try to sign up
+                console.log('Sign in failed, attempting sign up...');
+                result = await this.auth.signUp(email, password);
+                
+                if (result.error) {
+                    throw result.error;
+                }
+            }
+            
+            const user = result.data?.user || result.data?.session?.user;
+            
+            if (user && user.id) {
+                // Clean up form
+                this.formContainer.remove();
+                // Go to dashboard
+                this.scene.start('DashboardScene', { user });
+            } else {
+                throw new Error('Authentication failed - no user returned');
+            }
+        } catch (error) {
+            this.showError(error.message || 'Authentication failed');
+            this.authButton.disabled = false;
+            this.authButton.style.opacity = '1';
+        }
     }
     
     shutdown() {
