@@ -48,6 +48,11 @@
     - Shows only 4 most recent games
     - Adds "+ X more games" indicator when user has more
     - Keeps Sign Out button always visible on screen
+13. Added paging functionality to past games list:
+    - Users can navigate all games with up/down arrows
+    - Shows page indicator (e.g. "Page 1 of 3")
+    - Arrows scale on hover for better UX
+    - All elements grouped for clean page switching
 
 ## Game Saving Issue
 - Test save works but real games don't save

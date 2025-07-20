@@ -295,7 +295,7 @@ class LoginScene extends Phaser.Scene {
         }).setOrigin(0.5);
         
         // Test login buttons (temporary for testing)
-        this.add.text(450, 560, 'TEST LOGINS (auto-creates if needed):', {
+        this.add.text(450, 560, 'TEST LOGINS:', {
             fontSize: '14px',
             color: '#666666'
         }).setOrigin(0.5);
