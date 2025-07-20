@@ -1706,7 +1706,7 @@ class DashboardScene extends Phaser.Scene {
         modalElements.push(overlay);
         
         // Modal container - fixed size for both views
-        const modal = this.add.rectangle(450, 300, 600, 400, 0x111111)
+        const modal = this.add.rectangle(450, 300, 600, 450, 0x111111)
             .setStrokeStyle(2, 0x00ffff);
         modalElements.push(modal);
         
@@ -1800,7 +1800,7 @@ class DashboardScene extends Phaser.Scene {
         modalElements.push(dateText);
         
         // Main view buttons
-        const mainButtonY = 420;
+        const mainButtonY = 445;
         
         // Close button
         const closeBtn = this.add.rectangle(320, mainButtonY, 100, 40, 0x333333)
@@ -1908,22 +1908,9 @@ class DashboardScene extends Phaser.Scene {
         detailsViewElements.push(allocHeader);
         modalElements.push(allocHeader);
         
-        // Column headers
-        const startHeader = this.add.text(380, yPos + 30, 'Initial', {
-            fontSize: '14px',
-            color: '#666666'
-        }).setOrigin(0.5).setVisible(false);
-        detailsViewElements.push(startHeader);
-        modalElements.push(startHeader);
+        // Remove column headers since we're using a more compact inline layout
         
-        const endHeader = this.add.text(530, yPos + 30, 'Final', {
-            fontSize: '14px',
-            color: '#666666'
-        }).setOrigin(0.5).setVisible(false);
-        detailsViewElements.push(endHeader);
-        modalElements.push(endHeader);
-        
-        yPos += 50;  // Reduced from 60
+        yPos += 30;  // Reduced spacing since no column headers
         if (run.allocations) {
             // Calculate individual crypto performance
             const cryptoResults = {};
@@ -1958,15 +1945,17 @@ class DashboardScene extends Phaser.Scene {
             
             // Calculate dynamic spacing based on number of cryptos
             const numCryptos = Object.keys(cryptoResults).length;
-            const availableHeight = 270; // From y=220 to y=490 (leaving space for total and back button)
-            const cryptoSpacing = Math.min(50, Math.floor(availableHeight / (numCryptos + 2))); // +2 for padding
+            const startY = yPos;
+            const endY = 470; // Leave space for back button at 495
+            const availableHeight = endY - startY;
+            const cryptoSpacing = Math.floor(availableHeight / (numCryptos + 2)); // +2 for total row and padding
             
             // Display each crypto's performance
             Object.entries(cryptoResults).forEach(([symbol, data]) => {
                 const cryptoInfo = GAME_CONFIG.cryptos[symbol];
                 
-                // Crypto name
-                const allocText = this.add.text(260, yPos, `${symbol}:`, {
+                // Crypto name and initial investment on same line
+                const allocText = this.add.text(220, yPos, `${symbol}:`, {
                     fontSize: '16px',
                     fontFamily: 'Arial Black',
                     color: '#ffffff'
@@ -1974,35 +1963,35 @@ class DashboardScene extends Phaser.Scene {
                 detailsViewElements.push(allocText);
                 modalElements.push(allocText);
                 
-                // Initial investment
-                const initialText = this.add.text(380, yPos, `$${data.initialInvestment.toLocaleString()}`, {
-                    fontSize: '16px',
-                    color: '#666666'
-                }).setOrigin(0.5).setVisible(false);
+                const initialText = this.add.text(280, yPos, `$${data.initialInvestment.toLocaleString()}`, {
+                    fontSize: '15px',
+                    color: '#999999'
+                }).setOrigin(0, 0.5).setVisible(false);
                 detailsViewElements.push(initialText);
                 modalElements.push(initialText);
                 
-                // Arrow
-                const arrowText = this.add.text(450, yPos, `→`, {
-                    fontSize: '16px',
+                // Arrow pointing right
+                const arrowText = this.add.text(400, yPos, `→`, {
+                    fontSize: '14px',
                     color: '#666666'
                 }).setOrigin(0.5).setVisible(false);
                 detailsViewElements.push(arrowText);
                 modalElements.push(arrowText);
                 
-                // Final value
-                const finalText = this.add.text(530, yPos, `$${Math.round(data.finalValue).toLocaleString()}`, {
-                    fontSize: '16px',
+                // Final value and percentage on same line
+                const finalText = this.add.text(440, yPos, `$${Math.round(data.finalValue).toLocaleString()}`, {
+                    fontSize: '15px',
+                    fontFamily: 'Arial Black',
                     color: data.change >= 0 ? '#00ffff' : '#ff1493'
-                }).setOrigin(0.5).setVisible(false);
+                }).setOrigin(0, 0.5).setVisible(false);
                 detailsViewElements.push(finalText);
                 modalElements.push(finalText);
                 
-                // Percentage change
-                const changeText = this.add.text(640, yPos, `(${data.change >= 0 ? '+' : ''}${data.change.toFixed(1)}%)`, {
-                    fontSize: '14px',
+                const changeText = this.add.text(570, yPos, `${data.change >= 0 ? '+' : ''}${data.change.toFixed(1)}%`, {
+                    fontSize: '13px',
+                    fontFamily: 'Arial Black',
                     color: data.change >= 0 ? '#00ffff' : '#ff1493'
-                }).setOrigin(0.5).setVisible(false);
+                }).setOrigin(0, 0.5).setVisible(false);
                 detailsViewElements.push(changeText);
                 modalElements.push(changeText);
                 
@@ -2013,7 +2002,7 @@ class DashboardScene extends Phaser.Scene {
             yPos += 15;
             
             // Divider line
-            const divider = this.add.rectangle(450, yPos, 400, 1, 0x666666)
+            const divider = this.add.rectangle(395, yPos, 350, 1, 0x666666)
                 .setVisible(false);
             detailsViewElements.push(divider);
             modalElements.push(divider);
@@ -2021,7 +2010,7 @@ class DashboardScene extends Phaser.Scene {
             yPos += 15;
             
             // Total label
-            const totalLabel = this.add.text(260, yPos, 'TOTAL:', {
+            const totalLabel = this.add.text(220, yPos, 'TOTAL:', {
                 fontSize: '16px',
                 fontFamily: 'Arial Black',
                 color: '#ffffff'
@@ -2030,44 +2019,44 @@ class DashboardScene extends Phaser.Scene {
             modalElements.push(totalLabel);
             
             // Total initial
-            const totalInitial = this.add.text(380, yPos, `$${GAME_CONFIG.startingMoney.toLocaleString()}`, {
-                fontSize: '16px',
+            const totalInitial = this.add.text(280, yPos, `$${GAME_CONFIG.startingMoney.toLocaleString()}`, {
+                fontSize: '15px',
                 fontFamily: 'Arial Black',
-                color: '#666666'
-            }).setOrigin(0.5).setVisible(false);
+                color: '#999999'
+            }).setOrigin(0, 0.5).setVisible(false);
             detailsViewElements.push(totalInitial);
             modalElements.push(totalInitial);
             
             // Total arrow
-            const totalArrow = this.add.text(450, yPos, `→`, {
-                fontSize: '16px',
-                color: '#ffffff'
+            const totalArrow = this.add.text(400, yPos, `→`, {
+                fontSize: '14px',
+                color: '#666666'
             }).setOrigin(0.5).setVisible(false);
             detailsViewElements.push(totalArrow);
             modalElements.push(totalArrow);
             
             // Total final
-            const totalFinal = this.add.text(530, yPos, `$${Math.round(actualFinalValue).toLocaleString()}`, {
-                fontSize: '16px',
+            const totalFinal = this.add.text(440, yPos, `$${Math.round(actualFinalValue).toLocaleString()}`, {
+                fontSize: '15px',
                 fontFamily: 'Arial Black',
                 color: actualProfit >= 0 ? '#00ffff' : '#ff1493'
-            }).setOrigin(0.5).setVisible(false);
+            }).setOrigin(0, 0.5).setVisible(false);
             detailsViewElements.push(totalFinal);
             modalElements.push(totalFinal);
             
             // Total percentage
-            const totalPercent = this.add.text(640, yPos, `(${actualProfit >= 0 ? '+' : ''}${actualProfitPercent.toFixed(1)}%)`, {
-                fontSize: '14px',
+            const totalPercent = this.add.text(570, yPos, `${actualProfit >= 0 ? '+' : ''}${actualProfitPercent.toFixed(1)}%`, {
+                fontSize: '13px',
                 fontFamily: 'Arial Black',
                 color: actualProfit >= 0 ? '#00ffff' : '#ff1493'
-            }).setOrigin(0.5).setVisible(false);
+            }).setOrigin(0, 0.5).setVisible(false);
             detailsViewElements.push(totalPercent);
             modalElements.push(totalPercent);
             
             // Show warning if saved value doesn't match recalculated value
             if (Math.abs(run.final_value - actualFinalValue) > 1000) {
-                const warningText = this.add.text(450, yPos + 30, '⚠ Note: Values recalculated from historical data', {
-                    fontSize: '12px',
+                const warningText = this.add.text(450, yPos + 25, '⚠ Note: Values recalculated from historical data', {
+                    fontSize: '11px',
                     color: '#ff9900',
                     fontStyle: 'italic'
                 }).setOrigin(0.5).setVisible(false);
@@ -2077,14 +2066,14 @@ class DashboardScene extends Phaser.Scene {
         }
         
         // Back button (details view)
-        const backBtn = this.add.rectangle(450, 450, 100, 35, 0x333333)
+        const backBtn = this.add.rectangle(450, 495, 100, 35, 0x333333)
             .setStrokeStyle(2, 0x666666)
             .setInteractive({ useHandCursor: true })
             .setVisible(false);
         detailsViewElements.push(backBtn);
         modalElements.push(backBtn);
             
-        const backText = this.add.text(450, 450, 'BACK', {
+        const backText = this.add.text(450, 495, 'BACK', {
             fontSize: '16px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
