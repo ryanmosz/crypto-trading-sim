@@ -61,9 +61,10 @@ The tutorial uses a spotlight overlay system that highlights UI elements and sho
 ### Step 7: Make Allocations
 - **Scene**: AllocationScene
 - **Element**: Allocation sliders area
-- **Position**: x: 450, y: 300, w: 600, h: 250
+- **Position**: x: 450, y: 150, w: 600, h: 60
 - **Text**: "Drag the sliders to allocate your $10,000 across different cryptocurrencies. Your goal is to maximize returns!"
-- **Text Position**: top
+- **Text Position**: bottom
+- **Notes**: Positioned high on screen to avoid blocking UI
 
 ### Step 8: View Results
 - **Scene**: ResultsScene

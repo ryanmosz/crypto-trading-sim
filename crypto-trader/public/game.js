@@ -2354,7 +2354,7 @@ class DashboardScene extends Phaser.Scene {
                     yPos += 20; // Extra spacing between sections
                 }
                 
-                const multiplayerHeader = this.add.text(450, yPos+10, 'MULTIPLAYER GAMES', {
+                const multiplayerHeader = this.add.text(450, yPos, 'MULTIPLAYER GAMES', {
                     fontSize: '14px',
                     color: '#00ff00',
                     fontFamily: 'Arial Black'
