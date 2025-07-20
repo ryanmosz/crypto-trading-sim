@@ -1,6 +1,8 @@
 # Crypto Trader Simulator - Tutorial Steps Documentation
 
-**DEBUG MODE ENABLED**: Tutorial will run every time you log in for testing purposes.
+**DEBUG MODE ENABLED**: Tutorial will run once per page load for testing purposes. 
+
+**FIXED**: Tutorial no longer restarts when clicking tabs. Users can navigate freely without tutorial interference.
 
 This file lists all tutorial steps (Tour of App) with their current positions and text. Use this to review and adjust positioning.
 
