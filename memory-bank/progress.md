@@ -1,7 +1,7 @@
 # Progress Tracker
 
 ## Overall Status
-Phase 1 (Historical trading) and Phase 2 (Now mode) are 100% complete! Core gameplay and all planned features are fully functional.
+Phase 1 (Historical trading) and Phase 2 (Now mode) are 100% complete! All features are deployed and running in production with automated price updates.
 
 ## What Works
 - Complete authentication flow (login/signup) with profile loading
@@ -95,19 +95,16 @@ Past game runs are successfully saved to Supabase and displayed on the dashboard
 - ✅ Performance charts and visualizations
 - ✅ Expiration warnings
 - ✅ Manual and automated price updates
-- ✅ Complete edge function
+- ✅ Edge functions deployed (`fetch-prices` v6, `update-game-prices` v2)
+- ✅ Cron jobs scheduled (5-minute price updates, hourly game updates)
 - ✅ Leaderboard with competitive rankings
 - ✅ API integration with CoinGecko
 - ✅ API key integrated and working
 - ✅ All documentation complete
 - ✅ Testing tools ready
 
-**Final 2% - Deployment Only:**
-- ⏳ Deploy edge function to Supabase
-- ⏳ Enable cron schedule for hourly updates
-
 **Key Achievement:** 
-Game is feature-complete and production-ready! 🎉
+Game is 100% complete, deployed, and running in production! 🎉
 
 **Docs:** 
 - Testing: `FINAL_TESTING_CHECKLIST.md`
@@ -147,9 +144,10 @@ Currently tracking 30 cryptocurrencies:
 ## Metrics
 
 ### Development Progress
-- Milestones Complete: 2/4 (M0 ✅, M1 ✅, M2 98% ✅)
+- Milestones Complete: 3/4 (M0 ✅, M1 ✅, M2 ✅)
 - Database Tables: 8/8 ✅ (includes multiplayer tables)
-- Edge Functions: 2/2 ✅ (fetch-prices, update-game-prices)
+- Edge Functions: 2/2 ✅ Deployed (fetch-prices v6, update-game-prices v2)
+- Cron Jobs: 2/2 ✅ Active (5-min prices, hourly games)
 - Auth Integration: Backend ✅, Frontend ✅
 - Game Scenes: 12/12 ✅ (all scenes complete)
 - Multiplayer Features: ✅
@@ -161,13 +159,14 @@ Currently tracking 30 cryptocurrencies:
 - SQL migrations: ~400 lines
 - Edge functions: ~100 lines total
 
-## Next Critical Path
+## Next Critical Path (M3 - Polish)
 
-1. **Deploy edge functions to Supabase**
-2. **Enable cron schedules for automated updates**
-3. **Test multiplayer game flow end-to-end**
-4. **Polish UI animations and transitions**
-5. **Add error toasts and loading states**
-6. **Consider mobile optimization**
+1. **Test multiplayer game flow end-to-end**
+2. **Polish UI animations and transitions**
+3. **Add error toasts and loading states**
+4. **Consider mobile optimization**
+5. **Performance optimizations**
+6. **Add sound effects and music**
+7. **Create promotional materials**
 
-**Time estimate**: 2-3 hours for deployment and testing 
+**Time estimate**: 4-6 hours for polish and optimization 
