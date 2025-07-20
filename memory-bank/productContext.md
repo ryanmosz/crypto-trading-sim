@@ -1,4 +1,9 @@
-# Product Context - Why This Game Exists
+# Product Context
+
+## Product Vision
+**Crypto Trader Simulator** - Like fantasy football for crypto!!
+
+A web-based game that lets players experience the thrill and volatility of cryptocurrency trading through historical market simulations.
 
 ## Problem Statement
 
