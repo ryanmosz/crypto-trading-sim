@@ -111,10 +111,10 @@
   - Fixed Past tab paging controls
   - Fixed allocation screen spacing issues
   - Added duration display for Now mode games
-- Fixed text overlap on historical simulation final screen:
-  - "Black Thursday got you!" message was overlapping with "Historical data - this actually happened!"
-  - Moved fun message from Y:440 to Y:420 for proper spacing
-  - Both texts are now clearly readable without overlap
+- Simplified final screen messaging:
+  - Removed "Historical data - this actually happened!" message
+  - Moved fun message ("Black Thursday got you!") to historical note's position
+  - Changed fun message color to blue/teal (#00ffff) for better visual hierarchy
 
 ### Recent Major Changes
 
