@@ -29,6 +29,11 @@
    - Optimized font sizes and positioning
    - Centered all content at x=450 (modal center)
 7. Fixed details view centering (x=450 is modal center) and increased font sizes for readability
+8. Completely redesigned details view for better 5-crypto scaling:
+   - Increased modal height to 450px
+   - Switched to left-aligned inline layout to prevent overlap
+   - Removed column headers to save space
+   - Smaller fonts: 15px values, 13px percentages
 
 ## Game Saving Issue
 - Test save works but real games don't save

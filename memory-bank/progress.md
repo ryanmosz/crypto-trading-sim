@@ -26,6 +26,7 @@ Phase 1 (Historical trading) is ~85% complete with core gameplay functional but 
 - Split game details modal into main/details views for better space usage
 - Fixed details view to show accurate calculated totals from historical data
 - Optimized details view layout to support up to 5 crypto allocations
+- Redesigned details view with left-aligned layout and taller modal (450px) for 5 cryptos
 
 #### M0 - Auth + Backend Infrastructure (July 19, 2025)
 - **Supabase Project**: Created and fully configured
