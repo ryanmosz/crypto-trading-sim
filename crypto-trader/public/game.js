@@ -795,6 +795,14 @@ class AllocationScene extends Phaser.Scene {
             color: '#ffffff'
         }).setOrigin(0.5);
         
+        // Display duration for Now mode
+        if (this.isNowMode && this.durationDays) {
+            this.add.text(450, 75, `Duration: ${this.durationDays} days`, {
+                fontSize: '18px',
+                color: '#00ffff'
+            }).setOrigin(0.5);
+        }
+        
         // Fetch current prices if in Now mode
         if (this.isNowMode) {
             // Show loading text
@@ -878,49 +886,7 @@ class AllocationScene extends Phaser.Scene {
             })
             .on('pointerdown', () => this.scene.start('ScenarioSelectScene', { user: this.user }));
         
-        // Test price update button (temporary for debugging)
-        const testPriceBtn = this.add.text(100, 230, '[Update Prices]', {
-            fontSize: '14px',
-            color: '#00ff00'
-        }).setOrigin(0, 0.5)
-        .setInteractive({ useHandCursor: true })
-        .on('pointerover', function() { this.setColor('#ffffff'); })
-        .on('pointerout', function() { this.setColor('#00ff00'); })
-        .on('pointerdown', async () => {
-            console.log('Testing price update...');
-            try {
-                // Generate random price changes (-10% to +10%)
-                const priceChanges = {
-                    BTC: 98500 * (0.9 + Math.random() * 0.2),
-                    ETH: 3850 * (0.9 + Math.random() * 0.2),
-                    BNB: 725 * (0.9 + Math.random() * 0.2),
-                    XRP: 2.40 * (0.9 + Math.random() * 0.2),
-                    DOGE: 0.42 * (0.9 + Math.random() * 0.2)
-                };
-                
-                // Update prices in cache
-                for (const [symbol, price] of Object.entries(priceChanges)) {
-                    await this.auth.supabase
-                        .from('prices_cache')
-                        .upsert({ symbol, price })
-                        .select();
-                }
-                
-                // Call the update function
-                const { data, error } = await this.auth.supabase
-                    .rpc('update_active_game_values');
-                    
-                if (error) {
-                    console.error('Price update error:', error);
-                } else {
-                    console.log('Prices updated successfully!');
-                    // Refresh the scene to show new values
-                    this.scene.restart({ user: this.user });
-                }
-            } catch (e) {
-                console.error('Price update exception:', e);
-            }
-        });
+
     }
     
     createCryptoRow(symbol, crypto, y) {
@@ -934,23 +900,23 @@ class AllocationScene extends Phaser.Scene {
             reason = this.scenario.availableCryptos[symbol].reason;
         }
         
-        // Crypto icon placeholder
-        const iconBg = this.add.circle(150, y, 25, isAvailable ? crypto.color : 0x333333);
-        this.add.text(150, y, symbol, {
+        // Crypto icon placeholder - moved left
+        const iconBg = this.add.circle(100, y, 25, isAvailable ? crypto.color : 0x333333);
+        this.add.text(100, y, symbol, {
             fontSize: '16px',
             fontFamily: 'Arial Black',
             color: isAvailable ? '#ffffff' : '#666666'
         }).setOrigin(0.5);
         
-        // Crypto name
-        this.add.text(220, y, crypto.name, {
+        // Crypto name - adjusted position
+        this.add.text(150, y, crypto.name, {
             fontSize: '20px',
             color: isAvailable ? '#ffffff' : '#666666'
         }).setOrigin(0, 0.5);
         
         // If not available, show reason instead of price and controls
         if (!isAvailable) {
-            this.add.text(380, y, reason, {
+            this.add.text(320, y, reason, {
                 fontSize: '16px',
                 color: '#444444',
                 fontStyle: 'italic'
@@ -958,7 +924,7 @@ class AllocationScene extends Phaser.Scene {
             return;
         }
         
-        // Current price - gray (using historical start price or current price for Now mode)
+        // Current price - with more space
         let displayPrice = 0;
         if (this.isNowMode && this.currentPrices && this.currentPrices[symbol]) {
             displayPrice = this.currentPrices[symbol];
@@ -969,12 +935,15 @@ class AllocationScene extends Phaser.Scene {
             displayPrice = 0;
         }
         
-        this.add.text(400, y, displayPrice > 0 ? `$${displayPrice.toLocaleString()}` : 'Loading...', {
+        const priceText = this.add.text(320, y, displayPrice > 0 ? `$${displayPrice.toLocaleString()}` : 'Loading...', {
             fontSize: '18px',
             color: '#666666'
-        }).setOrigin(0.5);
+        }).setOrigin(0, 0.5);
         
-        // Minus button - moved left
+        // Store price text for updates
+        this[`${symbol}_priceText`] = priceText;
+        
+        // Minus button - with more space
         const minusBtn = this.add.text(470, y, '[-]', {
             fontSize: '28px',
             fontFamily: 'Arial Black',
@@ -991,8 +960,8 @@ class AllocationScene extends Phaser.Scene {
             }
         });
         
-        // Plus button - next to minus
-        const plusBtn = this.add.text(520, y, '[+]', {
+        // Plus button
+        const plusBtn = this.add.text(530, y, '[+]', {
             fontSize: '28px',
             fontFamily: 'Arial Black',
             color: '#666666'
@@ -1008,15 +977,15 @@ class AllocationScene extends Phaser.Scene {
             }
         });
         
-        // Allocation display - moved right of buttons
-        const allocationText = this.add.text(630, y, '$0', {
+        // Allocation display
+        const allocationText = this.add.text(660, y, '$0', {
             fontSize: '22px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
         }).setOrigin(0.5);
         
-        // Counter - gray
-        const counterText = this.add.text(750, y, '0/10', {
+        // Counter
+        const counterText = this.add.text(780, y, '0/10', {
             fontSize: '16px',
             color: '#666666'
         }).setOrigin(0.5);
@@ -1699,51 +1668,57 @@ class DashboardScene extends Phaser.Scene {
             }
         });
         
-        // Test price update button
-        const testPriceBtn = this.add.text(150, 20, '[Update Prices]', {
-            fontSize: '12px',
-            color: '#003300'
-        }).setOrigin(0, 0.5)
-        .setInteractive({ useHandCursor: true })
-        .on('pointerover', function() { this.setColor('#00ff00'); })
-        .on('pointerout', function() { this.setColor('#003300'); })
-        .on('pointerdown', async () => {
-            console.log('Testing price update...');
-            try {
-                // Generate random price changes (-10% to +10%)
-                const priceChanges = {
-                    BTC: 98500 * (0.9 + Math.random() * 0.2),
-                    ETH: 3850 * (0.9 + Math.random() * 0.2),
-                    BNB: 725 * (0.9 + Math.random() * 0.2),
-                    XRP: 2.40 * (0.9 + Math.random() * 0.2),
-                    DOGE: 0.42 * (0.9 + Math.random() * 0.2)
-                };
+
+        
+        // Update Prices button - only for Now mode
+        if (this.isNowMode) {
+            const updatePricesBtn = this.add.rectangle(800, 100, 150, 35, 0x333333)
+                .setStrokeStyle(2, 0x00ff00)
+                .setInteractive({ useHandCursor: true });
                 
-                // Update prices in cache
-                for (const [symbol, price] of Object.entries(priceChanges)) {
-                    await this.auth.supabase
-                        .from('prices_cache')
-                        .upsert({ symbol, price })
-                        .select();
-                }
-                
-                // Call the update function
-                const { data, error } = await this.auth.supabase
-                    .rpc('update_active_game_values');
-                    
-                if (error) {
-                    console.error('Price update error:', error);
-                } else {
-                    console.log('Prices updated successfully!');
-                    // Refresh content if on active tab
-                    if (this.activeTab === 'active') {
-                        this.showTabContent();
+            const updatePricesText = this.add.text(800, 100, 'UPDATE PRICES', {
+                fontSize: '14px',
+                fontFamily: 'Arial Black',
+                color: '#00ff00'
+            }).setOrigin(0.5);
+            
+            updatePricesBtn
+                .on('pointerover', () => {
+                    updatePricesBtn.setStrokeStyle(2, 0xffffff);
+                    updatePricesBtn.setFillStyle(0x00ff00);
+                    updatePricesText.setColor('#000000');
+                })
+                .on('pointerout', () => {
+                    updatePricesBtn.setStrokeStyle(2, 0x00ff00);
+                    updatePricesBtn.setFillStyle(0x333333);
+                    updatePricesText.setColor('#00ff00');
+                })
+                .on('pointerdown', async () => {
+                    updatePricesText.setText('UPDATING...');
+                    console.log('Fetching latest prices...');
+                    try {
+                        // Fetch fresh prices from CoinGecko
+                        await this.fetchCurrentPrices();
+                        
+                        console.log('Prices updated successfully!');
+                        updatePricesText.setText('UPDATED!');
+                        
+                        // Reset button text after a moment
+                        this.time.delayedCall(1500, () => {
+                            updatePricesText.setText('UPDATE PRICES');
+                        });
+                        
+                        // Refresh the crypto displays
+                        this.refreshCryptoRows();
+                    } catch (e) {
+                        console.error('Price update exception:', e);
+                        updatePricesText.setText('ERROR');
+                        this.time.delayedCall(1500, () => {
+                            updatePricesText.setText('UPDATE PRICES');
+                        });
                     }
-                }
-            } catch (e) {
-                console.error('Price update exception:', e);
-            }
-        });
+                });
+        }
     }
     
     createTabs() {
@@ -2621,6 +2596,16 @@ class DashboardScene extends Phaser.Scene {
             
         // Show main view by default
         showMainView();
+    }
+    
+    refreshCryptoRows() {
+        // Update price displays for all cryptos
+        Object.keys(GAME_CONFIG.cryptos).forEach(symbol => {
+            if (this[`${symbol}_priceText`] && this.currentPrices && this.currentPrices[symbol]) {
+                const displayPrice = this.currentPrices[symbol];
+                this[`${symbol}_priceText`].setText(`$${displayPrice.toLocaleString()}`);
+            }
+        });
     }
 }
 
