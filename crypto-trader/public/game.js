@@ -935,10 +935,10 @@ class AllocationScene extends Phaser.Scene {
             displayPrice = 0;
         }
         
-        const priceText = this.add.text(320, y, displayPrice > 0 ? `$${displayPrice.toLocaleString()}` : 'Loading...', {
-            fontSize: '18px',
-            color: '#666666'
-        }).setOrigin(0, 0.5);
+                    const priceText = this.add.text(320, y, displayPrice > 0 ? `$${displayPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'Loading...', {
+                fontSize: '18px',
+                color: '#666666'
+            }).setOrigin(0, 0.5);
         
         // Store price text for updates
         this[`${symbol}_priceText`] = priceText;
@@ -1268,7 +1268,7 @@ class SimulationScene extends Phaser.Scene {
         }).setOrigin(0, 0.5);
         
         // Current price - white
-                        const priceText = this.add.text(0, 0, `$${this.scenario.prices[symbol].start.toLocaleString()}`, {
+                        const priceText = this.add.text(0, 0, `$${this.scenario.prices[symbol].start.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
             fontSize: '20px',
             color: '#ffffff'
         }).setOrigin(0.5);
@@ -1286,7 +1286,9 @@ class SimulationScene extends Phaser.Scene {
             container,
             priceText,
             changeText,
-            bg
+            allocationText,
+            bg,
+            initialAllocation: allocationUSD
         };
     }
     
@@ -1323,13 +1325,21 @@ class SimulationScene extends Phaser.Scene {
                 display.priceText.setText(`$${this.prices[symbol].toLocaleString()}`);
                 display.changeText.setText(`${percentChange >= 0 ? '+' : ''}${percentChange.toFixed(2)}%`);
                 
+                // Update current value in first column
+                const currentValue = display.initialAllocation * (this.prices[symbol] / this.startingPrices[symbol]);
+                display.allocationText.setText(`$${(currentValue/1000000).toFixed(1)}M`);
+                
                 // Use accent colors only for profit/loss
                 if (percentChange > 0) {
                     display.changeText.setColor('#00ffff');
+                    display.allocationText.setColor('#00ffff');
                     display.bg.setStrokeStyle(2, 0x00ffff);
                 } else if (percentChange < 0) {
                     display.changeText.setColor('#ff1493');
+                    display.allocationText.setColor('#ff1493');
                     display.bg.setStrokeStyle(2, 0xff1493);
+                } else {
+                    display.allocationText.setColor('#666666');
                 }
             }
         });
@@ -1349,9 +1359,9 @@ class SimulationScene extends Phaser.Scene {
             }
         });
         
-        this.portfolioValueText.setText(`$${totalValue.toLocaleString()}`);
-        
-        const profit = totalValue - GAME_CONFIG.startingMoney;
+                                this.portfolioValueText.setText(`$${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
+            
+            const profit = totalValue - GAME_CONFIG.startingMoney;
         const profitPercent = (profit / GAME_CONFIG.startingMoney) * 100;
         
         this.profitText.setText(`${profit >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%`);
@@ -1445,7 +1455,7 @@ class ResultsScene extends Phaser.Scene {
         }).setOrigin(0.5);
         
         // Value - white with accent
-        this.add.text(450, 160, `$${this.totalValue.toLocaleString()}`, {
+        this.add.text(450, 160, `$${this.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
             fontSize: '48px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
@@ -1467,7 +1477,7 @@ class ResultsScene extends Phaser.Scene {
         
         yPos += 40;
         Object.entries(this.results).forEach(([symbol, data]) => {
-            const text = `${symbol}: $${(data.invested).toLocaleString()} → $${data.currentValue.toLocaleString()} (${data.change >= 0 ? '+' : ''}${data.change.toFixed(1)}%)`;
+            const text = `${symbol}: $${(data.invested).toLocaleString()} → $${data.currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${data.change >= 0 ? '+' : ''}${data.change.toFixed(1)}%)`;
             this.add.text(450, yPos, text, {
                 fontSize: '16px',
                 color: '#ffffff'
@@ -1481,7 +1491,7 @@ class ResultsScene extends Phaser.Scene {
             ['Black Thursday got you!', 'Welcome to crypto volatility!', 'Try a defensive strategy!'];
         const message = messages[Math.floor(Math.random() * messages.length)];
         
-        this.add.text(450, yPos + 20, message, {
+        this.add.text(450, yPos + 10, message, {
             fontSize: '24px',
             color: '#00ffff'
         }).setOrigin(0.5);
@@ -1837,6 +1847,21 @@ class DashboardScene extends Phaser.Scene {
             
             if (error) throw error;
             
+            // Get the latest price update time from price cache
+            const { data: priceData, error: priceError } = await this.auth.supabase
+                .from('prices_cache')
+                .select('fetched_at')
+                .order('fetched_at', { ascending: false })
+                .limit(1)
+                .single();
+                
+            // Update all games with the actual price cache update time
+            if (!priceError && priceData && data) {
+                data.forEach(game => {
+                    game.last_updated = priceData.fetched_at;
+                });
+            }
+            
             loadingText.destroy();
             
             if (!data || data.length === 0) {
@@ -1972,7 +1997,7 @@ class DashboardScene extends Phaser.Scene {
         this.contentGroup.add(remainingDisplay);
         
         // Current value
-        const valueText = this.add.text(500, y, `$${currentValue.toLocaleString()}`, {
+        const valueText = this.add.text(500, y, `$${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
             fontSize: '18px',
             color: '#ffffff',
             fontFamily: 'Arial Black'
@@ -1994,8 +2019,7 @@ class DashboardScene extends Phaser.Scene {
             fontSize: '14px',
             color: '#00ffff',
             fontFamily: 'Arial Black'
-        }).setOrigin(0.5)
-        .setInteractive({ useHandCursor: true });
+        }).setOrigin(0.5);
         
         this.contentGroup.add(viewBtn);
         
@@ -2566,7 +2590,7 @@ class DashboardScene extends Phaser.Scene {
         Object.keys(GAME_CONFIG.cryptos).forEach(symbol => {
             if (this[`${symbol}_priceText`] && this.currentPrices && this.currentPrices[symbol]) {
                 const displayPrice = this.currentPrices[symbol];
-                this[`${symbol}_priceText`].setText(`$${displayPrice.toLocaleString()}`);
+                                    this[`${symbol}_priceText`].setText(`$${displayPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
             }
         });
     }
@@ -2819,7 +2843,7 @@ class NowModeResultScene extends Phaser.Scene {
             if (amount > 0) {
                 const price = this.startingPrices[crypto];
                 const invested = amount * 1000000;
-                const priceDisplay = price > 0 ? `$${price.toLocaleString()}` : 'Price unavailable';
+                const priceDisplay = price > 0 ? `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'Price unavailable';
                 this.add.text(450, yPos, 
                     `${crypto}: $${invested.toLocaleString()} at ${priceDisplay}/coin`, 
                     {
@@ -2925,26 +2949,104 @@ class ActiveGameViewScene extends Phaser.Scene {
         this.gameData = data.gameData;
     }
     
-    create() {
+    async create() {
         // Black background
         this.cameras.main.setBackgroundColor('#000000');
         
-        // Header
-        this.add.text(450, 40, 'ACTIVE GAME DETAILS', {
+        // Initialize auth
+        this.auth = new Auth();
+        
+        // Fetch fresh game data and latest price update time
+        try {
+            // Get fresh game data
+            const { data: freshGameData, error } = await this.auth.supabase
+                .from('active_games')
+                .select('*')
+                .eq('id', this.gameData.id)
+                .single();
+                
+            if (!error && freshGameData) {
+                // Update gameData with fresh data
+                this.gameData = freshGameData;
+            }
+            
+            // Get the latest price update time from price cache
+            const { data: priceData, error: priceError } = await this.auth.supabase
+                .from('prices_cache')
+                .select('fetched_at')
+                .order('fetched_at', { ascending: false })
+                .limit(1)
+                .single();
+                
+            if (!priceError && priceData) {
+                // Use the actual price cache update time instead of game's last_updated
+                this.gameData.last_updated = priceData.fetched_at;
+            }
+        } catch (err) {
+            console.error('Error fetching fresh data:', err);
+            // Continue with existing data if fetch fails
+        }
+        
+        // View state management
+        let currentView = 'main';
+        const mainViewElements = [];
+        const detailsViewElements = [];
+        
+        // Function to show main view
+        const showMainView = () => {
+            detailsViewElements.forEach(el => el.setVisible(false));
+            mainViewElements.forEach(el => el.setVisible(true));
+            currentView = 'main';
+        };
+        
+        // Function to show details view
+        const showDetailsView = () => {
+            mainViewElements.forEach(el => el.setVisible(false));
+            detailsViewElements.forEach(el => el.setVisible(true));
+            currentView = 'details';
+        };
+        
+        // ===== SHARED HEADER =====
+        this.add.text(450, 40, 'ACTIVE GAME', {
             fontSize: '36px',
             fontFamily: 'Arial Black',
             color: '#00ffff'
         }).setOrigin(0.5);
         
+        // ===== MAIN VIEW CONTENT =====
         // Game info
         const daysRemaining = Math.ceil((new Date(this.gameData.ends_at) - new Date()) / (1000 * 60 * 60 * 24));
         const startedDate = new Date(this.gameData.started_at).toLocaleDateString();
         const endsDate = new Date(this.gameData.ends_at).toLocaleDateString();
         
-        this.add.text(450, 90, `${this.gameData.duration_days}-Day Challenge`, {
+        // Time remaining with color coding
+        const timeColor = daysRemaining <= 7 ? '#ff1493' : 
+                         daysRemaining <= 14 ? '#ffff00' : '#00ff00';
+        
+        // Create a container to hold both text parts centered
+        const challengeContainer = this.add.container(450, 90);
+        
+        // First part (white)
+        const challengePart1 = this.add.text(0, 0, `${this.gameData.duration_days}-Day Challenge / `, {
             fontSize: '24px',
             color: '#ffffff'
-        }).setOrigin(0.5);
+        }).setOrigin(0, 0.5);
+        
+        // Second part with color
+        const challengePart2 = this.add.text(challengePart1.width, 0, `${daysRemaining} days remaining`, {
+            fontSize: '24px',
+            fontFamily: 'Arial Black',
+            color: timeColor
+        }).setOrigin(0, 0.5);
+        
+        // Add both to container
+        challengeContainer.add([challengePart1, challengePart2]);
+        
+        // Center the container by offsetting it
+        const totalWidth = challengePart1.width + challengePart2.width;
+        challengeContainer.x = 450 - totalWidth / 2;
+        
+        mainViewElements.push(challengeContainer);
         
         // Calculate minutes ago for prices update
         let pricesText = '';
@@ -2954,20 +3056,11 @@ class ActiveGameViewScene extends Phaser.Scene {
             pricesText = ` | Prices updated ${minutesAgo} minutes ago`;
         }
         
-        this.add.text(450, 120, `Started: ${startedDate} | Ends: ${endsDate}${pricesText}`, {
+        const datesText = this.add.text(450, 120, `Started: ${startedDate} | Ends: ${endsDate}${pricesText}`, {
             fontSize: '16px',
             color: '#666666'
         }).setOrigin(0.5);
-        
-        // Time remaining with color coding
-        const timeColor = daysRemaining <= 7 ? '#ff1493' : 
-                         daysRemaining <= 14 ? '#ffff00' : '#00ff00';
-        
-        this.add.text(450, 150, `${daysRemaining} days remaining`, {
-            fontSize: '20px',
-            fontFamily: 'Arial Black',
-            color: timeColor
-        }).setOrigin(0.5);
+        mainViewElements.push(datesText);
         
         // Performance summary
         const startValue = this.gameData.starting_money || 10000000;
@@ -2977,116 +3070,90 @@ class ActiveGameViewScene extends Phaser.Scene {
         const profitColor = profit >= 0 ? '#00ff00' : '#ff0066';
         
         // Current value
-        this.add.text(450, 200, 'Current Portfolio Value', {
+        const currentLabel = this.add.text(450, 170, 'Current Portfolio Value', {
             fontSize: '18px',
             color: '#666666'
         }).setOrigin(0.5);
+        mainViewElements.push(currentLabel);
         
-        this.add.text(450, 230, `$${currentValue.toLocaleString()}`, {
-            fontSize: '36px',
-            fontFamily: 'Arial Black',
-            color: '#ffffff'
-        }).setOrigin(0.5);
+                        const currentValueText = this.add.text(450, 200, `$${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
+                    fontSize: '36px',
+                    fontFamily: 'Arial Black',
+                    color: '#ffffff'
+                }).setOrigin(0.5);
+                mainViewElements.push(currentValueText);
         
-        this.add.text(450, 270, `${profit >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%`, {
+        const profitPercentText = this.add.text(450, 240, `${profit >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%`, {
             fontSize: '28px',
             fontFamily: 'Arial Black',
             color: profitColor
         }).setOrigin(0.5);
+        mainViewElements.push(profitPercentText);
         
-        // Allocations breakdown
-        this.add.text(450, 320, 'Your Allocations:', {
+        // Quick allocation summary on main view
+        const allocLabel = this.add.text(450, 290, 'Portfolio:', {
             fontSize: '20px',
             color: '#ffffff'
         }).setOrigin(0.5);
+        mainViewElements.push(allocLabel);
         
-        let yPos = 360;
+        let yPos = 330;
         const allocations = this.gameData.allocations;
-        const startingPrices = this.gameData.starting_prices;
-        const currentPrices = this.gameData.current_prices || startingPrices;
+        const currentPrices = this.gameData.current_prices || this.gameData.starting_prices;
         
+        // Show just crypto names and percentages on main view
         Object.entries(allocations).forEach(([crypto, amount]) => {
             if (amount > 0) {
-                const invested = amount * 1000000;
-                const startPrice = startingPrices[crypto];
-                const currentPrice = currentPrices[crypto];
-                const coins = invested / startPrice;
-                const currentCryptoValue = coins * currentPrice;
-                const cryptoProfit = ((currentPrice - startPrice) / startPrice) * 100;
-                const cryptoProfitColor = cryptoProfit >= 0 ? '#00ff00' : '#ff0066';
-                
-                // Crypto name and allocation
-                this.add.text(150, yPos, crypto, {
+                const allocText = this.add.text(450, yPos, `${crypto}: ${amount * 10}%`, {
                     fontSize: '18px',
-                    fontFamily: 'Arial Black',
-                    color: '#ffffff'
-                }).setOrigin(0, 0.5);
-                
-                // Original investment
-                this.add.text(250, yPos, `$${invested.toLocaleString()}`, {
-                    fontSize: '16px',
-                    color: '#666666'
-                }).setOrigin(0, 0.5);
-                
-                // Current value
-                this.add.text(450, yPos, `$${currentCryptoValue.toLocaleString()}`, {
-                    fontSize: '16px',
-                    color: '#ffffff'
+                    color: '#00ffff'
                 }).setOrigin(0.5);
-                
-                // Performance
-                this.add.text(650, yPos, `${cryptoProfit >= 0 ? '+' : ''}${cryptoProfit.toFixed(1)}%`, {
-                    fontSize: '16px',
-                    fontFamily: 'Arial Black',
-                    color: cryptoProfitColor
-                }).setOrigin(0, 0.5);
-                
-                yPos += 30;
+                mainViewElements.push(allocText);
+                yPos += 25;
             }
         });
         
-        // Cash if any
-        const totalInvested = Object.values(allocations).reduce((sum, val) => sum + (val * 1000000), 0);
-        const cash = 10000000 - totalInvested;
-        if (cash > 0) {
-            this.add.text(150, yPos, 'Cash', {
-                fontSize: '18px',
-                fontFamily: 'Arial Black',
-                color: '#666666'
-            }).setOrigin(0, 0.5);
-            
-            this.add.text(250, yPos, `$${cash.toLocaleString()}`, {
-                fontSize: '16px',
-                color: '#666666'
-            }).setOrigin(0, 0.5);
-            
-            this.add.text(450, yPos, `$${cash.toLocaleString()}`, {
-                fontSize: '16px',
-                color: '#666666'
-            }).setOrigin(0.5);
-            
-            this.add.text(650, yPos, '+0.0%', {
-                fontSize: '16px',
-                fontFamily: 'Arial Black',
-                color: '#666666'
-            }).setOrigin(0, 0.5);
-        }
+        // Buttons for main view - keep at same position
+        const mainButtonY = 480;
         
-        // Performance History Chart
-        this.createPerformanceChart(yPos + 50);
+        // Details button
+        const detailsBtn = this.add.rectangle(350, mainButtonY, 120, 40, 0x333333)
+            .setStrokeStyle(2, 0x00ffff)
+            .setInteractive({ useHandCursor: true });
+        mainViewElements.push(detailsBtn);
+            
+        const detailsBtnText = this.add.text(350, mainButtonY, 'DETAILS', {
+            fontSize: '16px',
+            fontFamily: 'Arial Black',
+            color: '#00ffff'
+        }).setOrigin(0.5);
+        mainViewElements.push(detailsBtnText);
         
-
+        detailsBtn
+            .on('pointerover', () => {
+                detailsBtn.setFillStyle(0x00ffff);
+                detailsBtnText.setColor('#000000');
+            })
+            .on('pointerout', () => {
+                detailsBtn.setFillStyle(0x333333);
+                detailsBtnText.setColor('#00ffff');
+            })
+            .on('pointerdown', () => {
+                showDetailsView();
+            });
         
-        // Back button
-        const backButton = this.add.rectangle(450, 530, 200, 40, 0x333333)
+        // Back button for main view
+        const backButton = this.add.rectangle(550, mainButtonY, 120, 40, 0x333333)
             .setStrokeStyle(2, 0x666666)
             .setInteractive({ useHandCursor: true });
+        mainViewElements.push(backButton);
             
-        const backText = this.add.text(450, 530, 'BACK', {
-            fontSize: '18px',
+        const backText = this.add.text(550, mainButtonY, 'BACK', {
+            fontSize: '16px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
         }).setOrigin(0.5);
+        mainViewElements.push(backText);
         
         backButton
             .on('pointerover', () => {
@@ -3100,24 +3167,193 @@ class ActiveGameViewScene extends Phaser.Scene {
             .on('pointerdown', () => {
                 this.scene.start('DashboardScene', { user: this.user });
             });
+        
+        // ===== DETAILS VIEW CONTENT =====
+        const detailsTitle = this.add.text(450, 90, 'Detailed Portfolio Analysis', {
+            fontSize: '24px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        detailsViewElements.push(detailsTitle);
+        
+        // Detailed allocations breakdown with prices
+        const detailsAllocLabel = this.add.text(450, 130, 'Holdings & Performance:', {
+            fontSize: '20px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        detailsViewElements.push(detailsAllocLabel);
+        
+        // Column headers
+        const colHeaders = [
+            { text: 'Crypto', x: 100 },
+            { text: 'Invested', x: 220 },
+            { text: 'Coins', x: 340 },
+            { text: 'Start Price', x: 440 },
+            { text: 'Current Price', x: 560 },
+            { text: 'Value', x: 680 },
+            { text: 'Gain/Loss', x: 780 }
+        ];
+        
+        colHeaders.forEach(header => {
+            const headerText = this.add.text(header.x, 160, header.text, {
+                fontSize: '14px',
+                color: '#666666'
+            }).setOrigin(0.5);
+            detailsViewElements.push(headerText);
+        });
+        
+        let detailsYPos = 190;
+        const startingPrices = this.gameData.starting_prices;
+        
+        Object.entries(allocations).forEach(([crypto, amount]) => {
+            if (amount > 0) {
+                const invested = amount * 1000000;
+                const startPrice = startingPrices[crypto];
+                const currentPrice = currentPrices[crypto];
+                const coins = invested / startPrice;
+                const currentCryptoValue = coins * currentPrice;
+                const cryptoProfit = currentCryptoValue - invested;
+                const cryptoProfitPercent = (cryptoProfit / invested) * 100;
+                const cryptoProfitColor = cryptoProfit >= 0 ? '#00ff00' : '#ff0066';
+                
+                // Crypto name
+                const cryptoName = this.add.text(100, detailsYPos, crypto, {
+                    fontSize: '16px',
+                    fontFamily: 'Arial Black',
+                    color: '#ffffff'
+                }).setOrigin(0.5);
+                detailsViewElements.push(cryptoName);
+                
+                // Original investment
+                const investedText = this.add.text(220, detailsYPos, `$${invested.toLocaleString()}`, {
+                    fontSize: '14px',
+                    color: '#ffffff'
+                }).setOrigin(0.5);
+                detailsViewElements.push(investedText);
+                
+                // Number of coins
+                const coinsText = this.add.text(340, detailsYPos, coins.toFixed(2), {
+                    fontSize: '14px',
+                    color: '#666666'
+                }).setOrigin(0.5);
+                detailsViewElements.push(coinsText);
+                
+                // Starting price
+                const startPriceText = this.add.text(440, detailsYPos, `$${Number(startPrice).toFixed(2)}`, {
+                    fontSize: '14px',
+                    color: '#666666'
+                }).setOrigin(0.5);
+                detailsViewElements.push(startPriceText);
+                
+                // Current price
+                const currentPriceText = this.add.text(560, detailsYPos, `$${Number(currentPrice).toFixed(2)}`, {
+                    fontSize: '14px',
+                    color: '#00ffff'
+                }).setOrigin(0.5);
+                detailsViewElements.push(currentPriceText);
+                
+                // Current value
+                const valueText = this.add.text(680, detailsYPos, `$${currentCryptoValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
+                    fontSize: '14px',
+                    color: '#ffffff'
+                }).setOrigin(0.5);
+                detailsViewElements.push(valueText);
+                
+                // Profit/Loss
+                const profitText = this.add.text(780, detailsYPos, `${cryptoProfitPercent >= 0 ? '+' : ''}${cryptoProfitPercent.toFixed(1)}%`, {
+                    fontSize: '14px',
+                    fontFamily: 'Arial Black',
+                    color: cryptoProfitColor
+                }).setOrigin(0.5);
+                detailsViewElements.push(profitText);
+                
+                detailsYPos += 25;
+            }
+        });
+        
+        // Cash if any
+        const totalInvested = Object.values(allocations).reduce((sum, val) => sum + (val * 1000000), 0);
+        const cash = 10000000 - totalInvested;
+        if (cash > 0) {
+            const cashName = this.add.text(100, detailsYPos, 'Cash', {
+                fontSize: '16px',
+                fontFamily: 'Arial Black',
+                color: '#666666'
+            }).setOrigin(0.5);
+            detailsViewElements.push(cashName);
+            
+            const cashAmount = this.add.text(220, detailsYPos, `$${cash.toLocaleString()}`, {
+                fontSize: '14px',
+                color: '#666666'
+            }).setOrigin(0.5);
+            detailsViewElements.push(cashAmount);
+            
+            const cashValue = this.add.text(680, detailsYPos, `$${cash.toLocaleString()}`, {
+                fontSize: '14px',
+                color: '#666666'
+            }).setOrigin(0.5);
+            detailsViewElements.push(cashValue);
+            
+            const cashProfit = this.add.text(780, detailsYPos, '+0.0%', {
+                fontSize: '14px',
+                fontFamily: 'Arial Black',
+                color: '#666666'
+            }).setOrigin(0.5);
+            detailsViewElements.push(cashProfit);
+            
+            detailsYPos += 25;
+        }
+        
+        // Performance History Chart
+        this.createPerformanceChart(detailsYPos + 30, detailsViewElements);
+        
+        // Back to main button for details view
+        const detailsBackBtn = this.add.rectangle(450, 530, 200, 40, 0x333333)
+            .setStrokeStyle(2, 0x666666)
+            .setInteractive({ useHandCursor: true });
+        detailsViewElements.push(detailsBackBtn);
+            
+        const detailsBackText = this.add.text(450, 530, 'BACK TO SUMMARY', {
+            fontSize: '16px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        detailsViewElements.push(detailsBackText);
+        
+        detailsBackBtn
+            .on('pointerover', () => {
+                detailsBackBtn.setStrokeStyle(2, 0x00ffff);
+                detailsBackText.setColor('#00ffff');
+            })
+            .on('pointerout', () => {
+                detailsBackBtn.setStrokeStyle(2, 0x666666);
+                detailsBackText.setColor('#ffffff');
+            })
+            .on('pointerdown', () => {
+                showMainView();
+            });
+        
+        // Initially hide details view
+        detailsViewElements.forEach(el => el.setVisible(false));
     }
     
-    createPerformanceChart(startY) {
+    createPerformanceChart(startY, detailsViewElements) {
         // Chart title
-        this.add.text(450, startY, 'Performance Trend', {
+        const chartTitle = this.add.text(450, startY, 'Performance Trend', {
             fontSize: '18px',
             color: '#ffffff'
         }).setOrigin(0.5);
+        detailsViewElements.push(chartTitle);
         
         // Chart area
         const chartX = 200;
         const chartY = startY + 30;
         const chartWidth = 500;
-        const chartHeight = 80;
+        const chartHeight = 100;
         
         // Chart background
-        this.add.rectangle(chartX + chartWidth/2, chartY + chartHeight/2, chartWidth, chartHeight, 0x111111)
+        const chartBg = this.add.rectangle(chartX + chartWidth/2, chartY + chartHeight/2, chartWidth, chartHeight, 0x111111)
             .setStrokeStyle(1, 0x333333);
+        detailsViewElements.push(chartBg);
         
         // Generate sample data points (in real app, this would come from price_history table)
         const dataPoints = this.generateSampleData();
@@ -3149,29 +3385,36 @@ class ActiveGameViewScene extends Phaser.Scene {
         });
         graphics.strokePath();
         
-        // Add value labels
-        const startValue = dataPoints[0];
-        const endValue = dataPoints[dataPoints.length - 1];
-        const percentChange = ((endValue - startValue) / startValue) * 100;
-        const changeColor = percentChange >= 0 ? '#00ff00' : '#ff0066';
+        detailsViewElements.push(graphics);
         
-        // Start value
-        this.add.text(chartX - 10, chartY + chartHeight/2, `$${(startValue/1000000).toFixed(1)}M`, {
+        // Add axis labels
+        const startDateTime = new Date(this.gameData.started_at);
+        const startDate = startDateTime.toLocaleDateString();
+        const startTime = startDateTime.toLocaleTimeString();
+        const startLabel = this.add.text(chartX, chartY + chartHeight + 10, `Start: ${startDate} ${startTime}`, {
             fontSize: '12px',
             color: '#666666'
-        }).setOrigin(1, 0.5);
+        }).setOrigin(0, 0);
+        detailsViewElements.push(startLabel);
         
-        // End value
-        this.add.text(chartX + chartWidth + 10, chartY + chartHeight/2, `$${(endValue/1000000).toFixed(1)}M`, {
+        const endLabel = this.add.text(chartX + chartWidth, chartY + chartHeight + 10, 'Now', {
             fontSize: '12px',
-            color: changeColor
-        }).setOrigin(0, 0.5);
+            color: '#666666'
+        }).setOrigin(1, 0);
+        detailsViewElements.push(endLabel);
         
-        // Performance indicator
-        this.add.text(450, chartY + chartHeight + 15, `${percentChange >= 0 ? '+' : ''}${percentChange.toFixed(1)}% since start`, {
-            fontSize: '14px',
-            color: changeColor
-        }).setOrigin(0.5);
+        // Value labels
+        const maxLabel = this.add.text(chartX - 10, chartY, `$${maxValue.toLocaleString()}`, {
+            fontSize: '12px',
+            color: '#666666'
+        }).setOrigin(1, 0);
+        detailsViewElements.push(maxLabel);
+        
+        const minLabel = this.add.text(chartX - 10, chartY + chartHeight, `$${minValue.toLocaleString()}`, {
+            fontSize: '12px',
+            color: '#666666'
+        }).setOrigin(1, 1);
+        detailsViewElements.push(minLabel);
     }
     
     generateSampleData() {
