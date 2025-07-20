@@ -1,6 +1,327 @@
 // Import auth module (v2 - fixed auth initialization)
 import { Auth } from './auth.js';
 
+// Tutorial Overlay System
+class TutorialOverlay {
+    constructor(scene) {
+        this.scene = scene;
+        this.elements = [];
+    }
+    
+    show(x, y, width, height, text, position = 'bottom') {
+        // Clean up any existing overlay
+        this.hide();
+        
+        // Create dark overlay with hole
+        this.overlay = this.scene.add.graphics();
+        this.overlay.fillStyle(0x000000, 0.7);
+        
+        // Fill entire screen
+        this.overlay.fillRect(0, 0, 900, 600);
+        
+        // Create "hole" in overlay for spotlight effect
+        this.overlay.setBlendMode(Phaser.BlendModes.MULTIPLY);
+        
+        // Add highlight rectangle
+        const highlight = this.scene.add.rectangle(x, y, width + 20, height + 20, 0x00ffff, 0)
+            .setStrokeStyle(3, 0x00ffff);
+        
+        // Tutorial text box position
+        const textY = position === 'top' ? y - height/2 - 100 : y + height/2 + 80;
+        
+        // Background for text
+        const textBg = this.scene.add.rectangle(450, textY, 600, 80, 0x1a1a1a)
+            .setStrokeStyle(2, 0x00ffff);
+            
+        // Tutorial text
+        const tutorialText = this.scene.add.text(450, textY - 10, text, {
+            fontSize: '16px',
+            color: '#ffffff',
+            align: 'center',
+            wordWrap: { width: 580 }
+        }).setOrigin(0.5);
+        
+        // Next button
+        const nextBtn = this.scene.add.text(750, textY + 25, 'NEXT →', {
+            fontSize: '14px',
+            color: '#00ffff'
+        }).setOrigin(1, 0.5)
+        .setInteractive({ useHandCursor: true });
+        
+        // Skip button
+        const skipBtn = this.scene.add.text(150, textY + 25, 'Skip Tutorial', {
+            fontSize: '14px',
+            color: '#666666'
+        }).setOrigin(0, 0.5)
+        .setInteractive({ useHandCursor: true });
+        
+        // Store elements
+        this.elements = [this.overlay, highlight, textBg, tutorialText, nextBtn, skipBtn];
+        
+        // Set depth to be on top
+        this.elements.forEach(el => el.setDepth(1000));
+        
+        return { nextBtn, skipBtn };
+    }
+    
+    hide() {
+        this.elements.forEach(el => {
+            if (el && el.destroy) {
+                el.destroy();
+            }
+        });
+        this.elements = [];
+    }
+}
+
+// Tutorial Manager
+class TutorialManager {
+    constructor() {
+        this.steps = [
+            {
+                scene: 'DashboardScene',
+                elementId: 'playNewGame',
+                x: 450, y: 150, w: 200, h: 50,
+                text: "Welcome to Crypto Trader! Click 'PLAY NEW GAME' to start your first trading challenge.",
+                waitForClick: true
+            },
+            {
+                scene: 'ScenarioSelectScene',
+                elementId: 'scenarioCard',
+                x: 225, y: 250, w: 200, h: 280,
+                text: "Choose a historical event to trade through. Each scenario presents different market conditions!",
+                position: 'top'
+            },
+            {
+                scene: 'AllocationScene',
+                elementId: 'allocations',
+                x: 450, y: 300, w: 700, h: 300,
+                text: "Allocate your $10M across different cryptocurrencies. Click the + buttons to invest!",
+                position: 'top'
+            },
+            {
+                scene: 'SimulationScene',
+                elementId: 'portfolio',
+                x: 450, y: 110, w: 300, h: 60,
+                text: "Watch your portfolio value change as the market moves. This shows real historical data!",
+                autoAdvance: 3000
+            },
+            {
+                scene: 'ResultsScene',
+                elementId: 'breakdown',
+                x: 450, y: 280, w: 400, h: 200,
+                text: "See how each investment performed. Your games are automatically saved!"
+            },
+            {
+                scene: 'DashboardScene',
+                elementId: 'gameHistory',
+                x: 450, y: 350, w: 800, h: 200,
+                text: "Your completed games appear here. Try 'NOW MODE' for real-time trading challenges!",
+                position: 'top'
+            },
+            {
+                scene: 'DashboardScene',
+                elementId: 'nowMode',
+                x: 110, y: 260, w: 180, h: 120,
+                text: "NOW MODE lets you invest at current prices and track performance over 30-90 days. Perfect for multiplayer competitions!"
+            },
+            {
+                scene: 'DashboardScene',
+                elementId: 'leaderboard',
+                x: 740, y: 40, w: 120, h: 40,
+                text: "Check the LEADERBOARD to see top traders and learn from their strategies!"
+            }
+        ];
+        
+        this.currentStep = 0;
+        this.isActive = false;
+        this.overlay = null;
+        this.user = null;
+        this.hasShownForSession = false;
+    }
+    
+    async checkIfNeeded(user) {
+        try {
+            const auth = new Auth();
+            const { data: profile } = await auth.supabase
+                .from('profiles')
+                .select('has_completed_tutorial, tutorial_step')
+                .eq('id', user.id)
+                .single();
+                
+            return profile && !profile.has_completed_tutorial;
+        } catch (error) {
+            console.error('Error checking tutorial status:', error);
+            return false;
+        }
+    }
+    
+    async start(scene, user) {
+        // Don't show multiple times in same session
+        if (this.hasShownForSession) return false;
+        
+        this.user = user;
+        const needsTutorial = await this.checkIfNeeded(user);
+        
+        if (!needsTutorial) return false;
+        
+        this.hasShownForSession = true;
+        this.isActive = true;
+        this.currentStep = 0;
+        this.showStep(scene);
+        return true;
+    }
+    
+    showStep(scene) {
+        if (!this.isActive || this.currentStep >= this.steps.length) return;
+        
+        const step = this.steps[this.currentStep];
+        
+        // Check if we're on the right scene
+        if (scene.scene.key !== step.scene) return;
+        
+        // Create overlay if needed
+        if (!this.overlay) {
+            this.overlay = new TutorialOverlay(scene);
+        }
+        
+        // Show the overlay
+        const { nextBtn, skipBtn } = this.overlay.show(
+            step.x, step.y, step.w, step.h, 
+            step.text, step.position
+        );
+        
+        // Add button handlers
+        nextBtn.on('pointerdown', () => this.nextStep(scene));
+        skipBtn.on('pointerdown', () => this.skip());
+        
+        // Auto-advance if specified
+        if (step.autoAdvance) {
+            scene.time.delayedCall(step.autoAdvance, () => {
+                if (this.isActive && this.currentStep === this.steps.indexOf(step)) {
+                    this.nextStep(scene);
+                }
+            });
+        }
+        
+        // Save progress
+        this.saveProgress();
+    }
+    
+    nextStep(scene) {
+        this.currentStep++;
+        
+        if (this.currentStep >= this.steps.length) {
+            this.complete();
+        } else {
+            // Check if next step is in current scene
+            const nextStep = this.steps[this.currentStep];
+            if (nextStep.scene === scene.scene.key) {
+                this.showStep(scene);
+            } else {
+                // Hide overlay and wait for scene change
+                if (this.overlay) {
+                    this.overlay.hide();
+                }
+            }
+        }
+    }
+    
+    checkScene(scene) {
+        if (!this.isActive) return;
+        
+        const currentStep = this.steps[this.currentStep];
+        if (currentStep && currentStep.scene === scene.scene.key) {
+            // Recreate overlay for new scene
+            this.overlay = new TutorialOverlay(scene);
+            this.showStep(scene);
+        }
+    }
+    
+    async skip() {
+        this.isActive = false;
+        if (this.overlay) {
+            this.overlay.hide();
+        }
+        
+        // Mark as completed
+        try {
+            const auth = new Auth();
+            await auth.supabase
+                .from('profiles')
+                .update({ 
+                    has_completed_tutorial: true,
+                    tutorial_step: 0 
+                })
+                .eq('id', this.user.id);
+        } catch (error) {
+            console.error('Error skipping tutorial:', error);
+        }
+    }
+    
+    async complete() {
+        this.isActive = false;
+        
+        // Show completion message
+        const scene = this.overlay.scene;
+        this.overlay.hide();
+        
+        // Completion overlay
+        const completionBg = scene.add.rectangle(450, 300, 500, 200, 0x1a1a1a)
+            .setStrokeStyle(3, 0x00ffff)
+            .setDepth(1001);
+            
+        const title = scene.add.text(450, 250, '🎉 Tutorial Complete!', {
+            fontSize: '32px',
+            color: '#00ffff',
+            fontFamily: 'Arial Black'
+        }).setOrigin(0.5).setDepth(1002);
+        
+        const subtitle = scene.add.text(450, 300, 'You\'re ready to become a crypto trading legend!', {
+            fontSize: '18px',
+            color: '#ffffff'
+        }).setOrigin(0.5).setDepth(1002);
+        
+        // Auto-hide after 3 seconds
+        scene.time.delayedCall(3000, () => {
+            completionBg.destroy();
+            title.destroy();
+            subtitle.destroy();
+        });
+        
+        // Mark as completed in database
+        try {
+            const auth = new Auth();
+            await auth.supabase
+                .from('profiles')
+                .update({ 
+                    has_completed_tutorial: true,
+                    tutorial_step: 0 
+                })
+                .eq('id', this.user.id);
+        } catch (error) {
+            console.error('Error completing tutorial:', error);
+        }
+    }
+    
+    async saveProgress() {
+        if (!this.user) return;
+        
+        try {
+            const auth = new Auth();
+            await auth.supabase
+                .from('profiles')
+                .update({ tutorial_step: this.currentStep })
+                .eq('id', this.user.id);
+        } catch (error) {
+            console.error('Error saving tutorial progress:', error);
+        }
+    }
+}
+
+// Global tutorial instance
+window.tutorialManager = new TutorialManager();
+
 // Game configuration
 const GAME_CONFIG = {
     startingMoney: 10000000, // $10M
@@ -525,6 +846,11 @@ class ScenarioSelectScene extends Phaser.Scene {
             color: '#ffffff'
         }).setOrigin(0.5);
         
+        // Continue tutorial if active
+        if (window.tutorialManager) {
+            window.tutorialManager.checkScene(this);
+        }
+        
         // Subtitle
         this.add.text(450, 150, 'Choose a time period to trade through', {
             fontSize: '20px',
@@ -805,6 +1131,11 @@ class AllocationScene extends Phaser.Scene {
             fontFamily: 'Arial Black',
             color: '#ffffff'
         }).setOrigin(0.5);
+        
+        // Continue tutorial if active
+        if (window.tutorialManager) {
+            window.tutorialManager.checkScene(this);
+        }
         
         // Display duration for Now mode
         if (this.isNowMode && this.durationDays) {
@@ -1657,13 +1988,12 @@ class DashboardScene extends Phaser.Scene {
         // Create tabs
         this.createTabs();
         
-        // Content area - starts below tabs
-        this.contentY = 220;
+        // Check and start tutorial for new users
+        if (window.tutorialManager) {
+            window.tutorialManager.start(this, this.user);
+        }
         
-        // Create content group that we can clear/update
-        this.contentGroup = this.add.group();
-        
-        // Show initial tab content
+        // Show content based on active tab
         this.showTabContent();
         
         // Sign out button
