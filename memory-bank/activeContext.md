@@ -44,6 +44,10 @@
     - Reverted to shorter scenario names (just displayName)
     - Separated dollar amounts and percentages with 50px gap
     - Right-aligned dollar amounts, left-aligned percentages
+12. Limited past games display to prevent UI overflow:
+    - Shows only 4 most recent games
+    - Adds "+ X more games" indicator when user has more
+    - Keeps Sign Out button always visible on screen
 
 ## Game Saving Issue
 - Test save works but real games don't save
