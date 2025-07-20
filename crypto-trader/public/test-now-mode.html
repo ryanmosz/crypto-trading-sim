@@ -69,11 +69,21 @@
     </div>
 
     <script>
-        // Initialize Supabase
-        const supabase = supabaseClient.createClient(
-            window.SUPABASE_CONFIG.url,
-            window.SUPABASE_CONFIG.anonKey
-        );
+        // Global variable for Supabase client
+        let supabase;
+
+        // Wait for all scripts to load
+        window.onload = function() {
+            // Initialize Supabase - the CDN version exposes it as window.supabase
+            const { createClient } = window.supabase;
+            supabase = createClient(
+                window.SUPABASE_CONFIG.url,
+                window.SUPABASE_CONFIG.anonKey
+            );
+            
+            // Check auth once initialized
+            checkAuth();
+        };
 
         async function checkAuth() {
             const statusDiv = document.getElementById('auth-status');
@@ -183,11 +193,6 @@
                 gamesDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
             }
         }
-
-        // Check auth on load
-        window.onload = () => {
-            checkAuth();
-        };
     </script>
 </body>
 </html> 
