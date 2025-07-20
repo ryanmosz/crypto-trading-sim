@@ -1248,7 +1248,8 @@ class SimulationScene extends Phaser.Scene {
             totalValue,
             results,
             allocations: this.allocations,
-            scenario: this.scenarioKey
+            scenario: this.scenarioKey,
+            speed: this.speed
         });
     }
 }
@@ -1268,15 +1269,27 @@ class ResultsScene extends Phaser.Scene {
         this.allocations = data.allocations;
         this.scenarioKey = data.scenario || 'march_2020';
         this.scenario = SCENARIOS[this.scenarioKey];
+        this.speed = data.speed || 'regular';
     }
     
     async create() {
         // Black background
         this.cameras.main.setBackgroundColor('#000000');
         
+        // Initialize auth first
+        try {
+            await this.auth.initialize();
+            console.log('Auth initialized in ResultsScene');
+        } catch (error) {
+            console.error('Failed to initialize auth:', error);
+        }
+        
         // Save the game result if user is logged in
         if (this.user && this.user.id) {
+            console.log('User is logged in, attempting to save game...');
             await this.savePastRun();
+        } else {
+            console.log('No user logged in, skipping save');
         }
         
         // Results header - white
@@ -1380,6 +1393,11 @@ class ResultsScene extends Phaser.Scene {
     
     async savePastRun() {
         try {
+            // Get scenario details for better data
+            const scenario = SCENARIOS[this.scenarioKey];
+            const profit = this.totalValue - GAME_CONFIG.startingMoney;
+            const profitPercent = (profit / GAME_CONFIG.startingMoney) * 100;
+            
             const saveData = {
                 user_id: this.user.id,
                 scenario_key: this.scenarioKey,
@@ -1387,21 +1405,58 @@ class ResultsScene extends Phaser.Scene {
                 final_value: this.totalValue
             };
             
-            console.log('Attempting to save game with:', saveData);
+            // Log additional context for debugging
+            console.log('Game context:', {
+                scenario: scenario.displayName,
+                date: scenario.date,
+                speed: this.speed,
+                profit: `$${profit.toLocaleString()} (${profitPercent.toFixed(1)}%)`,
+                startingMoney: GAME_CONFIG.startingMoney
+            });
             
-            const profit = this.totalValue - GAME_CONFIG.startingMoney;
-            const profitPercent = (profit / GAME_CONFIG.startingMoney) * 100;
+            console.log('Attempting to save game with enhanced data:', saveData);
+            
+            // Initialize auth if needed
+            if (!this.auth.supabase) {
+                console.error('Auth not initialized, initializing now...');
+                await this.auth.initialize();
+            }
             
             const { data, error } = await this.auth.supabase
                 .from('past_runs')
                 .insert(saveData)
                 .select();
             
-            if (error) throw error;
+            if (error) {
+                console.error('Supabase error:', error);
+                throw error;
+            }
             
             console.log('Game saved successfully!', data);
+            
+            // Show visual confirmation
+            const savedText = this.add.text(450, 550, '✓ Game Saved', {
+                fontSize: '16px',
+                color: '#00ff00'
+            }).setOrigin(0.5);
+            
+            // Fade out after 2 seconds
+            this.tweens.add({
+                targets: savedText,
+                alpha: 0,
+                duration: 2000,
+                delay: 1000
+            });
+            
         } catch (error) {
             console.error('Error saving game:', error);
+            console.error('Error details:', error.message, error.code);
+            
+            // Show error message
+            this.add.text(450, 550, '⚠ Save Failed', {
+                fontSize: '16px',
+                color: '#ff0000'
+            }).setOrigin(0.5);
         }
     }
 }
