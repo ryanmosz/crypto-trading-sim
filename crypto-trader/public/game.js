@@ -1481,13 +1481,7 @@ class ResultsScene extends Phaser.Scene {
             yPos += 25;
         });
         
-        // Historical note
-        this.add.text(450, yPos + 20, "Historical data - this actually happened!", {
-            fontSize: '14px',
-            color: '#00ffff'
-        }).setOrigin(0.5);
-        
-        // Fun message - blue/teal color at historical note position
+        // Fun message - blue/teal color
         const messages = isWinner ? 
             ['You survived Black Thursday!', 'Better than most traders!', 'Risk management pro!'] :
             ['Black Thursday got you!', 'Welcome to crypto volatility!', 'Try a defensive strategy!'];
