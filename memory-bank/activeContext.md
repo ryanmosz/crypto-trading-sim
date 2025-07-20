@@ -34,6 +34,8 @@
    - Switched to left-aligned inline layout to prevent overlap
    - Removed column headers to save space
    - Smaller fonts: 15px values, 13px percentages
+9. Final centering fix: content spans x=260 to x=635 (375px wide, centered in 600px modal)
+   - Added 90px spacing between label and value to prevent "TOTAL:" overlap
 
 ## Game Saving Issue
 - Test save works but real games don't save
