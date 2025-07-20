@@ -15,8 +15,12 @@
 ✅ Complete transition from Unity to Phaser
 ✅ GitHub repository fully updated
 ✅ Comprehensive two-mode vision documented
+✅ GitHub Pages deployment configured with CI/CD
 
 ### Recent Additions
+- **Deployment Infrastructure**: GitHub Actions workflow for automatic deployment
+- **Deployment Documentation**: Comprehensive guide for multiple platforms
+- **Local Testing Script**: Easy way to test deployment locally
 
 #### Planning & Documentation
 - [x] Master phases document (PHASES.md - central planning doc)
