@@ -7,11 +7,18 @@
     "start": "cd public && python3 -m http.server 8090",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["phaser", "game", "crypto", "trading", "simulator"],
+  "keywords": [
+    "phaser",
+    "game",
+    "crypto",
+    "trading",
+    "simulator"
+  ],
   "author": "",
   "license": "MIT",
   "type": "commonjs",
   "dependencies": {
+    "@supabase/supabase-js": "^2.52.0",
     "phaser": "^3.86.0"
   }
 }

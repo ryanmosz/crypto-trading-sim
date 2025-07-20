@@ -1,0 +1,158 @@
+// Authentication module for crypto-trading-sim
+// Handles Supabase auth operations
+
+// Import Supabase client
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+// Note: In production, these should come from a secure source
+// For now, you'll need to replace these with your actual keys
+const SUPABASE_URL = 'https://hordiavathuwzaggjuwy.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY_HERE'; // TODO: Replace with actual key
+
+// Initialize Supabase client
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Auth functions
+export const auth = {
+  // Sign up new user
+  async signUp(email, password, username) {
+    try {
+      // Sign up the user
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+      
+      if (error) throw error;
+      
+      // Create profile entry
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([{ 
+            id: data.user.id, 
+            username: username || email.split('@')[0] 
+          }]);
+          
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+        }
+      }
+      
+      return { data, error: null };
+    } catch (error) {
+      console.error('Signup error:', error);
+      return { data: null, error };
+    }
+  },
+  
+  // Sign in existing user
+  async signIn(email, password) {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) throw error;
+      
+      return { data, error: null };
+    } catch (error) {
+      console.error('Signin error:', error);
+      return { data: null, error };
+    }
+  },
+  
+  // Sign out
+  async signOut() {
+    const { error } = await supabase.auth.signOut();
+    return { error };
+  },
+  
+  // Get current user
+  async getCurrentUser() {
+    const { data: { user } } = await supabase.auth.getUser();
+    return user;
+  },
+  
+  // Get current session
+  async getSession() {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session;
+  },
+  
+  // Listen to auth state changes
+  onAuthStateChange(callback) {
+    return supabase.auth.onAuthStateChange((event, session) => {
+      callback(event, session);
+    });
+  }
+};
+
+// Game data functions
+export const gameData = {
+  // Save a past run
+  async savePastRun(scenarioKey, allocations, finalValue) {
+    const user = await auth.getCurrentUser();
+    if (!user) throw new Error('User not authenticated');
+    
+    const { data, error } = await supabase
+      .from('past_runs')
+      .insert([{
+        user_id: user.id,
+        scenario_key: scenarioKey,
+        allocations: allocations,
+        final_value: finalValue,
+        finished_at: new Date().toISOString()
+      }])
+      .select();
+      
+    return { data, error };
+  },
+  
+  // Get user's past runs
+  async getPastRuns() {
+    const user = await auth.getCurrentUser();
+    if (!user) throw new Error('User not authenticated');
+    
+    const { data, error } = await supabase
+      .from('past_runs')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('finished_at', { ascending: false });
+      
+    return { data, error };
+  },
+  
+  // Submit a "Now" mode entry
+  async submitNowEntry(allocations, startPrices) {
+    const user = await auth.getCurrentUser();
+    if (!user) throw new Error('User not authenticated');
+    
+    const { data, error } = await supabase
+      .from('now_entries')
+      .insert([{
+        user_id: user.id,
+        allocations: allocations,
+        start_prices: startPrices,
+        created_at: new Date().toISOString()
+      }])
+      .select();
+      
+    return { data, error };
+  },
+  
+  // Get current leaderboard
+  async getLeaderboard(limit = 100) {
+    const { data, error } = await supabase
+      .from('now_leaderboard')
+      .select('*')
+      .limit(limit);
+      
+    return { data, error };
+  }
+};
+
+// Export for use in game
+window.supabaseAuth = auth;
+window.supabaseGameData = gameData; 

@@ -18,6 +18,7 @@ out/
 .env.local
 .env.production.local
 .env.development.local
+crypto-trader/env.js
 
 # IDE and editor files
 .idea/
@@ -58,3 +59,4 @@ docs/_site/
 .eslintcache
 .parcel-cache/
 .cache/
+brainlift/
