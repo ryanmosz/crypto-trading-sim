@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Supabase Auth</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+        #output {
+            background: #f5f5f5;
+            padding: 10px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Supabase Auth Test</h1>
+    
+    <div class="section">
+        <h2>1. Test Sign Up</h2>
+        <input type="email" id="signupEmail" placeholder="test@example.com" value="test@example.com">
+        <input type="password" id="signupPassword" placeholder="password123" value="password123">
+        <input type="text" id="signupUsername" placeholder="testuser" value="testuser">
+        <button onclick="testSignUp()">Sign Up</button>
+    </div>
+
+    <div class="section">
+        <h2>2. Test Sign In</h2>
+        <input type="email" id="signinEmail" placeholder="test@example.com" value="test@example.com">
+        <input type="password" id="signinPassword" placeholder="password123" value="password123">
+        <button onclick="testSignIn()">Sign In</button>
+    </div>
+
+    <div class="section">
+        <h2>3. Current User</h2>
+        <button onclick="getCurrentUser()">Get Current User</button>
+        <button onclick="signOut()">Sign Out</button>
+    </div>
+
+    <div class="section">
+        <h2>4. Test Game Data</h2>
+        <button onclick="savePastRun()">Save Test Past Run</button>
+        <button onclick="getPastRuns()">Get Past Runs</button>
+    </div>
+
+    <div class="section">
+        <h2>Output:</h2>
+        <div id="output"></div>
+    </div>
+
+    <script type="module" src="auth.js"></script>
+    <script>
+        function log(message, isError = false) {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = isError ? 'error' : 'success';
+            output.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        async function testSignUp() {
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const username = document.getElementById('signupUsername').value;
+            
+            log('Testing sign up...');
+            const { data, error } = await window.supabaseAuth.signUp(email, password, username);
+            
+            if (error) {
+                log(`Sign up error: ${error.message}`, true);
+            } else {
+                log(`Sign up successful! User ID: ${data.user?.id}`);
+            }
+        }
+
+        async function testSignIn() {
+            const email = document.getElementById('signinEmail').value;
+            const password = document.getElementById('signinPassword').value;
+            
+            log('Testing sign in...');
+            const { data, error } = await window.supabaseAuth.signIn(email, password);
+            
+            if (error) {
+                log(`Sign in error: ${error.message}`, true);
+            } else {
+                log(`Sign in successful! Session: ${data.session?.access_token?.substring(0, 20)}...`);
+            }
+        }
+
+        async function getCurrentUser() {
+            log('Getting current user...');
+            const user = await window.supabaseAuth.getCurrentUser();
+            
+            if (user) {
+                log(`Current user: ${user.email} (${user.id})`);
+            } else {
+                log('No user logged in', true);
+            }
+        }
+
+        async function signOut() {
+            log('Signing out...');
+            const { error } = await window.supabaseAuth.signOut();
+            
+            if (error) {
+                log(`Sign out error: ${error.message}`, true);
+            } else {
+                log('Signed out successfully');
+            }
+        }
+
+        async function savePastRun() {
+            log('Saving test past run...');
+            
+            const testAllocations = {
+                BTC: 3,
+                ETH: 2,
+                BNB: 2,
+                SOL: 2,
+                XRP: 1
+            };
+            
+            const { data, error } = await window.supabaseGameData.savePastRun(
+                'march_2020',
+                testAllocations,
+                12500000 // $12.5M final value
+            );
+            
+            if (error) {
+                log(`Save error: ${error.message}`, true);
+            } else {
+                log(`Past run saved! ID: ${data[0]?.id}`);
+            }
+        }
+
+        async function getPastRuns() {
+            log('Getting past runs...');
+            
+            const { data, error } = await window.supabaseGameData.getPastRuns();
+            
+            if (error) {
+                log(`Get runs error: ${error.message}`, true);
+            } else {
+                log(`Found ${data?.length || 0} past runs:`);
+                data?.forEach((run, i) => {
+                    log(`  ${i+1}. ${run.scenario_key} - $${run.final_value.toLocaleString()} (${new Date(run.finished_at).toLocaleDateString()})`);
+                });
+            }
+        }
+    </script>
+</body>
+</html> 

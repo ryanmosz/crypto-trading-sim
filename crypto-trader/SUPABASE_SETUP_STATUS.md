@@ -33,13 +33,10 @@
 
 ## ⏳ Next Steps (Manual)
 
-### 1. **Get API Keys** (5 min)
-1. Go to: https://supabase.com/dashboard/project/hordiavathuwzaggjuwy/settings/api
-2. Copy:
-   - `anon` (public) key
-   - `service_role` key (keep secret!)
-3. Update `crypto-trader/public/auth.js` with anon key
-4. Update `crypto-trader/env.js` with both keys
+### 1. **Get API Keys** (5 min) ✅ PARTIALLY COMPLETE
+1. ✅ Anon key already added to `auth.js`
+2. ⏳ Still need service_role key from: https://supabase.com/dashboard/project/yuobwpszomojorrjiwlp/settings/api
+3. ⏳ Add service_role key to `env.js` and edge function schedule
 
 ### 2. **Run Migrations** (10 min)
 Option A - Via Dashboard:
