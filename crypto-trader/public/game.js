@@ -90,6 +90,7 @@ class TutorialOverlay {
 // Tutorial Manager
 class TutorialManager {
     constructor() {
+        this.hasStarted = false; // Track if tutorial has been started
         this.steps = [
             {
                 scene: 'DashboardScene',
@@ -105,7 +106,7 @@ class TutorialManager {
                 elementId: 'newGameTab',
                 x: 230, y: 150, w: 200, h: 50,
                 text: "NEW GAME: Start trading through historical crypto events. Test your strategies against real market data!",
-                waitForClick: true,
+                waitForClick: false, // Don't auto-advance on tab clicks
                 position: 'bottom'
             },
             {
@@ -113,7 +114,7 @@ class TutorialManager {
                 elementId: 'activeGamesTab',
                 x: 450, y: 150, w: 200, h: 50,
                 text: "ACTIVE GAMES: Ongoing multiplayer investment challenges with data powered by CoinGecko.com. Challenge your friends! Or enemies!",
-                waitForClick: true,
+                waitForClick: false, // Don't auto-advance on tab clicks
                 position: 'bottom'
             },
             {
@@ -121,7 +122,7 @@ class TutorialManager {
                 elementId: 'leaderboard',
                 x: 450, y: 530, w: 250, h: 50,
                 text: "Check the LEADERBOARD to see top traders and compete with others!",
-                waitForClick: true,
+                waitForClick: false, // Don't auto-advance
                 position: 'top'
             },
             {
@@ -205,6 +206,9 @@ class TutorialManager {
     
     async start(scene, user) {
         // DEBUG MODE: Always show tutorial for testing
+        // But only once per page load
+        if (this.hasStarted) return false;
+        
         // // Don't show multiple times in same session
         // if (this.hasShownForSession) return false;
         
@@ -214,6 +218,7 @@ class TutorialManager {
         // if (!needsTutorial) return false;
         
         this.user = user;
+        this.hasStarted = true;
         this.hasShownForSession = true;
         this.isActive = true;
         this.currentStep = 0;
@@ -279,6 +284,9 @@ class TutorialManager {
     
     checkScene(scene) {
         if (!this.isActive) return;
+        
+        // Don't interfere if we're already showing a step
+        if (this.overlay && this.overlay.elements.length > 0) return;
         
         const currentStep = this.steps[this.currentStep];
         if (currentStep && currentStep.scene === scene.scene.key) {
