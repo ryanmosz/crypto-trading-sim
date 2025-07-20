@@ -1488,10 +1488,10 @@ class DashboardScene extends Phaser.Scene {
         }).setOrigin(0.5);
         
         // Refresh button (for testing)
-        const refreshBtn = this.add.text(600, 250, '[Refresh]', {
+        const refreshBtn = this.add.text(750, 250, '[Refresh]', {
             fontSize: '16px',
             color: '#00ff00'
-        }).setOrigin(0.5)
+        }).setOrigin(1, 0.5)
         .setInteractive({ useHandCursor: true })
         .on('pointerover', function() { this.setColor('#ffffff'); })
         .on('pointerout', function() { this.setColor('#00ff00'); })
