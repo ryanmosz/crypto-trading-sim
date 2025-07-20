@@ -78,12 +78,17 @@
 
 ## Current Work
 
-### M2 - Now Mode Implementation (98% Complete) 🚀
+### M2 - Now Mode Implementation (99% Complete) 🚀
 
 **API Key Integrated!** ✅
 - CoinGecko API key added to `env.js`
 - Test page detects and uses the key
 - Ready for real-time price updates
+
+**Cron Job Active!** ✅
+- Hourly price updates scheduled (Job ID: 2)
+- Runs at the top of every hour
+- Will activate once edge function is deployed
 
 **Complete Feature List:**
 - ✅ Historical trading scenarios
@@ -95,19 +100,22 @@
 - ✅ Leaderboard with rankings
 - ✅ Edge function ready
 - ✅ API integration working
+- ✅ Cron job scheduled
 - ✅ All documentation complete
 
-**Final 2% - Deploy Edge Function:**
-1. `supabase secrets set COINGECKO_API_KEY=CG-PkKqSj9jtXcCR53uBnnYyNVf`
-2. `supabase functions deploy update-game-prices`
-3. Set up cron job in SQL editor
+**Final 1% - Deploy Edge Function:**
+```bash
+supabase link --project-ref yuobwpszomojorrjiwlp
+supabase secrets set COINGECKO_API_KEY=CG-PkKqSj9jtXcCR53uBnnYyNVf
+supabase functions deploy update-game-prices
+```
 
 **Ready for Testing!**
 See `FINAL_TESTING_CHECKLIST.md` for comprehensive testing guide.
 
 ### Project Status
 
-The Crypto Trading Simulator is now **feature-complete** and ready for final testing. Once the edge function is deployed, the project will be at 100% with real-time price updates running automatically every hour.
+The Crypto Trading Simulator is now **99% complete** with the cron job active and waiting for the edge function deployment. Once deployed, the project will be at 100% with real-time price updates running automatically every hour.
 
 Total development time: ~2 days
 Lines of code: 3,300+ in game.js alone

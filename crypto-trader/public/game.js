@@ -1577,6 +1577,7 @@ class DashboardScene extends Phaser.Scene {
         this.currentPage = 0;
         this.gamesPerPage = 4;
         this.allGames = [];
+        this.activeTab = 'new'; // 'new', 'active', or 'past'
     }
     
     init(data) {
@@ -1607,83 +1608,17 @@ class DashboardScene extends Phaser.Scene {
             color: '#00ffff'
         }).setOrigin(0.5);
         
-        // Play button
-        const playButton = this.add.rectangle(450, 160, 300, 60, 0x00ffff)
-            .setInteractive({ useHandCursor: true });
-            
-        const playText = this.add.text(450, 160, 'PLAY NEW GAME', {
-            fontSize: '24px',
-            fontFamily: 'Arial Black',
-            color: '#000000'
-        }).setOrigin(0.5);
+        // Create tabs
+        this.createTabs();
         
-        playButton
-            .on('pointerover', () => {
-                playButton.setFillStyle(0xff1493);
-            })
-            .on('pointerout', () => {
-                playButton.setFillStyle(0x00ffff);
-            })
-            .on('pointerdown', () => {
-                this.scene.start('ScenarioSelectScene', { user: this.user });
-            });
+        // Content area - starts below tabs
+        this.contentY = 220;
         
-        // Active games section
-        this.activeGamesY = 240;
-        this.add.text(450, this.activeGamesY, 'ACTIVE GAMES', {
-            fontSize: '24px',
-            fontFamily: 'Arial Black',
-            color: '#00ffff'
-        }).setOrigin(0.5);
+        // Create content group that we can clear/update
+        this.contentGroup = this.add.group();
         
-        // Loading text for active games
-        this.activeGamesLoadingText = this.add.text(450, this.activeGamesY + 40, 'Loading active games...', {
-            fontSize: '16px',
-            color: '#666666'
-        }).setOrigin(0.5);
-        
-        // Past runs header - moved down
-        this.pastGamesY = 400;
-        this.add.text(450, this.pastGamesY, 'YOUR PAST GAMES', {
-            fontSize: '24px',
-            fontFamily: 'Arial Black',
-            color: '#ffffff'
-        }).setOrigin(0.5);
-        
-        // Leaderboard button
-        const leaderboardBtn = this.add.text(150, this.pastGamesY, '🏆 Leaderboard', {
-            fontSize: '16px',
-            color: '#ffff00'
-        }).setOrigin(0, 0.5)
-        .setInteractive({ useHandCursor: true })
-        .on('pointerover', function() { this.setColor('#ffffff'); })
-        .on('pointerout', function() { this.setColor('#ffff00'); })
-        .on('pointerdown', () => {
-            if (window.FEATURES && window.FEATURES.LEADERBOARD) {
-                this.scene.start('LeaderboardScene', { user: this.user });
-            } else {
-                alert('Leaderboard coming soon!');
-            }
-        });
-        
-        // Refresh button (for testing)
-        const refreshBtn = this.add.text(750, this.pastGamesY, '[Refresh]', {
-            fontSize: '16px',
-            color: '#00ff00'
-        }).setOrigin(1, 0.5)
-        .setInteractive({ useHandCursor: true })
-        .on('pointerover', function() { this.setColor('#ffffff'); })
-        .on('pointerout', function() { this.setColor('#00ff00'); })
-        .on('pointerdown', () => {
-            // Reload the scene to refresh past runs
-            this.scene.restart({ user: this.user });
-        });
-        
-        // Loading text for past runs
-        this.loadingText = this.add.text(450, this.pastGamesY + 50, 'Loading your game history...', {
-            fontSize: '16px',
-            color: '#666666'
-        }).setOrigin(0.5);
+        // Show initial tab content
+        this.showTabContent();
         
         // Sign out button
         const signOutButton = this.add.text(800, 550, 'Sign Out', {
@@ -1698,14 +1633,14 @@ class DashboardScene extends Phaser.Scene {
             this.scene.start('LoginScene');
         });
         
-        // Test save button (temporary for debugging)
-        const testSaveBtn = this.add.text(100, 200, '[Test Save]', {
-            fontSize: '14px',
-            color: '#00ff00'
+        // Test buttons (temporary for debugging) - hide them in corner
+        const testSaveBtn = this.add.text(50, 20, '[Test Save]', {
+            fontSize: '12px',
+            color: '#003300'
         }).setOrigin(0, 0.5)
         .setInteractive({ useHandCursor: true })
-        .on('pointerover', function() { this.setColor('#ffffff'); })
-        .on('pointerout', function() { this.setColor('#00ff00'); })
+        .on('pointerover', function() { this.setColor('#00ff00'); })
+        .on('pointerout', function() { this.setColor('#003300'); })
         .on('pointerdown', async () => {
             console.log('Testing save with user:', this.user);
             try {
@@ -1731,14 +1666,14 @@ class DashboardScene extends Phaser.Scene {
             }
         });
         
-        // Test price update button (temporary for debugging)
-        const testPriceBtn = this.add.text(100, 230, '[Update Prices]', {
-            fontSize: '14px',
-            color: '#00ff00'
+        // Test price update button
+        const testPriceBtn = this.add.text(150, 20, '[Update Prices]', {
+            fontSize: '12px',
+            color: '#003300'
         }).setOrigin(0, 0.5)
         .setInteractive({ useHandCursor: true })
-        .on('pointerover', function() { this.setColor('#ffffff'); })
-        .on('pointerout', function() { this.setColor('#00ff00'); })
+        .on('pointerover', function() { this.setColor('#00ff00'); })
+        .on('pointerout', function() { this.setColor('#003300'); })
         .on('pointerdown', async () => {
             console.log('Testing price update...');
             try {
@@ -1767,30 +1702,159 @@ class DashboardScene extends Phaser.Scene {
                     console.error('Price update error:', error);
                 } else {
                     console.log('Prices updated successfully!');
-                    // Refresh the scene to show new values
-                    this.scene.restart({ user: this.user });
+                    // Refresh content if on active tab
+                    if (this.activeTab === 'active') {
+                        this.showTabContent();
+                    }
                 }
             } catch (e) {
                 console.error('Price update exception:', e);
             }
         });
-        
-        // Load active games and past runs
-        this.loadActiveGames();
-        this.loadPastRuns();
     }
     
-    async loadActiveGames() {
-        try {
-            // Make sure we have a valid user
-            if (!this.user || !this.user.id) {
-                console.error('No valid user for active games');
-                return;
+    createTabs() {
+        const tabY = 150;
+        const tabWidth = 200;
+        const tabHeight = 50;
+        const tabSpacing = 20;
+        const startX = 450 - (tabWidth * 1.5 + tabSpacing); // Center 3 tabs
+        
+        // Tab data
+        const tabs = [
+            { key: 'new', label: 'NEW GAME', x: startX },
+            { key: 'active', label: 'ACTIVE', x: startX + tabWidth + tabSpacing },
+            { key: 'past', label: 'PAST', x: startX + (tabWidth + tabSpacing) * 2 }
+        ];
+        
+        // Create tab buttons
+        tabs.forEach(tab => {
+            const isActive = this.activeTab === tab.key;
+            
+            // Tab background
+            const tabBg = this.add.rectangle(tab.x, tabY, tabWidth, tabHeight, 
+                isActive ? 0x00ffff : 0x111111)
+                .setStrokeStyle(2, isActive ? 0x00ffff : 0x333333)
+                .setInteractive({ useHandCursor: true });
+            
+            // Tab text
+            const tabText = this.add.text(tab.x, tabY, tab.label, {
+                fontSize: '20px',
+                fontFamily: 'Arial Black',
+                color: isActive ? '#000000' : '#ffffff'
+            }).setOrigin(0.5);
+            
+            // Tab interactions
+            if (!isActive) {
+                tabBg.on('pointerover', () => {
+                    tabBg.setStrokeStyle(2, 0x00ffff);
+                    tabText.setColor('#00ffff');
+                })
+                .on('pointerout', () => {
+                    tabBg.setStrokeStyle(2, 0x333333);
+                    tabText.setColor('#ffffff');
+                })
+                .on('pointerdown', () => {
+                    this.activeTab = tab.key;
+                    // Recreate tabs to update active state
+                    this.scene.restart({ user: this.user });
+                });
             }
+        });
+    }
+    
+    showTabContent() {
+        // Clear existing content
+        this.contentGroup.clear(true, true);
+        
+        switch (this.activeTab) {
+            case 'new':
+                this.showNewGameContent();
+                break;
+            case 'active':
+                this.showActiveGamesContent();
+                break;
+            case 'past':
+                this.showPastGamesContent();
+                break;
+        }
+    }
+    
+    showNewGameContent() {
+        // Large play button
+        const playButton = this.add.rectangle(450, this.contentY + 80, 400, 80, 0x00ffff)
+            .setInteractive({ useHandCursor: true });
             
-            console.log('Loading active games for user:', this.user.id);
+        const playText = this.add.text(450, this.contentY + 80, 'START NEW GAME', {
+            fontSize: '28px',
+            fontFamily: 'Arial Black',
+            color: '#000000'
+        }).setOrigin(0.5);
+        
+        this.contentGroup.addMultiple([playButton, playText]);
+        
+        playButton
+            .on('pointerover', () => {
+                playButton.setFillStyle(0xff1493);
+            })
+            .on('pointerout', () => {
+                playButton.setFillStyle(0x00ffff);
+            })
+            .on('pointerdown', () => {
+                this.scene.start('ScenarioSelectScene', { user: this.user });
+            });
+        
+        // Instructions
+        const instructions = this.add.text(450, this.contentY + 180, 
+            'Choose from historical scenarios or trade in real-time with "Now" mode', {
+            fontSize: '16px',
+            color: '#666666',
+            align: 'center',
+            wordWrap: { width: 600 }
+        }).setOrigin(0.5);
+        
+        this.contentGroup.add(instructions);
+        
+        // Leaderboard button
+        const leaderboardBtn = this.add.rectangle(450, this.contentY + 250, 250, 50, 0x111111)
+            .setStrokeStyle(2, 0xffff00)
+            .setInteractive({ useHandCursor: true });
             
-            // Query active games from Supabase
+        const leaderboardText = this.add.text(450, this.contentY + 250, '🏆 VIEW LEADERBOARD', {
+            fontSize: '18px',
+            fontFamily: 'Arial Black',
+            color: '#ffff00'
+        }).setOrigin(0.5);
+        
+        this.contentGroup.addMultiple([leaderboardBtn, leaderboardText]);
+        
+        leaderboardBtn
+            .on('pointerover', () => {
+                leaderboardBtn.setFillStyle(0x222222);
+            })
+            .on('pointerout', () => {
+                leaderboardBtn.setFillStyle(0x111111);
+            })
+            .on('pointerdown', () => {
+                if (window.FEATURES && window.FEATURES.LEADERBOARD) {
+                    this.scene.start('LeaderboardScene', { user: this.user });
+                } else {
+                    alert('Leaderboard coming soon!');
+                }
+            });
+    }
+    
+    async showActiveGamesContent() {
+        // Loading text
+        const loadingText = this.add.text(450, this.contentY + 40, 'Loading active games...', {
+            fontSize: '16px',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
+        this.contentGroup.add(loadingText);
+        
+        try {
+            // Query active games
             const { data, error } = await this.auth.supabase
                 .from('active_games')
                 .select('*')
@@ -1800,28 +1864,91 @@ class DashboardScene extends Phaser.Scene {
             
             if (error) throw error;
             
-            console.log('Active games loaded:', data);
-            
-            this.activeGamesLoadingText.destroy();
+            loadingText.destroy();
             
             if (!data || data.length === 0) {
-                this.add.text(450, this.activeGamesY + 40, 'No active games. Start a new "Now" mode game!', {
-                    fontSize: '16px',
+                const noGamesText = this.add.text(450, this.contentY + 60, 
+                    'No active games', {
+                    fontSize: '20px',
                     color: '#666666'
                 }).setOrigin(0.5);
+                
+                const hintText = this.add.text(450, this.contentY + 100, 
+                    'Start a new "Now" mode game to trade with real-time prices!', {
+                    fontSize: '16px',
+                    color: '#444444',
+                    align: 'center',
+                    wordWrap: { width: 500 }
+                }).setOrigin(0.5);
+                
+                this.contentGroup.addMultiple([noGamesText, hintText]);
                 return;
             }
             
             // Display active games
-            let yPos = this.activeGamesY + 60;
+            let yPos = this.contentY + 40;
             data.forEach(game => {
                 this.createActiveGameDisplay(game, yPos);
-                yPos += 60;
+                yPos += 70;
             });
             
         } catch (error) {
             console.error('Error loading active games:', error);
-            this.activeGamesLoadingText.setText('Error loading active games');
+            loadingText.setText('Error loading active games');
+            loadingText.setColor('#ff0000');
+        }
+    }
+    
+    async showPastGamesContent() {
+        // Loading text
+        const loadingText = this.add.text(450, this.contentY + 40, 'Loading past games...', {
+            fontSize: '16px',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
+        this.contentGroup.add(loadingText);
+        
+        try {
+            // Query past runs
+            const { data, error } = await this.auth.supabase
+                .from('past_runs')
+                .select('*')
+                .eq('user_id', this.user.id)
+                .order('created_at', { ascending: false })
+                .limit(20); // Get more for paging
+            
+            if (error) throw error;
+            
+            loadingText.destroy();
+            
+            if (!data || data.length === 0) {
+                const noGamesText = this.add.text(450, this.contentY + 60, 
+                    'No games played yet', {
+                    fontSize: '20px',
+                    color: '#666666'
+                }).setOrigin(0.5);
+                
+                const hintText = this.add.text(450, this.contentY + 100, 
+                    'Complete your first game to see it here!', {
+                    fontSize: '16px',
+                    color: '#444444'
+                }).setOrigin(0.5);
+                
+                this.contentGroup.addMultiple([noGamesText, hintText]);
+                return;
+            }
+            
+            // Store all games for paging
+            this.allGames = data;
+            this.currentPage = 0; // Reset to first page
+            
+            // Display current page
+            this.displayCurrentPage();
+            
+        } catch (error) {
+            console.error('Error loading past runs:', error);
+            loadingText.setText('Error loading game history');
+            loadingText.setColor('#ff0000');
         }
     }
     
@@ -1842,6 +1969,9 @@ class DashboardScene extends Phaser.Scene {
             .setStrokeStyle(isExpiring ? 2 : 1, borderColor)
             .setInteractive({ useHandCursor: true });
         
+        // Add to content group
+        this.contentGroup.add(bg);
+        
         // Calculate performance
         const startValue = game.starting_money || 10000000;
         const currentValue = game.current_value || startValue;
@@ -1849,54 +1979,63 @@ class DashboardScene extends Phaser.Scene {
         const profitPercent = (profit / startValue) * 100;
         const profitColor = profit >= 0 ? '#00ff00' : '#ff0066';
         
-        // Duration text
-        this.add.text(150, y, `${game.duration_days}-Day Challenge`, {
+        // Game duration
+        const durationText = `${game.duration_days || 30} day game`;
+        const durationDisplay = this.add.text(150, y, durationText, {
             fontSize: '16px',
-            color: '#ffffff'
-        }).setOrigin(0, 0.5);
-        
-        // Time remaining with urgency indicator
-        let timeText = `${daysRemaining} days left`;
-        if (isExpiring) {
-            timeText = `⚠️ ${daysRemaining} days left!`;
-        } else if (daysRemaining === 0) {
-            timeText = '⏰ ENDS TODAY!';
-        }
-        
-        this.add.text(320, y, timeText, {
-            fontSize: '16px',
-            fontFamily: isExpiringSoon ? 'Arial Black' : 'Arial',
             color: timeColor
         }).setOrigin(0, 0.5);
         
-        // Current value
-        this.add.text(480, y, `$${currentValue.toLocaleString()}`, {
-            fontSize: '16px',
-            color: '#ffffff'
-        }).setOrigin(1, 0.5);
+        this.contentGroup.add(durationDisplay);
         
-        // Performance
-        this.add.text(580, y, `${profit >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
-            fontSize: '16px',
-            fontFamily: 'Arial Black',
-            color: profitColor
+        // Days remaining
+        const remainingText = daysRemaining <= 0 ? 'EXPIRED' : `${daysRemaining} days left`;
+        const remainingDisplay = this.add.text(300, y, remainingText, {
+            fontSize: '14px',
+            color: timeColor,
+            fontFamily: 'Arial Black'
         }).setOrigin(0, 0.5);
         
-        // View button text
-        this.add.text(700, y, 'VIEW', {
-            fontSize: '14px',
-            color: '#00ffff'
+        this.contentGroup.add(remainingDisplay);
+        
+        // Current value
+        const valueText = this.add.text(500, y, `$${currentValue.toLocaleString()}`, {
+            fontSize: '18px',
+            color: '#ffffff',
+            fontFamily: 'Arial Black'
         }).setOrigin(0.5);
         
-        // Click handler
+        this.contentGroup.add(valueText);
+        
+        // Profit/Loss
+        const profitText = this.add.text(650, y, `${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
+            fontSize: '16px',
+            color: profitColor,
+            fontFamily: 'Arial Black'
+        }).setOrigin(0.5);
+        
+        this.contentGroup.add(profitText);
+        
+        // View button
+        const viewBtn = this.add.text(750, y, 'VIEW', {
+            fontSize: '14px',
+            color: '#00ffff',
+            fontFamily: 'Arial Black'
+        }).setOrigin(0.5)
+        .setInteractive({ useHandCursor: true });
+        
+        this.contentGroup.add(viewBtn);
+        
+        // Hover effects
         bg.on('pointerover', () => {
-            bg.setStrokeStyle(2, 0x00ffff);
+            bg.setFillStyle(0x222222);
+            viewBtn.setColor('#ffffff');
         })
         .on('pointerout', () => {
-            bg.setStrokeStyle(1, 0x00ffff);
+            bg.setFillStyle(0x111111);
+            viewBtn.setColor('#00ffff');
         })
         .on('pointerdown', () => {
-            // Go to active game view
             this.scene.start('ActiveGameViewScene', { 
                 user: this.user,
                 gameData: game
@@ -1904,58 +2043,12 @@ class DashboardScene extends Phaser.Scene {
         });
     }
     
-    async loadPastRuns() {
-        try {
-            // Make sure we have a valid user
-            if (!this.user || !this.user.id) {
-                console.error('No valid user in dashboard');
-                this.scene.start('LoginScene');
-                return;
-            }
-            
-            console.log('Loading past runs for user:', this.user.id);
-            
-            // Query past runs from Supabase
-            const { data, error } = await this.auth.supabase
-                .from('past_runs')
-                .select('*')
-                .eq('user_id', this.user.id)
-                .order('created_at', { ascending: false })
-                .limit(10);
-            
-            if (error) throw error;
-            
-            console.log('Past runs loaded:', data);
-            
-            this.loadingText.destroy();
-            
-            if (!data || data.length === 0) {
-                this.add.text(450, this.pastGamesY + 50, 'No games played yet. Start your first game!', {
-                    fontSize: '16px',
-                    color: '#666666'
-                }).setOrigin(0.5);
-                return;
-            }
-            
-            // Store all games for paging
-            this.allGames = data;
-            
-            // Display current page
-            this.displayCurrentPage();
-            
-        } catch (error) {
-            console.error('Error loading past runs:', error);
-            this.loadingText.setText('Error loading game history');
-            this.loadingText.setColor('#ff0000');
-        }
-    }
-    
     displayCurrentPage() {
         // Clear existing game displays if any
-        if (this.gameDisplayGroup) {
-            this.gameDisplayGroup.destroy(true);
+        if (this.pageDisplayGroup) {
+            this.pageDisplayGroup.destroy(true);
         }
-        this.gameDisplayGroup = this.add.group();
+        this.pageDisplayGroup = this.add.group();
         
         // Calculate page info
         const totalPages = Math.ceil(this.allGames.length / this.gamesPerPage);
@@ -1964,11 +2057,14 @@ class DashboardScene extends Phaser.Scene {
         const gamesToShow = this.allGames.slice(startIndex, endIndex);
         
         // Display games
-        let yPos = this.pastGamesY + 60;
+        let yPos = this.contentY + 40;
         gamesToShow.forEach((run, index) => {
-            this.createPastRunDisplay(run, yPos, this.gameDisplayGroup);
+            this.createPastRunDisplay(run, yPos, this.pageDisplayGroup);
             yPos += 60;
         });
+        
+        // Add page display group to content group
+        this.contentGroup.add(this.pageDisplayGroup);
         
         // Show paging controls if there are multiple pages
         if (totalPages > 1) {
@@ -1980,7 +2076,7 @@ class DashboardScene extends Phaser.Scene {
                 fontSize: '13px',
                 color: '#666666'
             }).setOrigin(0.5);
-            this.gameDisplayGroup.add(pageText);
+            this.contentGroup.add(pageText);
             
             // Up arrow (previous page) - positioned left with proper spacing
             if (this.currentPage > 0) {
@@ -1995,7 +2091,7 @@ class DashboardScene extends Phaser.Scene {
                     this.currentPage--;
                     this.displayCurrentPage();
                 });
-                this.gameDisplayGroup.add(upArrow);
+                this.contentGroup.add(upArrow);
             }
             
             // Down arrow (next page) - positioned right with proper spacing
@@ -2011,7 +2107,7 @@ class DashboardScene extends Phaser.Scene {
                     this.currentPage++;
                     this.displayCurrentPage();
                 });
-                this.gameDisplayGroup.add(downArrow);
+                this.contentGroup.add(downArrow);
             }
         }
     }
