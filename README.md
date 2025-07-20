@@ -1,7 +1,9 @@
 # 🎮 Crypto Trading Simulator
 Phaser.js web game. Start with $10M, pick cryptos, compete.
 
-![Build Status](https://img.shields.io/badge/build-passing-brightgreen) ![Version](https://img.shields.io/badge/version-0.1.0-blue)
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen) ![Version](https://img.shields.io/badge/version-0.1.0-blue) ![Deploy](https://github.com/ryanmosz/crypto-trading-sim/actions/workflows/deploy.yml/badge.svg)
+
+### 🌐 [Play Now!](https://ryanmosz.github.io/crypto-trading-sim/) (Coming Soon)
 
 ## About
 A cryptocurrency trading simulator where players invest virtual money across BTC, ETH, BNB, SOL, and XRP. Built with Phaser 3 for web browsers.
