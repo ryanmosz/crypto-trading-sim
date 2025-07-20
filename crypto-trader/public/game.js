@@ -767,11 +767,21 @@ class AllocationScene extends Phaser.Scene {
         this.durationDays = data.durationDays || null;
         this.currentPrices = null;
         
+        // Multiplayer game data
+        this.multiplayerGame = data.multiplayerGame || null;
+        this.isJoiningMultiplayer = !!this.multiplayerGame;
+        
         // For Now mode, don't try to look up a scenario
-        if (this.scenarioKey === 'now' || this.isNowMode) {
+        if (this.scenarioKey === 'now' || this.isNowMode || this.isJoiningMultiplayer) {
             this.scenario = null;
+            this.isNowMode = true; // Force Now mode for multiplayer
         } else {
             this.scenario = SCENARIOS[this.scenarioKey];
+        }
+        
+        // If joining multiplayer, use game's duration
+        if (this.isJoiningMultiplayer) {
+            this.durationDays = this.multiplayerGame.duration_days;
         }
         
         this.speed = data.speed || 'regular';
@@ -805,16 +815,22 @@ class AllocationScene extends Phaser.Scene {
         
         // Fetch current prices if in Now mode
         if (this.isNowMode) {
-            // Show loading text
-            const loadingText = this.add.text(450, 300, 'Loading current prices...', {
-                fontSize: '24px',
-                color: '#666666'
-            }).setOrigin(0.5);
-            
-            await this.fetchCurrentPrices();
-            
-            // Remove loading text
-            loadingText.destroy();
+            if (this.isJoiningMultiplayer) {
+                // Use the game's starting prices for multiplayer
+                this.currentPrices = this.multiplayerGame.starting_prices;
+                console.log('Using multiplayer game starting prices:', this.currentPrices);
+            } else {
+                // Show loading text
+                const loadingText = this.add.text(450, 300, 'Loading current prices...', {
+                    fontSize: '24px',
+                    color: '#666666'
+                }).setOrigin(0.5);
+                
+                await this.fetchCurrentPrices();
+                
+                // Remove loading text
+                loadingText.destroy();
+            }
         }
         
         // Money remaining - white text
@@ -1093,7 +1109,9 @@ class AllocationScene extends Phaser.Scene {
                 allocations: this.allocations,
                 durationDays: this.durationDays,
                 startingPrices: prices,
-                totalInvested: this.totalAllocated * 1000000
+                totalInvested: this.totalAllocated * 1000000,
+                isJoiningMultiplayer: this.isJoiningMultiplayer,
+                multiplayerGame: this.multiplayerGame
             });
         } else {
             // Start the simulation for historical scenarios
@@ -1837,15 +1855,44 @@ class DashboardScene extends Phaser.Scene {
         this.contentGroup.add(loadingText);
         
         try {
-            // Query active games
-            const { data, error } = await this.auth.supabase
+            // Query user's active games
+            const { data: myGames, error: myError } = await this.auth.supabase
                 .from('active_games')
                 .select('*')
                 .eq('user_id', this.user.id)
                 .eq('is_complete', false)
                 .order('created_at', { ascending: false });
             
-            if (error) throw error;
+            if (myError) throw myError;
+            
+            // Query all active multiplayer games
+            const { data: multiplayerGames, error: mpError } = await this.auth.supabase
+                .from('active_games')
+                .select('*')
+                .eq('is_multiplayer', true)
+                .eq('is_complete', false)
+                .neq('user_id', this.user.id)
+                .order('created_at', { ascending: false });
+                
+            if (mpError) throw mpError;
+            
+            // Check which multiplayer games user has already joined
+            const multiplayerGameIds = multiplayerGames ? multiplayerGames.map(g => g.id) : [];
+            let joinedGames = [];
+            
+            if (multiplayerGameIds.length > 0) {
+                const { data: participations } = await this.auth.supabase
+                    .from('game_participants')
+                    .select('game_id')
+                    .eq('user_id', this.user.id)
+                    .in('game_id', multiplayerGameIds);
+                    
+                joinedGames = participations ? participations.map(p => p.game_id) : [];
+            }
+            
+            // Filter out already joined games
+            const joinableGames = multiplayerGames ? 
+                multiplayerGames.filter(g => !joinedGames.includes(g.id)) : [];
             
             // Get the latest price update time from price cache
             const { data: priceData, error: priceError } = await this.auth.supabase
@@ -1856,15 +1903,24 @@ class DashboardScene extends Phaser.Scene {
                 .single();
                 
             // Update all games with the actual price cache update time
-            if (!priceError && priceData && data) {
-                data.forEach(game => {
-                    game.last_updated = priceData.fetched_at;
-                });
+            if (!priceError && priceData) {
+                if (myGames) {
+                    myGames.forEach(game => {
+                        game.last_updated = priceData.fetched_at;
+                    });
+                }
+                if (joinableGames) {
+                    joinableGames.forEach(game => {
+                        game.last_updated = priceData.fetched_at;
+                    });
+                }
             }
             
             loadingText.destroy();
             
-            if (!data || data.length === 0) {
+            const totalGames = (myGames?.length || 0) + (joinableGames?.length || 0);
+            
+            if (totalGames === 0) {
                 const noGamesText = this.add.text(450, this.contentY + 60, 
                     'No active games', {
                     fontSize: '20px',
@@ -1883,12 +1939,43 @@ class DashboardScene extends Phaser.Scene {
                 return;
             }
             
-            // Display active games
+            // Display user's games first
             let yPos = this.contentY + 40;
-            data.forEach(game => {
-                this.createActiveGameDisplay(game, yPos);
-                yPos += 70;
-            });
+            
+            if (myGames && myGames.length > 0) {
+                const myGamesHeader = this.add.text(450, yPos, 'YOUR GAMES', {
+                    fontSize: '14px',
+                    color: '#00ffff',
+                    fontFamily: 'Arial Black'
+                }).setOrigin(0.5);
+                this.contentGroup.add(myGamesHeader);
+                yPos += 30;
+                
+                myGames.forEach(game => {
+                    this.createActiveGameDisplay(game, yPos, false); // false = not joinable
+                    yPos += 70;
+                });
+            }
+            
+            // Display joinable multiplayer games
+            if (joinableGames && joinableGames.length > 0) {
+                if (myGames && myGames.length > 0) {
+                    yPos += 20; // Extra spacing between sections
+                }
+                
+                const joinableHeader = this.add.text(450, yPos, 'JOIN MULTIPLAYER GAMES', {
+                    fontSize: '14px',
+                    color: '#00ff00',
+                    fontFamily: 'Arial Black'
+                }).setOrigin(0.5);
+                this.contentGroup.add(joinableHeader);
+                yPos += 30;
+                
+                joinableGames.forEach(game => {
+                    this.createActiveGameDisplay(game, yPos, true); // true = joinable
+                    yPos += 70;
+                });
+            }
             
         } catch (error) {
             console.error('Error loading active games:', error);
@@ -1950,7 +2037,7 @@ class DashboardScene extends Phaser.Scene {
         }
     }
     
-    createActiveGameDisplay(game, y) {
+    createActiveGameDisplay(game, y, isJoinable = false) {
         // Calculate days remaining
         const now = new Date();
         const endsAt = new Date(game.ends_at);
@@ -1959,12 +2046,12 @@ class DashboardScene extends Phaser.Scene {
         // Determine urgency colors
         const isExpiringSoon = daysRemaining <= 7;
         const isExpiring = daysRemaining <= 3;
-        const borderColor = isExpiring ? 0xff1493 : (isExpiringSoon ? 0xffff00 : 0x00ffff);
+        const borderColor = isJoinable ? 0x00ff00 : (isExpiring ? 0xff1493 : (isExpiringSoon ? 0xffff00 : 0x00ffff));
         const timeColor = isExpiring ? '#ff1493' : (isExpiringSoon ? '#ffff00' : '#00ffff');
         
         // Background with urgency-based border
         const bg = this.add.rectangle(450, y, 720, 50, 0x111111)
-            .setStrokeStyle(isExpiring ? 2 : 1, borderColor)
+            .setStrokeStyle(isJoinable ? 2 : (isExpiring ? 2 : 1), borderColor)
             .setInteractive({ useHandCursor: true });
         
         // Add to content group
@@ -1996,48 +2083,83 @@ class DashboardScene extends Phaser.Scene {
         
         this.contentGroup.add(remainingDisplay);
         
-        // Current value
-        const valueText = this.add.text(500, y, `$${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
-            fontSize: '18px',
-            color: '#ffffff',
-            fontFamily: 'Arial Black'
-        }).setOrigin(0.5);
-        
-        this.contentGroup.add(valueText);
-        
-        // Profit/Loss
-        const profitText = this.add.text(650, y, `${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
-            fontSize: '16px',
-            color: profitColor,
-            fontFamily: 'Arial Black'
-        }).setOrigin(0.5);
-        
-        this.contentGroup.add(profitText);
-        
-        // View button
-        const viewBtn = this.add.text(750, y, 'VIEW', {
-            fontSize: '14px',
-            color: '#00ffff',
-            fontFamily: 'Arial Black'
-        }).setOrigin(0.5);
-        
-        this.contentGroup.add(viewBtn);
-        
-        // Hover effects
-        bg.on('pointerover', () => {
-            bg.setFillStyle(0x222222);
-            viewBtn.setColor('#ffffff');
-        })
-        .on('pointerout', () => {
-            bg.setFillStyle(0x111111);
-            viewBtn.setColor('#00ffff');
-        })
-        .on('pointerdown', () => {
-            this.scene.start('ActiveGameViewScene', { 
-                user: this.user,
-                gameData: game
+        if (isJoinable) {
+            // For joinable games, show participant count
+            const participantText = `${game.participant_count || 1} player${(game.participant_count || 1) > 1 ? 's' : ''}`;
+            const participantDisplay = this.add.text(500, y, participantText, {
+                fontSize: '16px',
+                color: '#ffffff'
+            }).setOrigin(0.5);
+            this.contentGroup.add(participantDisplay);
+            
+            // Show JOIN button
+            const joinBtn = this.add.text(750, y, 'JOIN', {
+                fontSize: '16px',
+                color: '#00ff00',
+                fontFamily: 'Arial Black'
+            }).setOrigin(0.5);
+            
+            this.contentGroup.add(joinBtn);
+            
+            // Hover effects
+            bg.on('pointerover', () => {
+                bg.setFillStyle(0x222222);
+                joinBtn.setColor('#ffffff');
+            })
+            .on('pointerout', () => {
+                bg.setFillStyle(0x111111);
+                joinBtn.setColor('#00ff00');
+            })
+            .on('pointerdown', () => {
+                this.scene.start('JoinGameScene', { 
+                    user: this.user,
+                    game: game
+                });
             });
-        });
+        } else {
+            // Current value
+            const valueText = this.add.text(500, y, `$${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
+                fontSize: '18px',
+                color: '#ffffff',
+                fontFamily: 'Arial Black'
+            }).setOrigin(0.5);
+            
+            this.contentGroup.add(valueText);
+            
+            // Profit/Loss
+            const profitText = this.add.text(650, y, `${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
+                fontSize: '16px',
+                color: profitColor,
+                fontFamily: 'Arial Black'
+            }).setOrigin(0.5);
+            
+            this.contentGroup.add(profitText);
+            
+            // View button
+            const viewBtn = this.add.text(750, y, 'VIEW', {
+                fontSize: '14px',
+                color: '#00ffff',
+                fontFamily: 'Arial Black'
+            }).setOrigin(0.5);
+            
+            this.contentGroup.add(viewBtn);
+            
+            // Hover effects
+            bg.on('pointerover', () => {
+                bg.setFillStyle(0x222222);
+                viewBtn.setColor('#ffffff');
+            })
+            .on('pointerout', () => {
+                bg.setFillStyle(0x111111);
+                viewBtn.setColor('#00ffff');
+            })
+            .on('pointerdown', () => {
+                this.scene.start('ActiveGameViewScene', { 
+                    user: this.user,
+                    gameData: game
+                });
+            });
+        }
     }
     
     displayCurrentPage() {
@@ -2804,6 +2926,8 @@ class NowModeResultScene extends Phaser.Scene {
         this.durationDays = data.durationDays;
         this.startingPrices = data.startingPrices;
         this.totalInvested = data.totalInvested;
+        this.isJoiningMultiplayer = data.isJoiningMultiplayer || false;
+        this.multiplayerGame = data.multiplayerGame || null;
     }
     
     create() {
@@ -2811,7 +2935,8 @@ class NowModeResultScene extends Phaser.Scene {
         this.cameras.main.setBackgroundColor('#000000');
         
         // Title
-        this.add.text(450, 100, 'GAME STARTED!', {
+        const titleText = this.isJoiningMultiplayer ? 'JOINED GAME!' : 'GAME STARTED!';
+        this.add.text(450, 100, titleText, {
             fontSize: '42px',
             fontFamily: 'Arial Black',
             color: '#00ffff'
@@ -2819,16 +2944,20 @@ class NowModeResultScene extends Phaser.Scene {
         
         // Duration info
         const endDate = new Date();
-        endDate.setDate(endDate.getDate() + this.durationDays);
+        if (this.isJoiningMultiplayer) {
+            // Use the game's end date
+            endDate.setTime(new Date(this.multiplayerGame.ends_at).getTime());
+        } else {
+            endDate.setDate(endDate.getDate() + this.durationDays);
+        }
         
-        this.add.text(450, 160, `Your ${this.durationDays}-day challenge has begun!`, {
+        const challengeText = this.isJoiningMultiplayer ? 
+            `You've joined the ${this.durationDays}-day multiplayer challenge!` :
+            `Your ${this.durationDays}-day challenge has begun!`;
+            
+        this.add.text(450, 160, challengeText, {
             fontSize: '24px',
             color: '#ffffff'
-        }).setOrigin(0.5);
-        
-        this.add.text(450, 190, `Ends on ${endDate.toLocaleDateString()}`, {
-            fontSize: '18px',
-            color: '#666666'
         }).setOrigin(0.5);
         
         // Your allocations header
@@ -2908,29 +3037,62 @@ class NowModeResultScene extends Phaser.Scene {
                 return;
             }
             
-            // Calculate ends_at
-            const endsAt = new Date();
-            endsAt.setDate(endsAt.getDate() + this.durationDays);
-            
-            // Save to active_games table
-            const { data, error } = await this.auth.supabase
-                .from('active_games')
-                .insert({
-                    user_id: user.id,
-                    duration_days: this.durationDays,
-                    ends_at: endsAt.toISOString(),
-                    allocations: this.allocations,
-                    starting_prices: this.startingPrices,
-                    starting_money: GAME_CONFIG.startingMoney,
-                    current_prices: this.startingPrices,
-                    current_value: GAME_CONFIG.startingMoney,
-                    last_updated: new Date().toISOString()
-                });
+            if (this.isJoiningMultiplayer) {
+                // Join existing multiplayer game
+                const { data, error } = await this.auth.supabase
+                    .from('game_participants')
+                    .insert({
+                        game_id: this.multiplayerGame.id,
+                        user_id: user.id,
+                        allocations: this.allocations,
+                        starting_value: 10000000,
+                        current_value: 10000000,
+                        is_original_creator: false
+                    });
+                    
+                if (error) {
+                    console.error('Error joining game:', error);
+                    return;
+                }
                 
-            if (error) {
-                console.error('Error saving active game:', error);
+                // Update participant count
+                const { error: updateError } = await this.auth.supabase
+                    .from('active_games')
+                    .update({ 
+                        participant_count: (this.multiplayerGame.participant_count || 1) + 1 
+                    })
+                    .eq('id', this.multiplayerGame.id);
+                    
+                if (updateError) {
+                    console.error('Error updating participant count:', updateError);
+                }
+                
+                console.log('Successfully joined multiplayer game');
             } else {
-                console.log('Active game saved successfully');
+                // Calculate ends_at
+                const endsAt = new Date();
+                endsAt.setDate(endsAt.getDate() + this.durationDays);
+                
+                // Save to active_games table
+                const { data, error } = await this.auth.supabase
+                    .from('active_games')
+                    .insert({
+                        user_id: user.id,
+                        duration_days: this.durationDays,
+                        ends_at: endsAt.toISOString(),
+                        allocations: this.allocations,
+                        starting_prices: this.startingPrices,
+                        starting_money: GAME_CONFIG.startingMoney,
+                        current_prices: this.startingPrices,
+                        current_value: GAME_CONFIG.startingMoney,
+                        last_updated: new Date().toISOString()
+                    });
+                    
+                if (error) {
+                    console.error('Error saving active game:', error);
+                } else {
+                    console.log('Active game saved successfully');
+                }
             }
         } catch (error) {
             console.error('Error in saveActiveGame:', error);
@@ -2987,6 +3149,15 @@ class ActiveGameViewScene extends Phaser.Scene {
             // Continue with existing data if fetch fails
         }
         
+        // Check if this is a multiplayer game
+        if (this.gameData.is_multiplayer && this.gameData.participant_count > 1) {
+            await this.showMultiplayerView();
+        } else {
+            this.showSinglePlayerView();
+        }
+    }
+    
+    showSinglePlayerView() {
         // View state management
         let currentView = 'main';
         const mainViewElements = [];
@@ -3336,6 +3507,174 @@ class ActiveGameViewScene extends Phaser.Scene {
         detailsViewElements.forEach(el => el.setVisible(false));
     }
     
+    async showMultiplayerView() {
+        // Title
+        this.add.text(450, 50, 'MULTIPLAYER CHALLENGE', {
+            fontSize: '32px',
+            color: '#00ffff',
+            fontFamily: 'Arial Black'
+        }).setOrigin(0.5);
+        
+        // Calculate days remaining
+        const now = new Date();
+        const endsAt = new Date(this.gameData.ends_at);
+        const daysRemaining = Math.ceil((endsAt - now) / (1000 * 60 * 60 * 24));
+        
+        // Game info
+        this.add.text(450, 100, `${this.gameData.duration_days}-Day Challenge`, {
+            fontSize: '24px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        this.add.text(450, 130, `${daysRemaining} days remaining`, {
+            fontSize: '18px',
+            color: daysRemaining <= 3 ? '#ff1493' : (daysRemaining <= 7 ? '#ffff00' : '#00ffff')
+        }).setOrigin(0.5);
+        
+        // Price update time
+        if (this.gameData.last_updated) {
+            const lastUpdated = new Date(this.gameData.last_updated);
+            const timeSince = Math.floor((Date.now() - lastUpdated) / 60000); // minutes
+            const updateText = timeSince < 60 ? 
+                `Prices updated ${timeSince} minutes ago` : 
+                `Prices updated ${Math.floor(timeSince / 60)} hours ago`;
+            
+            this.add.text(450, 160, updateText, {
+                fontSize: '14px',
+                color: '#666666'
+            }).setOrigin(0.5);
+        }
+        
+        // Leaderboard header
+        this.add.text(450, 200, 'CURRENT STANDINGS', {
+            fontSize: '24px',
+            color: '#ffffff',
+            fontFamily: 'Arial Black'
+        }).setOrigin(0.5);
+        
+        // Loading text
+        const loadingText = this.add.text(450, 250, 'Loading leaderboard...', {
+            fontSize: '16px',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
+        try {
+            // Load all participants
+            const { data: participants, error } = await this.auth.supabase
+                .from('game_participants')
+                .select('*, profiles(email)')
+                .eq('game_id', this.gameData.id)
+                .order('current_value', { ascending: false });
+                
+            if (error) throw error;
+            
+            loadingText.destroy();
+            
+            // Display participants
+            let yPos = 250;
+            participants.forEach((participant, index) => {
+                const isMe = participant.user_id === this.user.id;
+                const email = participant.profiles?.email || 'Anonymous';
+                const value = participant.current_value || 10000000;
+                const profit = ((value - 10000000) / 10000000) * 100;
+                
+                // Highlight current user
+                if (isMe) {
+                    this.add.rectangle(450, yPos, 700, 35, 0x111111)
+                        .setStrokeStyle(2, 0x00ffff);
+                }
+                
+                // Rank
+                this.add.text(200, yPos, `${index + 1}.`, {
+                    fontSize: '20px',
+                    color: isMe ? '#00ffff' : '#ffffff',
+                    fontFamily: 'Arial Black'
+                }).setOrigin(0, 0.5);
+                
+                // Player email
+                this.add.text(250, yPos, email, {
+                    fontSize: '18px',
+                    color: isMe ? '#00ffff' : '#ffffff'
+                }).setOrigin(0, 0.5);
+                
+                // Value
+                this.add.text(500, yPos, `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
+                    fontSize: '18px',
+                    color: isMe ? '#00ffff' : '#ffffff',
+                    fontFamily: 'Arial Black'
+                }).setOrigin(0, 0.5);
+                
+                // Gain/Loss
+                const profitColor = profit >= 0 ? '#00ff00' : '#ff0066';
+                this.add.text(650, yPos, `${profit >= 0 ? '+' : ''}${profit.toFixed(2)}%`, {
+                    fontSize: '18px',
+                    color: isMe ? '#00ffff' : profitColor,
+                    fontFamily: 'Arial Black'
+                }).setOrigin(0, 0.5);
+                
+                yPos += 40;
+            });
+            
+            // View My Portfolio button
+            const myPortfolioBtn = this.add.rectangle(450, 480, 250, 50, 0x333333)
+                .setStrokeStyle(2, 0x00ffff)
+                .setInteractive({ useHandCursor: true });
+                
+            this.add.text(450, 480, 'VIEW MY PORTFOLIO', {
+                fontSize: '18px',
+                color: '#ffffff',
+                fontFamily: 'Arial Black'
+            }).setOrigin(0.5);
+            
+            myPortfolioBtn.on('pointerover', () => {
+                myPortfolioBtn.setFillStyle(0x444444);
+            })
+            .on('pointerout', () => {
+                myPortfolioBtn.setFillStyle(0x333333);
+            })
+            .on('pointerdown', () => {
+                // Find user's participation data
+                const myParticipation = participants.find(p => p.user_id === this.user.id);
+                if (myParticipation) {
+                    // Show portfolio detail
+                    this.showPortfolioDetail(myParticipation);
+                }
+            });
+            
+        } catch (error) {
+            console.error('Error loading participants:', error);
+            loadingText.setText('Error loading leaderboard');
+            loadingText.setColor('#ff0000');
+        }
+        
+        // Back button
+        const backBtn = this.add.text(450, 540, 'BACK TO DASHBOARD', {
+            fontSize: '16px',
+            color: '#666666'
+        }).setOrigin(0.5)
+        .setInteractive({ useHandCursor: true })
+        .on('pointerover', function() { this.setColor('#00ffff'); })
+        .on('pointerout', function() { this.setColor('#666666'); })
+        .on('pointerdown', () => {
+            this.scene.start('DashboardScene', { user: this.user });
+        });
+    }
+    
+    showPortfolioDetail(participantData) {
+        // Clear the scene
+        this.children.removeAll();
+        
+        // Show detailed portfolio view for multiplayer participant
+        this.add.text(450, 50, 'MY PORTFOLIO', {
+            fontSize: '32px',
+            color: '#00ffff',
+            fontFamily: 'Arial Black'
+        }).setOrigin(0.5);
+        
+        // Add more details about the participant's portfolio
+        // ...
+    }
+    
     createPerformanceChart(startY, detailsViewElements) {
         // Chart title
         const chartTitle = this.add.text(450, startY, 'Performance Trend', {
@@ -3435,6 +3774,181 @@ class ActiveGameViewScene extends Phaser.Scene {
         data.push(currentValue);
         
         return data;
+    }
+}
+
+// Join Game Scene - allows users to join multiplayer games
+class JoinGameScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'JoinGameScene' });
+    }
+    
+    init(data) {
+        this.user = data.user;
+        this.game = data.game;
+        this.auth = window.gameAuth;
+    }
+    
+    create() {
+        // Background
+        this.add.rectangle(450, 300, 900, 600, 0x000000);
+        
+        // Title
+        this.add.text(450, 50, 'JOIN MULTIPLAYER GAME', {
+            fontSize: '32px',
+            color: '#00ff00',
+            fontFamily: 'Arial Black'
+        }).setOrigin(0.5);
+        
+        // Game info
+        this.add.text(450, 120, `${this.game.duration_days}-Day Challenge`, {
+            fontSize: '24px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        // Calculate days remaining
+        const now = new Date();
+        const endsAt = new Date(this.game.ends_at);
+        const daysRemaining = Math.ceil((endsAt - now) / (1000 * 60 * 60 * 24));
+        
+        this.add.text(450, 160, `${daysRemaining} days remaining`, {
+            fontSize: '18px',
+            color: '#00ffff'
+        }).setOrigin(0.5);
+        
+        // Current participants
+        this.add.text(450, 200, 'CURRENT PARTICIPANTS', {
+            fontSize: '18px',
+            color: '#ffffff',
+            fontFamily: 'Arial Black'
+        }).setOrigin(0.5);
+        
+        // Loading text for participants
+        const loadingText = this.add.text(450, 250, 'Loading participants...', {
+            fontSize: '16px',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
+        // Load and display participants
+        this.loadParticipants(loadingText);
+        
+        // Join button
+        const joinBtn = this.add.rectangle(450, 450, 200, 50, 0x00ff00)
+            .setInteractive({ useHandCursor: true });
+            
+        const joinText = this.add.text(450, 450, 'JOIN GAME', {
+            fontSize: '20px',
+            color: '#000000',
+            fontFamily: 'Arial Black'
+        }).setOrigin(0.5);
+        
+        joinBtn.on('pointerover', () => {
+            joinBtn.setFillStyle(0x00dd00);
+        })
+        .on('pointerout', () => {
+            joinBtn.setFillStyle(0x00ff00);
+        })
+        .on('pointerdown', () => {
+            // Go to allocation scene with multiplayer context
+            this.scene.start('AllocationScene', { 
+                user: this.user,
+                scenario: 'now',
+                multiplayerGame: this.game
+            });
+        });
+        
+        // Back button
+        const backBtn = this.add.text(450, 520, 'BACK TO DASHBOARD', {
+            fontSize: '16px',
+            color: '#666666'
+        }).setOrigin(0.5)
+        .setInteractive({ useHandCursor: true })
+        .on('pointerover', function() { this.setColor('#00ffff'); })
+        .on('pointerout', function() { this.setColor('#666666'); })
+        .on('pointerdown', () => {
+            this.scene.start('DashboardScene', { user: this.user });
+        });
+    }
+    
+    async loadParticipants(loadingText) {
+        try {
+            // Get game participants
+            const { data: participants, error } = await this.auth.supabase
+                .from('game_participants')
+                .select('*, profiles(email)')
+                .eq('game_id', this.game.id)
+                .order('current_value', { ascending: false });
+                
+            if (error) throw error;
+            
+            loadingText.destroy();
+            
+            if (!participants || participants.length === 0) {
+                // Show the game creator
+                this.add.text(450, 250, '1. Game Creator', {
+                    fontSize: '16px',
+                    color: '#ffffff'
+                }).setOrigin(0.5);
+                
+                this.add.text(450, 280, 'Be the first to join!', {
+                    fontSize: '14px',
+                    color: '#666666'
+                }).setOrigin(0.5);
+            } else {
+                // Display participants
+                let yPos = 250;
+                participants.forEach((participant, index) => {
+                    const email = participant.profiles?.email || 'Anonymous';
+                    const value = participant.current_value || 10000000;
+                    const profit = ((value - 10000000) / 10000000) * 100;
+                    
+                    // Rank and email
+                    this.add.text(250, yPos, `${index + 1}. ${email}`, {
+                        fontSize: '16px',
+                        color: '#ffffff'
+                    }).setOrigin(0, 0.5);
+                    
+                    // Value
+                    this.add.text(550, yPos, `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
+                        fontSize: '16px',
+                        color: '#ffffff'
+                    }).setOrigin(0, 0.5);
+                    
+                    // Profit
+                    const profitColor = profit >= 0 ? '#00ff00' : '#ff0066';
+                    this.add.text(650, yPos, `${profit >= 0 ? '+' : ''}${profit.toFixed(1)}%`, {
+                        fontSize: '16px',
+                        color: profitColor
+                    }).setOrigin(0, 0.5);
+                    
+                    yPos += 30;
+                });
+            }
+            
+            // Also show the original game creator if not in participants
+            if (!participants || !participants.find(p => p.is_original_creator)) {
+                // Get creator info
+                const { data: creator } = await this.auth.supabase
+                    .from('profiles')
+                    .select('email')
+                    .eq('id', this.game.user_id)
+                    .single();
+                    
+                if (creator) {
+                    const yPos = 250 + (participants ? participants.length * 30 : 30);
+                    this.add.text(450, yPos, `Game created by: ${creator.email}`, {
+                        fontSize: '14px',
+                        color: '#666666',
+                        fontStyle: 'italic'
+                    }).setOrigin(0.5);
+                }
+            }
+            
+        } catch (error) {
+            console.error('Error loading participants:', error);
+            loadingText.setText('Error loading participants');
+            loadingText.setColor('#ff0000');
+        }
     }
 }
 
@@ -3716,7 +4230,7 @@ const config = {
     parent: 'game-container',
     width: 900,
     height: 600,
-    scene: [LoginScene, DashboardScene, ScenarioSelectScene, SimulationSpeedScene, AllocationScene, SimulationScene, ResultsScene, NowModeSetupScene, NowModeResultScene, ActiveGameViewScene, LeaderboardScene],
+    scene: [LoginScene, DashboardScene, ScenarioSelectScene, SimulationSpeedScene, AllocationScene, SimulationScene, ResultsScene, NowModeSetupScene, NowModeResultScene, ActiveGameViewScene, JoinGameScene, LeaderboardScene],
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
