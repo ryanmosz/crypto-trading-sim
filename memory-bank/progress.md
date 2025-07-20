@@ -29,6 +29,7 @@ Phase 1 (Historical trading) is ~85% complete with core gameplay functional but 
 - Redesigned details view with left-aligned layout and taller modal (450px) for 5 cryptos
 - Fixed centering and added proper spacing to prevent label/value overlap
 - Improved past games list with full scenario descriptions for better context
+- Fixed past games list value overlap with proper spacing and alignment
 
 #### M0 - Auth + Backend Infrastructure (July 19, 2025)
 - **Supabase Project**: Created and fully configured

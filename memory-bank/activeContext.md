@@ -40,6 +40,10 @@
     - Shows full scenario context (e.g. "2013 - Bitcoin's First Bull Run")
     - Handles legacy data that saved displayName instead of scenario_key
     - Adjusted column positioning for longer scenario text
+11. Fixed past games list overlap issues:
+    - Reverted to shorter scenario names (just displayName)
+    - Separated dollar amounts and percentages with 50px gap
+    - Right-aligned dollar amounts, left-aligned percentages
 
 ## Game Saving Issue
 - Test save works but real games don't save
