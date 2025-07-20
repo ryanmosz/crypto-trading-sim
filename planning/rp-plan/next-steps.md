@@ -1,107 +1,134 @@
-# 🚀 NEXT-STEPS CHECKLIST (48-Hour Sprint)
+# 🎯 NEXT-STEPS: M1 - Persist Past Runs (1 Day Sprint)
 
-> Audience: **you** (and anyone pairing).
-> Scope: Only the **very next** concrete actions; larger roadmap lives in `minimum-roadmap.md`.
-
----
-
-## 0. Sanity Sync (15 min)
-
-- [ ] Re-read `minimum-roadmap.md` once—catch anything fuzzy.
-- [ ] Open a scratch doc (`/notes/today.md`) to log blockers/questions as they pop up.
+> **Current Status**: M0 Complete ✅ (Auth + Backend Infrastructure)  
+> **Next Milestone**: M1 - Save game results & show user history
 
 ---
 
-## 1. Supabase Project Bootstrap (30 min)
+## Quick Context
 
-1. Log in to Supabase → **New Project** `crypto-trading-sim`.
-2. Copy `anon` and `service_role` keys into `.env.local` (keep local only).
-3. Enable Row Level Security (RLS) globally (default is ON).
-4. In SQL editor, paste the "M0-auth.sql" snippet below and run.
+We now have:
+- ✅ Supabase auth working (test page verified)
+- ✅ Database tables ready (past_runs, profiles)
+- ✅ Live price updates every 5 minutes
+- ✅ Game fully playable with fake users
 
-```sql
--- M0-auth.sql  ▶ basic auth schema
-create table profiles (
-  id uuid primary key references auth.users,
-  username text,
-  created_at timestamptz default now()
-);
-alter table profiles enable row level security;
-create policy "Profiles are readable by owner"
-  on profiles for select using ( auth.uid() = id );
-create policy "Profiles are writable by owner"
-  on profiles for insert with check ( auth.uid() = id );
-```
-
-📌  Result: e-mail/password signup works & each user has a profile row.
+We need:
+- Real login/signup in the game
+- Save results after each game
+- Dashboard to view past games
 
 ---
 
-## 2. Local Auth Smoke-Test (20 min)
+## 1. Replace Fake Users with Auth (2 hours)
 
-- [ ] `npm i @supabase/supabase-js` inside `crypto-trader`.
-- [ ] In a new `auth.js`, wire `signUp(email,pw)` + `signIn(email,pw)`; console-log the session.
-- [ ] Hard-code a quick call in `public/game.js` (run once) to verify login succeeds.
+### 1.1 Update LoginScene
+- [ ] Import auth.js module
+- [ ] Replace Alice/Bob/Quick Play buttons with:
+  - Email/password input fields
+  - Sign Up button
+  - Sign In button
+- [ ] Store user session in game state
+- [ ] Show logged-in user email
 
----
+### 1.2 Handle Auth State
+- [ ] Check for existing session on game start
+- [ ] If logged in → skip login, go to dashboard
+- [ ] If not → show login screen
+- [ ] Add Sign Out button somewhere
 
-## 3. Draft Detailed Data Model (1 h)
-
-Open Supabase SQL editor → create a new script **`m1_core_tables.sql`** but DON’T run yet.
-
-Table | Purpose | Key fields
------ | ------- | ----------
-`past_runs` | stores completed historical replays | id pk, user_id fk, scenario_key, allocations jsonb, final_value, finished_at
-`now_entries` | user’s live-mode allocation snapshot | id pk, user_id fk, allocations jsonb, start_prices jsonb, created_at
-`now_snapshots` | periodic portfolio valuation (denormalised, keeps history) | entry_id fk, ts, portfolio_value
-`price_cache` | latest price per symbol | symbol pk, price, fetched_at
-
-🚩  Notes:
-- `now_entries` is **append-only**; users can create multiple bets.
-- `now_snapshots` populated by cron edge-function; lets us chart lines later.
-
-*Leave TODO comments for indices & RLS policies—will flesh out after code spike.*
+**Test**: Can sign up, sign in, and see email displayed
 
 ---
 
-## 4. Price Ingestion Spike (45 min)
+## 2. Save Game Results (1 hour)
 
-- [ ] Create folder `supabase/functions/fetch_prices/`.
-- [ ] Use Supabase Edge-Functions template (`deno`).
-- [ ] Inside, write minimal script: fetch BTC/ETH/BNB/SOL/XRP from CoinGecko → upsert into `price_cache`.
-- [ ] Test locally: `supabase functions serve --env-file ./supabase/.env.local`.
-- [ ] Schedule: in Supabase dashboard → "Scheduled triggers" → every 5 min.
+### 2.1 Modify ResultsScene
+- [ ] When results load, immediately save to database:
+  ```javascript
+  // In ResultsScene.create()
+  this.savePastRun();
+  ```
 
-Outcome: you now have fresh prices in DB → foundation for Future-mode valuation.
+### 2.2 Create savePastRun Method
+- [ ] Get current user from auth
+- [ ] Prepare data:
+  - scenario_key (e.g., 'march_2020')
+  - allocations object
+  - final_value
+  - profit_percent
+- [ ] INSERT into past_runs table via Supabase client
+
+**Test**: Play a game, check Supabase dashboard for new row
 
 ---
 
-## 5. Commit & Push (10 min)
+## 3. Create Dashboard Scene (2 hours)
+
+### 3.1 New DashboardScene
+- [ ] Shows after login
+- [ ] Display:
+  - Welcome message with user email
+  - "Play New Game" button → ScenarioSelectScene
+  - "My Past Games" section
+  - Sign Out button
+
+### 3.2 Load & Display Past Runs
+- [ ] Query past_runs for current user
+- [ ] Sort by created_at DESC
+- [ ] Show each run:
+  - Scenario name & date
+  - Final value & profit %
+  - When played
+  - "Play Again" link
+
+### 3.3 Add to Scene List
+- [ ] Update game config to include DashboardScene
+- [ ] Update navigation flow
+
+**Test**: See your game history after playing multiple rounds
+
+---
+
+## 4. Quick Wins (if time allows)
+
+- [ ] Add loading states while saving/fetching
+- [ ] Show success message after saving game
+- [ ] Add basic error handling for auth failures
+- [ ] Style the dashboard nicely
+
+---
+
+## 5. Commit Checkpoint
 
 ```bash
-git add planning/rp-plan/next-steps.md
-git add supabase/*
-git commit -m "chore: bootstrap supabase auth, price-cache function stub"
+git add -A
+git commit -m "feat: M1 complete - auth integration & game persistence
+
+- Replaced fake users with real Supabase auth
+- Games now save to past_runs table
+- Added dashboard showing user's game history
+- Users can sign up, play, and track progress"
 git push
 ```
 
 ---
 
-## 6. Tomorrow’s Focus Preview
+## Success Criteria ✅
 
-1. Build Past-mode result write-back (`/api/past_run`).
-2. Front-end – replace fake users with actual auth flow.
-3. Crank through `m1_core_tables.sql`, RLS, and simple leaderboard view (`now_leaderboard`).
-
----
-
-### 🔗  How Data Model Connects to Future-Mode
-
-• `now_entries` holds **user choice** (allocations + start prices).
-• Cron function reads `price_cache`, calc current value, inserts into `now_snapshots`, updates a materialized view `current_leaderboard`.
-• Front-end fetches `/rpc/current_leaderboard` for live ranks.
-✱  Because start_prices are stored per entry, we’re immune to later price-feed corrections.
+1. Can create account with email/password
+2. Game saves results to database automatically
+3. Dashboard shows all my past games
+4. Can sign out and sign back in
+5. Past games persist between sessions
 
 ---
 
-Happy hacking!  Add / strike tasks directly in this file as you go.
+## What's Next After This?
+
+**M2: Now Mode** - Real-time multiplayer competition with live leaderboard
+
+---
+
+**Time Estimate**: 5-6 hours of focused work
+**Complexity**: Medium (mostly wiring existing pieces together) 
