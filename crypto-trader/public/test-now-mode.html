@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Now Mode Save</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../env.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #000;
+            color: #fff;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 5px;
+        }
+        button {
+            background: #00ffff;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        button:hover {
+            background: #00cccc;
+        }
+        .success {
+            color: #00ff00;
+        }
+        .error {
+            color: #ff0000;
+        }
+        pre {
+            background: #111;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Now Mode Save</h1>
+
+    <div class="test-section">
+        <h2>1. Auth Status</h2>
+        <button onclick="checkAuth()">Check Auth</button>
+        <div id="auth-status"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test Save Active Game</h2>
+        <button onclick="testSaveActiveGame()">Save Test Game</button>
+        <div id="save-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. View Active Games</h2>
+        <button onclick="viewActiveGames()">Load Active Games</button>
+        <div id="active-games"></div>
+    </div>
+
+    <script>
+        // Initialize Supabase
+        const supabase = window.supabaseClient.createClient(
+            window.SUPABASE_CONFIG.url,
+            window.SUPABASE_CONFIG.anonKey
+        );
+
+        async function checkAuth() {
+            const statusDiv = document.getElementById('auth-status');
+            try {
+                const { data: { user }, error } = await supabase.auth.getUser();
+                if (error) throw error;
+                
+                if (user) {
+                    statusDiv.innerHTML = `<p class="success">✅ Logged in as: ${user.email}</p>`;
+                } else {
+                    statusDiv.innerHTML = `<p class="error">❌ Not logged in</p>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testSaveActiveGame() {
+            const resultDiv = document.getElementById('save-result');
+            try {
+                // Check if user is authenticated
+                const { data: { user }, error: authError } = await supabase.auth.getUser();
+                if (authError) throw authError;
+                if (!user) {
+                    resultDiv.innerHTML = `<p class="error">❌ Not logged in</p>`;
+                    return;
+                }
+
+                // Test data for active game
+                const durationDays = 30;
+                const endsAt = new Date();
+                endsAt.setDate(endsAt.getDate() + durationDays);
+
+                const testAllocations = {
+                    BTC: 5,
+                    ETH: 3,
+                    BNB: 2
+                };
+
+                const testPrices = {
+                    BTC: 117996,
+                    ETH: 3733.97,
+                    BNB: 747.13,
+                    XRP: 3.49,
+                    DOGE: 0.25
+                };
+
+                const gameData = {
+                    user_id: user.id,
+                    duration_days: durationDays,
+                    ends_at: endsAt.toISOString(),
+                    allocations: testAllocations,
+                    starting_prices: testPrices,
+                    starting_money: 10000000,
+                    current_prices: testPrices,
+                    current_value: 10000000,
+                    last_updated: new Date().toISOString()
+                };
+
+                resultDiv.innerHTML = `<p>Saving game...</p>`;
+
+                // Save to active_games table
+                const { data, error } = await supabase
+                    .from('active_games')
+                    .insert(gameData)
+                    .select();
+
+                if (error) {
+                    resultDiv.innerHTML = `<p class="error">❌ Error saving: ${error.message}</p>
+                                         <pre>${JSON.stringify(error, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<p class="success">✅ Game saved successfully!</p>
+                                         <pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+
+        async function viewActiveGames() {
+            const gamesDiv = document.getElementById('active-games');
+            try {
+                const { data: { user }, error: authError } = await supabase.auth.getUser();
+                if (authError) throw authError;
+                if (!user) {
+                    gamesDiv.innerHTML = `<p class="error">❌ Not logged in</p>`;
+                    return;
+                }
+
+                const { data, error } = await supabase
+                    .from('active_games')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('started_at', { ascending: false });
+
+                if (error) {
+                    gamesDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+                } else {
+                    if (data && data.length > 0) {
+                        gamesDiv.innerHTML = `<p class="success">Found ${data.length} active game(s)</p>
+                                            <pre>${JSON.stringify(data, null, 2)}</pre>`;
+                    } else {
+                        gamesDiv.innerHTML = `<p>No active games found</p>`;
+                    }
+                }
+            } catch (error) {
+                gamesDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Check auth on load
+        window.onload = () => {
+            checkAuth();
+        };
+    </script>
+</body>
+</html> 

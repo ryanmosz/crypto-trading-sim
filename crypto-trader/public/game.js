@@ -1,4 +1,4 @@
-// Import auth module
+// Import auth module (v2 - fixed auth initialization)
 import { Auth } from './auth.js';
 
 // Game configuration
@@ -1412,13 +1412,7 @@ class ResultsScene extends Phaser.Scene {
         // Black background
         this.cameras.main.setBackgroundColor('#000000');
         
-        // Initialize auth first
-        try {
-            await this.auth.initialize();
-            console.log('Auth initialized in ResultsScene');
-        } catch (error) {
-            console.error('Failed to initialize auth:', error);
-        }
+        // Auth is already initialized in constructor, no need to call initialize
         
         // Save the game result if user is logged in
         if (this.user && this.user.id) {

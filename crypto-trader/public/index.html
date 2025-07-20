@@ -41,7 +41,8 @@
     <script src="./config.js"></script>
     <script src="./api-integration.js"></script>
     <script type="module">
-        import './game.js';
+        const timestamp = Date.now();
+        import(`./game.js?v=${timestamp}`);
     </script>
 </body>
 </html>
