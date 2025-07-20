@@ -1576,7 +1576,7 @@ class DashboardScene extends Phaser.Scene {
                     user_id: this.user.id,
                     scenario_key: 'march_2020',
                     allocations: {BTC: 5, ETH: 3, BNB: 2},
-                    final_value: 12500000
+                    final_value: 12500000  // NOTE: This is fake test data! March 2020 was a crash
                 };
                 
                 const { data, error } = await this.auth.supabase
@@ -1761,7 +1761,8 @@ class DashboardScene extends Phaser.Scene {
         mainViewElements.push(scenarioDesc);
         modalElements.push(scenarioDesc);
         
-        // Results
+        // Results - Note: We keep using saved value on main view for consistency
+        // Details view will show recalculated values if different
         const profit = run.final_value - GAME_CONFIG.startingMoney;
         const profitPercent = (profit / GAME_CONFIG.startingMoney) * 100;
         const profitColor = profit >= 0 ? '#00ffff' : '#ff1493';
@@ -1927,6 +1928,7 @@ class DashboardScene extends Phaser.Scene {
             // Calculate individual crypto performance
             const cryptoResults = {};
             const scenarioData = SCENARIOS[run.scenario_key];
+            let recalculatedTotal = 0;
             
             // Calculate each crypto's final value
             Object.entries(run.allocations).forEach(([symbol, blocks]) => {
@@ -1944,8 +1946,15 @@ class DashboardScene extends Phaser.Scene {
                         finalValue,
                         change
                     };
+                    
+                    recalculatedTotal += finalValue;
                 }
             });
+            
+            // Use recalculated total for accuracy
+            const actualFinalValue = recalculatedTotal;
+            const actualProfit = actualFinalValue - GAME_CONFIG.startingMoney;
+            const actualProfitPercent = (actualProfit / GAME_CONFIG.startingMoney) * 100;
             
             // Display each crypto's performance
             Object.entries(cryptoResults).forEach(([symbol, data]) => {
@@ -2033,22 +2042,33 @@ class DashboardScene extends Phaser.Scene {
             modalElements.push(totalArrow);
             
             // Total final
-            const totalFinal = this.add.text(530, yPos, `$${run.final_value.toLocaleString()}`, {
+            const totalFinal = this.add.text(530, yPos, `$${Math.round(actualFinalValue).toLocaleString()}`, {
                 fontSize: '16px',
                 fontFamily: 'Arial Black',
-                color: profit >= 0 ? '#00ffff' : '#ff1493'
+                color: actualProfit >= 0 ? '#00ffff' : '#ff1493'
             }).setOrigin(0.5).setVisible(false);
             detailsViewElements.push(totalFinal);
             modalElements.push(totalFinal);
             
             // Total percentage
-            const totalPercent = this.add.text(650, yPos, `(${profit >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%)`, {
+            const totalPercent = this.add.text(650, yPos, `(${actualProfit >= 0 ? '+' : ''}${actualProfitPercent.toFixed(1)}%)`, {
                 fontSize: '14px',
                 fontFamily: 'Arial Black',
-                color: profit >= 0 ? '#00ffff' : '#ff1493'
+                color: actualProfit >= 0 ? '#00ffff' : '#ff1493'
             }).setOrigin(1, 0.5).setVisible(false);
             detailsViewElements.push(totalPercent);
             modalElements.push(totalPercent);
+            
+            // Show warning if saved value doesn't match recalculated value
+            if (Math.abs(run.final_value - actualFinalValue) > 1000) {
+                const warningText = this.add.text(450, yPos + 40, '⚠ Note: Values recalculated from historical data', {
+                    fontSize: '12px',
+                    color: '#ff9900',
+                    fontStyle: 'italic'
+                }).setOrigin(0.5).setVisible(false);
+                detailsViewElements.push(warningText);
+                modalElements.push(warningText);
+            }
         }
         
         // Back button (details view)
