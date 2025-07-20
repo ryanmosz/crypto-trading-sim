@@ -27,7 +27,8 @@
 6. Redesigned details view layout to scale properly with up to 5 cryptos:
    - Dynamic spacing based on number of allocations
    - Optimized font sizes and positioning
-   - Centered all content at x=390 for better balance
+   - Centered all content at x=350 for better balance
+7. Fixed details view centering (x=350 is modal center) and increased font sizes for readability
 
 ## Game Saving Issue
 - Test save works but real games don't save
