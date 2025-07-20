@@ -204,14 +204,16 @@ class TutorialManager {
     }
     
     async start(scene, user) {
-        // Don't show multiple times in same session
-        if (this.hasShownForSession) return false;
+        // DEBUG MODE: Always show tutorial for testing
+        // // Don't show multiple times in same session
+        // if (this.hasShownForSession) return false;
+        
+        // this.user = user;
+        // const needsTutorial = await this.checkIfNeeded(user);
+        
+        // if (!needsTutorial) return false;
         
         this.user = user;
-        const needsTutorial = await this.checkIfNeeded(user);
-        
-        if (!needsTutorial) return false;
-        
         this.hasShownForSession = true;
         this.isActive = true;
         this.currentStep = 0;
@@ -280,9 +282,12 @@ class TutorialManager {
         
         const currentStep = this.steps[this.currentStep];
         if (currentStep && currentStep.scene === scene.scene.key) {
-            // Recreate overlay for new scene
-            this.overlay = new TutorialOverlay(scene);
-            this.showStep(scene);
+            // Only show if we have valid text to display
+            if (currentStep.text) {
+                // Recreate overlay for new scene
+                this.overlay = new TutorialOverlay(scene);
+                this.showStep(scene);
+            }
         }
     }
     
@@ -4254,6 +4259,10 @@ class JoinGameScene extends Phaser.Scene {
     init(data) {
         this.user = data.user;
         this.game = data.game;
+        // Initialize auth if not already available
+        if (!window.gameAuth) {
+            window.gameAuth = new Auth();
+        }
         this.auth = window.gameAuth;
     }
     
