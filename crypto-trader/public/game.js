@@ -803,9 +803,20 @@ class LoginScene extends Phaser.Scene {
         // Check for existing session
         const currentUser = await this.auth.getCurrentUser();
         if (currentUser) {
-            // Already logged in, go to dashboard
-            this.scene.start('DashboardScene', { user: currentUser });
-            return;
+            try {
+                // Fetch user profile with username
+                const profile = await this.auth.getUserProfile(currentUser.id);
+                const fullUser = {
+                    ...currentUser,
+                    username: profile?.username || currentUser.email?.split('@')[0] || 'Unknown'
+                };
+                // Already logged in, go to dashboard
+                this.scene.start('DashboardScene', { user: fullUser });
+                return;
+            } catch (error) {
+                console.error('Error fetching profile:', error);
+                // Continue to login screen if profile fetch fails
+            }
         }
         
         // Black background
@@ -5031,25 +5042,4 @@ const config = {
 // Start the game
 const game = new Phaser.Game(config);
 
-// Check for existing session on load
-(async () => {
-    try {
-        const session = await auth.getSession();
-        if (session?.user) {
-            console.log('Existing session found, fetching profile...');
-            const profile = await auth.getUserProfile(session.user.id);
-            const fullUser = {
-                ...session.user,
-                username: profile?.username || session.user.email?.split('@')[0] || 'Unknown'
-            };
-            
-            // Wait for game to be ready then switch to dashboard
-            game.events.once('ready', () => {
-                game.scene.stop('LoginScene');
-                game.scene.start('DashboardScene', { user: fullUser });
-            });
-        }
-    } catch (error) {
-        console.error('Error checking session:', error);
-    }
-})();
+
