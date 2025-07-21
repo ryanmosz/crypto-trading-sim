@@ -2236,14 +2236,10 @@ class DashboardScene extends Phaser.Scene {
     }
     
     async create() {
-        console.log('DashboardScene create() called with user:', this.user);
-        
         // Initialize auth if needed
         try {
             if (this.auth && this.auth.init) {
-                console.log('Initializing auth...');
                 await this.auth.init();
-                console.log('Auth initialized successfully');
             }
         } catch (error) {
             console.error('Error initializing auth:', error);
@@ -2251,7 +2247,7 @@ class DashboardScene extends Phaser.Scene {
         
         // Make sure we have a valid user
         if (!this.user || !this.user.email) {
-            console.error('No valid user for dashboard:', this.user);
+            console.error('No valid user for dashboard');
             this.scene.start('LoginScene');
             return;
         }
@@ -2273,33 +2269,23 @@ class DashboardScene extends Phaser.Scene {
                 color: '#00ffff'
             }).setOrigin(0.5);
             
-            console.log('Creating tabs...');
             // Create tabs
             this.createTabs();
             
-            console.log('Initializing content group...');
             // Initialize content group
             this.contentGroup = this.add.group();
             this.contentY = 280; // Starting Y position for content
             
             // Check and start tutorial for new users
-            console.log('DashboardScene - Checking tutorial manager:', window.tutorialManager);
             if (window.tutorialManager) {
-                console.log('Starting tutorial from DashboardScene');
                 window.tutorialManager.start(this, this.user);
-            } else {
-                console.log('Tutorial manager not found!');
             }
             
-            console.log('Showing tab content...');
             // Show content based on active tab
             this.showTabContent();
             
-            console.log('Creating sign out button...');
             // Create Sign Out button after content to ensure it's on top
             this.createSignOutButton();
-            
-            console.log('DashboardScene create() completed successfully');
         } catch (error) {
             console.error('Error in DashboardScene create():', error);
             console.error('Stack trace:', error.stack);
@@ -2362,11 +2348,17 @@ class DashboardScene extends Phaser.Scene {
     
     createTabs() {
         // Clear existing tabs if any
-        if (this.tabGroup) {
-            this.tabGroup.clear(true, true);
-        } else {
-            this.tabGroup = this.add.group();
+        if (this.tabGroup && this.tabGroup.children && this.tabGroup.children.size !== undefined) {
+            try {
+                this.tabGroup.clear(true, true);
+            } catch (e) {
+                console.warn('Error clearing tabGroup:', e);
+                this.tabGroup = null;
+            }
         }
+        
+        // Always create a new group to ensure clean state
+        this.tabGroup = this.add.group();
         
         const tabY = 150;
         const tabWidth = 200;
@@ -2423,25 +2415,34 @@ class DashboardScene extends Phaser.Scene {
                 });
             }
         });
-        
-        console.log('Tabs created successfully');
     }
     
     showTabContent() {
-        console.log('showTabContent() called, activeTab:', this.activeTab);
         
         // Clear existing content more thoroughly
-        if (this.pageDisplayGroup) {
-            this.pageDisplayGroup.clear(true, true);
-            this.pageDisplayGroup.destroy(true);
+        if (this.pageDisplayGroup && this.pageDisplayGroup.children && this.pageDisplayGroup.children.size !== undefined) {
+            try {
+                this.pageDisplayGroup.clear(true, true);
+                this.pageDisplayGroup.destroy(true);
+            } catch (e) {
+                console.warn('Error clearing pageDisplayGroup:', e);
+            }
             this.pageDisplayGroup = null;
         }
         
         // Clear all children from contentGroup
-        this.contentGroup.getChildren().forEach(child => {
-            child.destroy();
-        });
-        this.contentGroup.clear(true, true);
+        if (this.contentGroup && this.contentGroup.children && this.contentGroup.children.size !== undefined) {
+            try {
+                this.contentGroup.getChildren().forEach(child => {
+                    if (child && child.destroy) {
+                        child.destroy();
+                    }
+                });
+                this.contentGroup.clear(true, true);
+            } catch (e) {
+                console.warn('Error clearing contentGroup:', e);
+            }
+        }
         
         switch (this.activeTab) {
             case 'new':
@@ -3449,19 +3450,29 @@ class DashboardScene extends Phaser.Scene {
     
     shutdown() {
         // Clean up when leaving dashboard
-        console.log('DashboardScene shutdown called');
-        
-        // Clear all groups
-        if (this.tabGroup) {
-            this.tabGroup.clear(true, true);
+        // Clear all groups with error handling
+        if (this.tabGroup && this.tabGroup.children && this.tabGroup.children.size !== undefined) {
+            try {
+                this.tabGroup.clear(true, true);
+            } catch (e) {
+                console.warn('Error clearing tabGroup in shutdown:', e);
+            }
             this.tabGroup = null;
         }
-        if (this.contentGroup) {
-            this.contentGroup.clear(true, true);
+        if (this.contentGroup && this.contentGroup.children && this.contentGroup.children.size !== undefined) {
+            try {
+                this.contentGroup.clear(true, true);
+            } catch (e) {
+                console.warn('Error clearing contentGroup in shutdown:', e);
+            }
             this.contentGroup = null;
         }
-        if (this.pageDisplayGroup) {
-            this.pageDisplayGroup.clear(true, true);
+        if (this.pageDisplayGroup && this.pageDisplayGroup.children && this.pageDisplayGroup.children.size !== undefined) {
+            try {
+                this.pageDisplayGroup.clear(true, true);
+            } catch (e) {
+                console.warn('Error clearing pageDisplayGroup in shutdown:', e);
+            }
             this.pageDisplayGroup = null;
         }
         
