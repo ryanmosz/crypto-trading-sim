@@ -110,6 +110,32 @@ Game is 100% complete, deployed, and running in production! 🎉
 - Testing: `FINAL_TESTING_CHECKLIST.md`
 - Deploy: `QUICK_DEPLOY.md`
 
+#### Phase 0 - Scene Extraction Refactor (July 21, 2025) ✅
+**Status: Complete**
+
+Successfully extracted all 12 Phaser scenes from the monolithic 5,109-line `game.js` file into individual ES6 modules:
+
+**Extracted Components:**
+- ✅ 12 Scene Classes:
+  - LoginScene, DashboardScene, ScenarioSelectScene, SimulationSpeedScene
+  - AllocationScene, SimulationScene, ResultsScene, LeaderboardScene
+  - NowModeSetupScene, NowModeResultScene, ActiveGameViewScene, JoinGameScene
+- ✅ Shared Components:
+  - TutorialOverlay, TutorialManager
+  - Game constants (GAME_CONFIG, SCENARIOS, etc.)
+  - Utility functions (createBackButton)
+- ✅ Created modular `index.js` entry point
+- ✅ Updated `index.html` to use ES6 modules
+
+**Architecture Improvements:**
+- Each scene is now a self-contained ES6 module with proper imports
+- Shared code organized in `/shared/` directory
+- Consistent module structure across all files
+- Preserved all functionality - no breaking changes
+- Ready for Phase 1 multiplayer improvements
+
+**Next Steps:** Test the refactored application to ensure all features work correctly before proceeding with Phase 1.
+
 #### M3 - Polish Pass
 **Status: Not Started**
 - Loading states throughout

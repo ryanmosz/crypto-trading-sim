@@ -4,7 +4,7 @@
   "description": "Cryptocurrency trading simulator game built with Phaser 3",
   "main": "src/game.js",
   "scripts": {
-    "start": "cd public && python3 -m http.server 8090",
+    "start": "cd public && python3 -m http.server 8001",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [

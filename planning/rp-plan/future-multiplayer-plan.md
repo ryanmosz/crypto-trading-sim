@@ -191,27 +191,66 @@ _Practical impact_:
 If schedule is **extremely** tight, you *could* skip this, but every subsequent code change will be harder. **Recommendation: do the split.**
 
  
-## 7. Implementation Steps & Estimates
+## 📋 Implementation Steps (Phase-aligned)
 
-| Step | Owner | ETA |
-|------|-------|-----|
-| **0. Pre-work – Lightweight scene split** | FE | **3 h** |
-| 1. Write migration 004 – new cols + policies | BE | 0.5 h |
-| 2. Edge function `create_game` | BE | 1 h |
-| 3. Edge function `join_game` | BE | 0.5 h |
-| 4. Edge cron `update_active_games` | BE | 1 h |
-| 5. Front-end service layer (`nowGameApi.js`) | FE | 0.5 h |
-| 6. Update `NowModeSetupScene` → use API | FE | 0.5 h |
-| 7. Update `DashboardScene` active list (JOIN button) | FE | 1 h |
-| 8. Update `AllocationScene` flow | FE | 1 h |
-| 9. Update `ActiveGameViewScene` leaderboard | FE | 1.5 h |
-| 10. QA & bug-bash | All | 1 h |
+Below is a single authoritative list of tasks, grouped by implementation phase.
+The Phase numbers map 1-to-1 with the items in `future-multiplayer-checklist.md`.
 
-_**Total** ≈ **12 h** including refactor._
-
-`game_code` now uses a **4-char** slug (e.g. `A7bQ`).
+| Phase | Task | Owner | ETA |
+|-------|------|-------|-----|
+| **0** | Lightweight scene split (extract each Phaser Scene into `/scenes`, update bootstrap) | FE | 3 h |
+| **1** | Write migration 004 – add `game_code`, `is_multiplayer`, `participant_count`; ensure indexes & RLS policies | BE | 0.5 h |
+| **2** | Edge function `create_game` (generate 4-char slug, insert game & creator participant) | BE | 1 h |
+| **2** | Edge function `join_game` (dedup join, insert participant, bump count) | BE | 0.5 h |
+| **2** | Edge cron `update_active_games` (5-min price sync, close finished games) | BE | 1 h |
+| **3** | Implement `services/nowGameApi.js` (+ fallback `utils/slug.js`) | FE | 0.5 h |
+| **4** | Update `NowModeSetupScene` to call `create_game` & display slug | FE | 0.5 h |
+| **4** | Update `DashboardScene` Active tab (JOIN button, fetch open games) | FE | 1 h |
+| **4** | Update `AllocationScene` to use `starting_prices` & call `join_game` | FE | 1 h |
+| **4** | Update `ActiveGameViewScene` to render multiplayer leaderboard | FE | 1.5 h |
+| **5** | QA & bug-bash (manual + edge-case tests; ensure past-mode unaffected) | All | 1 h |
+| **6** | Deploy edge functions, schedule cron job, add basic logging/alerts | DevOps | 0.5 h |
 
 ---
+
+### Phase 0 – Pre-work (Lightweight Scene Split)
+* Extract each Phaser Scene class from `game.js` into `/scenes/<SceneName>.js`.
+* Update central bootstrap (e.g., `index.js` or a slim `game.js` stub) to register scenes.
+* **No logic changes**; aim for file size ≤ 1 000 LOC each (ideal ≤ 500).
+* Must complete **before** any multiplayer feature work.
+
+### Phase 1 – Database & Security
+* Create migration 004 with new columns & index.
+* Verify `game_participants` table exists (migration 003).
+* Add / update RLS policies for `active_games` and `game_participants`.
+
+### Phase 2 – Backend Functions
+* Implement `create_game` edge function (generates 4-char slug, inserts game & creator).
+* Implement `join_game` edge function (dedup join, inserts participant, bumps count).
+* Implement `update_active_games` cron/edge job (5-minute price & status updates).
+
+### Phase 3 – Front-End Service Layer
+* Create `services/nowGameApi.js` to wrap the edge functions.
+* Add `utils/slug.js` for slug generation (client fallback / tests).
+
+### Phase 4 – Scene Updates
+* `NowModeSetupScene` → call `create_game`, show slug.
+* `DashboardScene` (Active tab) → fetch open games, show JOIN button.
+* `AllocationScene` → if joining, use `starting_prices`, then call `join_game`.
+* `ActiveGameViewScene` → show real-time participant leaderboard.
+
+### Phase 5 – QA & Polish
+* Manual test create/join flow with multiple accounts.
+* Edge case: late join near game end.
+* Regression-test past-mode.
+* UI copy & colour-pass.
+
+### Phase 6 – Deploy & Monitor
+* Deploy edge functions & schedule cron job.
+* Add basic logging / alerts in Supabase dashboard or external monitor.
+* Post-deploy smoke test.
+
+*Note:* The project now uses a **4-character mixed-case alphanumeric slug** (36⁴ combos) everywhere `game_code` is referenced.
 
 ## 8. Open Questions
 
