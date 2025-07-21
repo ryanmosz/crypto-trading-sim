@@ -2236,6 +2236,8 @@ class DashboardScene extends Phaser.Scene {
     }
     
     async create() {
+        console.log('DashboardScene create() called with user:', this.user);
+        
         // Initialize auth if needed
         if (this.auth && this.auth.init) {
             await this.auth.init();
@@ -2243,48 +2245,59 @@ class DashboardScene extends Phaser.Scene {
         
         // Make sure we have a valid user
         if (!this.user || !this.user.email) {
-            console.error('No valid user for dashboard');
+            console.error('No valid user for dashboard:', this.user);
             this.scene.start('LoginScene');
             return;
         }
         
-        // Black background
-        this.cameras.main.setBackgroundColor('#000000');
-        
-        // Header
-        this.add.text(450, 40, 'CRYPTO TRADER SIMULATOR', {
-            fontSize: '36px',
-            fontFamily: 'Arial Black',
-            color: '#ffffff'
-        }).setOrigin(0.5);
-        
-        // Welcome message
-        this.add.text(450, 90, `Welcome, ${this.user.email}!`, {
-            fontSize: '20px',
-            color: '#00ffff'
-        }).setOrigin(0.5);
-        
-        // Create tabs
-        this.createTabs();
-        
-        // Initialize content group
-        this.contentGroup = this.add.group();
-        this.contentY = 280; // Starting Y position for content
-        
-        // Check and start tutorial for new users
-        console.log('DashboardScene - Checking tutorial manager:', window.tutorialManager);
-        if (window.tutorialManager) {
-            console.log('Starting tutorial from DashboardScene');
-            window.tutorialManager.start(this, this.user);
-        } else {
-            console.log('Tutorial manager not found!');
+        try {
+            // Black background
+            this.cameras.main.setBackgroundColor('#000000');
+            
+            // Header
+            this.add.text(450, 40, 'CRYPTO TRADER SIMULATOR', {
+                fontSize: '36px',
+                fontFamily: 'Arial Black',
+                color: '#ffffff'
+            }).setOrigin(0.5);
+            
+            // Welcome message
+            this.add.text(450, 90, `Welcome, ${this.user.email}!`, {
+                fontSize: '20px',
+                color: '#00ffff'
+            }).setOrigin(0.5);
+            
+            console.log('Creating tabs...');
+            // Create tabs
+            this.createTabs();
+            
+            console.log('Initializing content group...');
+            // Initialize content group
+            this.contentGroup = this.add.group();
+            this.contentY = 280; // Starting Y position for content
+            
+            // Check and start tutorial for new users
+            console.log('DashboardScene - Checking tutorial manager:', window.tutorialManager);
+            if (window.tutorialManager) {
+                console.log('Starting tutorial from DashboardScene');
+                window.tutorialManager.start(this, this.user);
+            } else {
+                console.log('Tutorial manager not found!');
+            }
+            
+            console.log('Showing tab content...');
+            // Show content based on active tab
+            this.showTabContent();
+            
+            console.log('Creating sign out button...');
+            // Create Sign Out button after content to ensure it's on top
+            this.createSignOutButton();
+            
+            console.log('DashboardScene create() completed successfully');
+        } catch (error) {
+            console.error('Error in DashboardScene create():', error);
+            console.error('Stack trace:', error.stack);
         }
-        
-        // Show content based on active tab
-        this.showTabContent();
-        
-        // Create Sign Out button after content to ensure it's on top
-        this.createSignOutButton();
         
         // Test buttons (temporary for debugging) - hide them in corner
         const testSaveBtn = this.add.text(50, 20, '[Test Save]', {
@@ -2404,9 +2417,13 @@ class DashboardScene extends Phaser.Scene {
                 });
             }
         });
+        
+        console.log('Tabs created successfully');
     }
     
     showTabContent() {
+        console.log('showTabContent() called, activeTab:', this.activeTab);
+        
         // Clear existing content more thoroughly
         if (this.pageDisplayGroup) {
             this.pageDisplayGroup.clear(true, true);
