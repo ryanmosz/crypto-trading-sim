@@ -2269,26 +2269,11 @@ class DashboardScene extends Phaser.Scene {
             console.log('Tutorial manager not found!');
         }
         
-        // Create persistent UI group for elements that should not be cleared
-        this.persistentUI = this.add.group();
-        
-        // Sign out button (add to persistent UI)
-        const signOutButton = this.add.text(800, 550, 'Sign Out', {
-            fontSize: '16px',
-            color: '#666666'
-        }).setOrigin(1, 0.5)
-        .setInteractive({ useHandCursor: true })
-        .on('pointerover', function() { this.setColor('#ff1493'); })
-        .on('pointerout', function() { this.setColor('#666666'); })
-        .on('pointerdown', async () => {
-            await this.auth.signOut();
-            this.scene.start('LoginScene');
-        });
-        
-        this.persistentUI.add(signOutButton);
-        
         // Show content based on active tab
         this.showTabContent();
+        
+        // Create Sign Out button after content to ensure it's on top
+        this.createSignOutButton();
         
         // Test buttons (temporary for debugging) - hide them in corner
         const testSaveBtn = this.add.text(50, 20, '[Test Save]', {
@@ -2323,6 +2308,26 @@ class DashboardScene extends Phaser.Scene {
             }
         });
 
+    }
+    
+    createSignOutButton() {
+        // Remove existing sign out button if any
+        if (this.signOutButton) {
+            this.signOutButton.destroy();
+        }
+        
+        // Create sign out button
+        this.signOutButton = this.add.text(800, 550, 'Sign Out', {
+            fontSize: '16px',
+            color: '#666666'
+        }).setOrigin(1, 0.5)
+        .setInteractive({ useHandCursor: true })
+        .on('pointerover', function() { this.setColor('#ff1493'); })
+        .on('pointerout', function() { this.setColor('#666666'); })
+        .on('pointerdown', async () => {
+            await this.auth.signOut();
+            this.scene.start('LoginScene');
+        });
     }
     
     createTabs() {
@@ -2384,6 +2389,7 @@ class DashboardScene extends Phaser.Scene {
                     // Clear and redraw tabs without restarting scene
                     this.createTabs();
                     this.showTabContent();
+                    this.createSignOutButton(); // Recreate sign out button
                 });
             }
         });
