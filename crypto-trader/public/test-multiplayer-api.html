@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Multiplayer API</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #00ff00;
+        }
+        button {
+            background: #333;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-family: monospace;
+        }
+        button:hover {
+            background: #444;
+        }
+        #output {
+            background: #000;
+            border: 1px solid #333;
+            padding: 20px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        input {
+            background: #333;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 5px 10px;
+            font-family: monospace;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #333;
+        }
+    </style>
+    
+    <!-- Load Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Load config -->
+    <script src="config.js"></script>
+    
+    <!-- Load API wrapper -->
+    <script type="module" src="services/nowGameApi.js"></script>
+</head>
+<body>
+    <h1>Multiplayer API Test</h1>
+    
+    <div class="section">
+        <h2>1. Create Game</h2>
+        <label>Duration: 
+            <select id="duration">
+                <option value="30">30 days</option>
+                <option value="60">60 days</option>
+                <option value="90">90 days</option>
+            </select>
+        </label>
+        <br><br>
+        <label>Allocations (must sum to 10):</label><br>
+        BTC: <input type="number" id="btc" value="4" min="0" max="10"><br>
+        ETH: <input type="number" id="eth" value="3" min="0" max="10"><br>
+        SOL: <input type="number" id="sol" value="3" min="0" max="10"><br>
+        <button onclick="createGame()">Create Game</button>
+    </div>
+    
+    <div class="section">
+        <h2>2. Find Game by Code</h2>
+        <input type="text" id="findCode" placeholder="Enter 4-char code">
+        <button onclick="findGame()">Find Game</button>
+    </div>
+    
+    <div class="section">
+        <h2>3. Join Game</h2>
+        <input type="text" id="joinGameId" placeholder="Game ID (UUID)">
+        <br><br>
+        <label>Allocations (must sum to 10):</label><br>
+        BTC: <input type="number" id="joinBtc" value="3" min="0" max="10"><br>
+        ETH: <input type="number" id="joinEth" value="4" min="0" max="10"><br>
+        SOL: <input type="number" id="joinSol" value="3" min="0" max="10"><br>
+        <button onclick="joinGame()">Join Game</button>
+    </div>
+    
+    <div class="section">
+        <h2>4. Update Prices (Manual Trigger)</h2>
+        <button onclick="updatePrices()">Trigger Update</button>
+    </div>
+    
+    <div id="output">Ready for testing...</div>
+    
+    <script type="module">
+        import { createNowGame, joinNowGame, findGameByCode } from './services/nowGameApi.js';
+        
+        // Initialize Supabase
+        const supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+        window.supabase = supabase;
+        
+        function log(message) {
+            const output = document.getElementById('output');
+            output.textContent += '\n' + new Date().toISOString() + ' - ' + message;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        window.createGame = async function() {
+            try {
+                const duration = parseInt(document.getElementById('duration').value);
+                const allocations = {
+                    BTC: parseInt(document.getElementById('btc').value),
+                    ETH: parseInt(document.getElementById('eth').value),
+                    SOL: parseInt(document.getElementById('sol').value)
+                };
+                
+                log('Creating game...');
+                const result = await createNowGame({ duration, allocations });
+                log('Game created successfully!');
+                log('Game ID: ' + result.game_id);
+                log('Game Code: ' + result.game_code);
+                log('Ends at: ' + result.ends_at);
+                log(JSON.stringify(result, null, 2));
+            } catch (error) {
+                log('ERROR: ' + error.message);
+            }
+        };
+        
+        window.findGame = async function() {
+            try {
+                const gameCode = document.getElementById('findCode').value;
+                log('Finding game with code: ' + gameCode);
+                const result = await findGameByCode(gameCode);
+                log('Game found!');
+                log('Game ID: ' + result.id);
+                log('Participants: ' + result.participant_count);
+                log(JSON.stringify(result, null, 2));
+                document.getElementById('joinGameId').value = result.id;
+            } catch (error) {
+                log('ERROR: ' + error.message);
+            }
+        };
+        
+        window.joinGame = async function() {
+            try {
+                const gameId = document.getElementById('joinGameId').value;
+                const allocations = {
+                    BTC: parseInt(document.getElementById('joinBtc').value),
+                    ETH: parseInt(document.getElementById('joinEth').value),
+                    SOL: parseInt(document.getElementById('joinSol').value)
+                };
+                
+                log('Joining game...');
+                const result = await joinNowGame({ gameId, allocations });
+                log('Joined game successfully!');
+                log('Participant ID: ' + result.participant_id);
+                log('Participants: ' + result.participant_count);
+                log(JSON.stringify(result, null, 2));
+            } catch (error) {
+                log('ERROR: ' + error.message);
+            }
+        };
+        
+        window.updatePrices = async function() {
+            try {
+                log('Triggering price update...');
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    log('ERROR: No active session');
+                    return;
+                }
+                
+                const response = await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/update-active-games`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${session.access_token}`,
+                        'Content-Type': 'application/json',
+                        'apikey': CONFIG.SUPABASE_ANON_KEY
+                    }
+                });
+                
+                const data = await response.json();
+                log('Update complete!');
+                log(JSON.stringify(data, null, 2));
+            } catch (error) {
+                log('ERROR: ' + error.message);
+            }
+        };
+        
+        // Check auth status
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+                log('Authenticated as: ' + session.user.email);
+            } else {
+                log('Not authenticated - please login first');
+            }
+        });
+    </script>
+</body>
+</html> 

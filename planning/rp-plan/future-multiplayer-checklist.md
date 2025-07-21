@@ -3,23 +3,23 @@
 _A concise roadmap of tasks (no code)_
 
 ## Phase 0 – Pre-work (Scene Split)
-- [ ] Extract each Phaser scene from **game.js** into its own file under `/scenes`
-- [ ] Update import/bootstrapping code in `index.js`
-- [ ] Verify build runs unchanged
+- [x] Extract each Phaser scene from **game.js** into its own file under `/scenes`
+- [x] Update import/bootstrapping code in `index.js`
+- [x] Verify build runs unchanged
 
 ## Phase 1 – Database & Security
-- [ ] Apply **migration 004**
+- [x] Apply **migration 004**
   • add `game_code`, `is_multiplayer`, `participant_count` columns to `active_games`
   • ensure `game_participants` table exists
   • create indexes on `game_code`
-- [ ] Create / update **RLS policies** for `active_games` & `game_participants`
+- [x] Create / update **RLS policies** for `active_games` & `game_participants`
 
 ## Phase 2 – Backend Functions
-- [ ] Edge Function **`create_game`**
+- [x] Edge Function **`create_game`**
   • validate payload, generate 4-char slug, insert game & creator participant
-- [ ] Edge Function **`join_game`**
+- [x] Edge Function **`join_game`**
   • prevent duplicate join, insert participant, bump `participant_count`
-- [ ] Cron/Edge Function **`update_active_games`**
+- [x] Cron/Edge Function **`update_active_games`**
   • every 5 min fetch prices, update games & participants, mark complete when due
 
 ## Phase 3 – Front-End Service Layer

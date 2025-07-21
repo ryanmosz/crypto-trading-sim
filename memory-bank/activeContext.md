@@ -37,11 +37,19 @@ User testing confirmed:
 None! Phase 0 completed successfully with no outstanding issues.
 
 ## Next Actions
-**Ready for Phase 1 - Shared State Refactor**
+**Phase 2 Complete - Ready for Phase 3!**
 
-The codebase is now properly modularized and tested. Phase 1 will introduce:
-1. Centralized state management system
-2. WebSocket connections for real-time updates
-3. Shared game state synchronization
-4. Foundation for true multiplayer gameplay
-5. Implementation of the multiplayer flow from the Future Multiplayer Plan 
+Phase 2 Backend Functions has been successfully completed:
+- ✅ create-game Edge Function deployed
+- ✅ join-game Edge Function deployed
+- ✅ update-active-games Edge Function deployed
+- ✅ Frontend API wrapper created (nowGameApi.js)
+- ✅ Utility functions implemented
+
+**Next: Phase 3 - Frontend Service Layer & Phase 4 - Scene Updates**
+1. Update NowModeSetupScene to call create_game API
+2. Update DashboardScene to show joinable multiplayer games
+3. Create/Update JoinGameScene for joining flow
+4. Update AllocationScene to handle joining games
+5. Update ActiveGameViewScene to show multiplayer leaderboard
+6. Configure cron schedule for price updates 

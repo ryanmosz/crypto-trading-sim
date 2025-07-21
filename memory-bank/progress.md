@@ -195,4 +195,67 @@ Currently tracking 30 cryptocurrencies:
 6. **Add sound effects and music**
 7. **Create promotional materials**
 
-**Time estimate**: 4-6 hours for polish and optimization 
+**Time estimate**: 4-6 hours for polish and optimization
+
+## Phase 0 - Scene Extraction Refactor (July 21, 2025) ✅
+
+Successfully modularized the monolithic game.js file:
+
+### Extracted Components
+- 12 individual scene modules in `/scenes/` directory
+- Shared components: TutorialManager, TutorialOverlay, constants, utils
+- New index.js entry point managing all imports
+- Updated index.html to use ES6 modules
+
+### Architecture Improvements
+- Reduced main file from 5,109 lines to modular components
+- Each scene is self-contained with proper imports
+- Shared utilities centralized for easy maintenance
+- All functionality preserved and tested
+
+## Phase 1 - Database & Security (July 21, 2025) ✅
+
+Successfully implemented database foundation for multiplayer support:
+
+### Completed
+- Created and applied migration 005_multiplayer_support.sql
+- Added game_code column to active_games table with unique constraint
+- Implemented RLS policies for public multiplayer game viewing
+- Verified game_participants table structure from migration 003
+- Tested all database changes and constraints
+- Created comprehensive multiplayer database documentation
+
+### Database Changes
+- `active_games.game_code` - 4-character unique identifier for joining games
+- Index on game_code for fast lookups
+- RLS policies allowing public viewing of open multiplayer games
+- All existing functionality preserved and tested
+
+Ready for Phase 2 - Backend Functions to implement the multiplayer API endpoints.
+
+## Phase 2 - Backend Functions (July 21, 2025) ✅
+
+Successfully implemented backend Edge Functions for multiplayer support:
+
+### Completed
+- Created and deployed create-game Edge Function
+- Created and deployed join-game Edge Function  
+- Created and deployed update-active-games Edge Function
+- Implemented frontend API wrapper (nowGameApi.js)
+- Added utility functions for game code generation and portfolio calculations
+- Configured CORS for cross-origin access
+
+### Edge Functions
+1. **create-game**: Generates unique 4-character game codes, validates input, creates game and adds creator as participant
+2. **join-game**: Validates game exists, prevents duplicate joins, adds participant and updates count
+3. **update-active-games**: Fetches latest prices, calculates portfolio values, marks completed games
+
+### Key Features
+- Alphanumeric game codes (62^4 = 14.7M combinations)
+- Retry logic for unique code generation
+- Authentication and authorization checks
+- Input validation and error handling
+- Atomic operations with rollback support
+- Portfolio value calculation with crypto pair support
+
+Ready for Phase 3 & 4 - Frontend integration to complete the multiplayer flow! 
