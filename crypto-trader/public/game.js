@@ -2239,8 +2239,14 @@ class DashboardScene extends Phaser.Scene {
         console.log('DashboardScene create() called with user:', this.user);
         
         // Initialize auth if needed
-        if (this.auth && this.auth.init) {
-            await this.auth.init();
+        try {
+            if (this.auth && this.auth.init) {
+                console.log('Initializing auth...');
+                await this.auth.init();
+                console.log('Auth initialized successfully');
+            }
+        } catch (error) {
+            console.error('Error initializing auth:', error);
         }
         
         // Make sure we have a valid user
@@ -3439,6 +3445,35 @@ class DashboardScene extends Phaser.Scene {
                                     this[`${symbol}_priceText`].setText(`$${displayPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
             }
         });
+    }
+    
+    shutdown() {
+        // Clean up when leaving dashboard
+        console.log('DashboardScene shutdown called');
+        
+        // Clear all groups
+        if (this.tabGroup) {
+            this.tabGroup.clear(true, true);
+            this.tabGroup = null;
+        }
+        if (this.contentGroup) {
+            this.contentGroup.clear(true, true);
+            this.contentGroup = null;
+        }
+        if (this.pageDisplayGroup) {
+            this.pageDisplayGroup.clear(true, true);
+            this.pageDisplayGroup = null;
+        }
+        
+        // Clear sign out button
+        if (this.signOutButton) {
+            this.signOutButton.destroy();
+            this.signOutButton = null;
+        }
+        
+        // Reset state
+        this.currentPage = 0;
+        this.allGames = [];
     }
 }
 
