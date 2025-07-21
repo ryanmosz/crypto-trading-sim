@@ -5,7 +5,7 @@
 ### Phase 1: Authentication & Onboarding (5 min)
 
 #### 1.1 New User Signup
-- [ ] Navigate to game URL
+- [ ] Navigate to game URL https://crypto-trading-sim.vercel.app/
 - [ ] Click "Sign Up" mode
 - [ ] Enter: ted@test.com / password123
 - [ ] Verify signup success

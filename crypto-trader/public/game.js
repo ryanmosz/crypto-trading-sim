@@ -2269,10 +2269,10 @@ class DashboardScene extends Phaser.Scene {
             console.log('Tutorial manager not found!');
         }
         
-        // Show content based on active tab
-        this.showTabContent();
+        // Create persistent UI group for elements that should not be cleared
+        this.persistentUI = this.add.group();
         
-        // Sign out button
+        // Sign out button (add to persistent UI)
         const signOutButton = this.add.text(800, 550, 'Sign Out', {
             fontSize: '16px',
             color: '#666666'
@@ -2284,6 +2284,11 @@ class DashboardScene extends Phaser.Scene {
             await this.auth.signOut();
             this.scene.start('LoginScene');
         });
+        
+        this.persistentUI.add(signOutButton);
+        
+        // Show content based on active tab
+        this.showTabContent();
         
         // Test buttons (temporary for debugging) - hide them in corner
         const testSaveBtn = this.add.text(50, 20, '[Test Save]', {
