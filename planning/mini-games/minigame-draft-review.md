@@ -212,3 +212,76 @@ items (1-3) before merging into `main`.
 With these fixes, Button-Mash Duel will integrate smoothly into the
 Crypto-Trader ecosystem and provide a fun, low-risk competitive mini-game
 for players.
+
+## 8. Post-Implementation Review (2025-07-22)
+
+Below is a consolidated "state-of-the-union" snapshot after applying the latest
+planning edits and runtime patches.
+
+### 1. What’s solid
+• Deterministic gameplay loop
+  – `isHost` flag passed into `ButtonMashScene`; host alone emits canonical
+    **start** and **finish**.
+  – Duplicate-finish defence with `matchComplete` / `finishSent`.
+  – Client-side input throttle (20 msg/s) in place.
+
+• Realtime helper (`realtime.js`) exposes clear `onStart / onIncrement /
+  onFinish` hooks.
+
+• Constants live in a single file
+  (`constants/minigame.js`) and are consumed by both the scene and helper.
+
+• Planning artefacts (checklist + **minigame-plan-1…6** files) are aligned with
+  the codebase; every open issue maps to a parent task + sub-tasks.
+
+• RLS policy tightened in `005_mini_game_duels.sql`
+  (`service_role` insert-only).
+
+---
+
+### 2. Remaining gaps / next actions
+A. **Project structure & build**
+   1. Move the *draft* tree into real `public/mini-games/` & `supabase/` roots.
+   2. Register `ButtonMashScene` in `public/index.js`; preload assets.
+   3. Add countdown sprites / "GO!" graphic under `/assets/minigame/`.
+
+B. **Invite / launch flow**
+   • Flesh out `DuelInviteModal` and add a "Duel" button in
+     `DashboardScene`.
+   • Generate `duelId`, broadcast `duel_invite`, compute `isHost` (lexicographic
+     min `userId`), then start `ButtonMashScene` on both clients.
+
+C. **Edge Function & migration placement**
+   • Move `record-duel-result` to `supabase/functions/` and bump migration to
+     `006_…`.
+   • Provide `.env` with `SUPABASE_SERVICE_ROLE_KEY`.
+
+D. **Testing**
+   • Jest: countdown timing, host determination, duplicate-finish guard.
+   • Cypress: invite → accept → mash → winner persists row.
+
+E. **Scene housekeeping**
+   • Ensure timers & channel unsubscribes in `shutdown()`.
+   • Optional `visibilitychange` handling for background tabs.
+
+F. **Security & quotas**
+   • Document 20 msg/s throttle; rely on Realtime limits for now.
+   • Confirm Edge Function runs with service-role key (`--no-verify-jwt`).
+
+---
+
+### 3. Checklist parity
+All items in **minigame-plan-checklist.md** now correspond to active technical
+work:
+
+0.0 ✅ Duplicate-paths resolved
+7.0-13.0 ➜ Host logic, single-finish, throttle, Supabase paths/env,
+security/RLS, integration, tests — all present and cross-linked to the six
+design docs.
+
+---
+
+### 4. Overall verdict
+Foundation is solid and works in isolation.  Remaining effort is mainly
+integration (invite UI, asset loading, repo moves) plus automated tests.  No
+architectural blockers detected.

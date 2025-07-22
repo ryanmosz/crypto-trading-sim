@@ -206,8 +206,7 @@ export async function checkCompletedGames(auth, userId, notificationSystem) {
             `)
             .eq('user_id', userId)
             .eq('game.is_complete', true)
-            .gte('game.completed_at', oneHourAgo)
-            .order('game.completed_at', { ascending: false });
+            .gte('game.completed_at', oneHourAgo);
             
         if (error) {
             console.error('Error checking completed games:', error);
@@ -216,8 +215,15 @@ export async function checkCompletedGames(auth, userId, notificationSystem) {
         
         if (!completedGames || completedGames.length === 0) return;
         
+        // Sort by completed_at date (newest first) 
+        const sortedGames = completedGames.sort((a, b) => {
+            const dateA = new Date(a.game.completed_at);
+            const dateB = new Date(b.game.completed_at);
+            return dateB - dateA;
+        });
+        
         // Process each completed game
-        for (const gameData of completedGames) {
+        for (const gameData of sortedGames) {
             const game = gameData.game;
             const gameId = game.id;
             

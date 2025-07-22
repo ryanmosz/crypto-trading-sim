@@ -1,7 +1,7 @@
 // Import dependencies
 import { Auth } from '../auth.js';
 import { getGameParticipants } from '../services/nowGameApi.js';
-import { calculateTimeRemaining, formatTimeRemaining, getTimeRemainingColor } from '../utils/countdown.js';
+import { calculateTimeRemaining, calculateTimeRemainingFromEndDate, formatTimeRemaining, getTimeRemainingColor } from '../utils/countdown.js';
 import { formatGameCode } from '../utils/slug.js';
 
 // Active Game View Scene
