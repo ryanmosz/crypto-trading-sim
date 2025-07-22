@@ -69,7 +69,7 @@ Just implemented:
    - Set up monitoring
 
 ### Automated Updates ✅ (OPERATIONAL!)
-- **Cron job for price updates**: Running every minute (Job ID: 8)
+- **Cron job for price updates**: Running every minute (Job ID: 6 - fetch-crypto-prices)
 - **Automated game completion**: complete_expired_games function active
 - **Price fetching**: Using fetch-prices Edge Function
 - **Portfolio value updates**: Automatic recalculation
