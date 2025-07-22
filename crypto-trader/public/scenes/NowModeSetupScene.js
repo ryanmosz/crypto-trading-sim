@@ -125,7 +125,7 @@ export default class NowModeSetupScene extends Phaser.Scene {
         // All Now games are multiplayer - no toggle needed
         
         // Duration selection header
-        this.add.text(450, 350, 'SELECT DURATION', {
+        this.add.text(450, 330, 'SELECT DURATION', {
             fontSize: '20px',
             color: '#00ff00'
         }).setOrigin(0.5);
