@@ -825,21 +825,20 @@ export default class ActiveGameViewScene extends Phaser.Scene {
                 viewState: this.viewState
             });
         });
-    }
-    
-    // Add auto-refresh for details view
-    this.time.addEvent({
-        delay: 60000, // 1 minute
-        callback: () => {
-            // Restart scene but preserve view state
-            this.scene.restart({ 
-                user: this.user, 
-                gameData: this.gameData,
-                viewState: this.viewState 
-            });
-        },
-        loop: true
-    });
+        
+        // Add auto-refresh for details view
+        this.time.addEvent({
+            delay: 60000, // 1 minute
+            callback: () => {
+                // Restart scene but preserve view state
+                this.scene.restart({ 
+                    user: this.user, 
+                    gameData: this.gameData,
+                    viewState: this.viewState 
+                });
+            },
+            loop: true
+        });
     }
     
     createPerformanceChart(startY) {
