@@ -13,6 +13,9 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Auth functions
 export const auth = {
+  // Expose the supabase client for direct access
+  supabase,
+  
   // Sign up new user
   async signUp(email, password, username) {
     try {
