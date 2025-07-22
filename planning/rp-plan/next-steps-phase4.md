@@ -106,6 +106,9 @@ Ready for full end-to-end testing!
   - [x] Beth shows 4.0% on leaderboard but 0.4% on details
   - [x] Find the decimal/multiplication issue
   - [x] Ensure consistent calculation across all views
+  - [x] Fixed database calculation - allocations were 0-10 scale
+  - [x] Removed all frontend calculation workarounds
+  - [x] Single source of truth: database values only
 - [x] **Fix Chart Data Issues** ✅
   - [x] Chart using wrong/stale data (shows $9.8M vs actual $10.04M)
   - [x] Fix chart showing negative when player is positive
