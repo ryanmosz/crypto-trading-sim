@@ -1,6 +1,43 @@
 // Countdown timer utility functions
 
 /**
+ * Calculate time remaining from end date directly
+ * @param {string} endsAt - ISO date string when game ends
+ * @returns {object} Time remaining breakdown
+ */
+export function calculateTimeRemainingFromEndDate(endsAt) {
+    const endTime = new Date(endsAt);
+    const now = new Date();
+    
+    const totalSeconds = Math.max(0, Math.floor((endTime - now) / 1000));
+    
+    if (totalSeconds === 0) {
+        return {
+            days: 0,
+            hours: 0,
+            minutes: 0,
+            seconds: 0,
+            totalSeconds: 0,
+            isExpired: true
+        };
+    }
+    
+    const days = Math.floor(totalSeconds / (24 * 60 * 60));
+    const hours = Math.floor((totalSeconds % (24 * 60 * 60)) / (60 * 60));
+    const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
+    const seconds = totalSeconds % 60;
+    
+    return {
+        days,
+        hours,
+        minutes,
+        seconds,
+        totalSeconds,
+        isExpired: false
+    };
+}
+
+/**
  * Calculate time remaining from created date and duration
  * @param {string} createdAt - ISO date string when game was created
  * @param {number} durationDays - Duration of the game in days

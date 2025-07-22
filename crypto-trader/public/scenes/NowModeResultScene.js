@@ -46,11 +46,12 @@ export default class NowModeResultScene extends Phaser.Scene {
             endDate.setDate(endDate.getDate() + this.durationDays);
         }
         
-        const challengeText = this.isJoiningMultiplayer ? 
-            `You've joined the ${this.durationDays}-day multiplayer challenge!` :
-            `Your ${this.durationDays}-day challenge has begun!`;
+        // Success message
+        const successMessage = this.isMultiplayer ? 
+            `You've joined the ${this.durationDays === 0 ? '6-minute' : `${this.durationDays}-day`} multiplayer challenge!` :
+            `Your ${this.durationDays === 0 ? '6-minute' : `${this.durationDays}-day`} challenge has begun!`;
             
-        this.add.text(450, 160, challengeText, {
+        this.add.text(450, 160, successMessage, {
             fontSize: '24px',
             color: '#ffffff'
         }).setOrigin(0.5);

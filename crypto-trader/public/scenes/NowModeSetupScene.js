@@ -132,6 +132,7 @@ export default class NowModeSetupScene extends Phaser.Scene {
         
         // Create duration option boxes
         const durations = [
+            { days: 0, label: '6 MIN', desc: 'Quick test game' },
             { days: 30, label: '30 DAYS', desc: 'One month challenge' },
             { days: 60, label: '60 DAYS', desc: 'Two month challenge' },
             { days: 90, label: '90 DAYS', desc: 'Three month challenge' }

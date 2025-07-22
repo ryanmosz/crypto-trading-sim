@@ -1,7 +1,7 @@
 // Import dependencies
 import { Auth } from '../auth.js';
 import { GAME_CONFIG, SCENARIOS } from '../shared/constants.js';
-import { calculateTimeRemaining, formatTimeRemaining, getTimeRemainingColor } from '../utils/countdown.js';
+import { calculateTimeRemaining, calculateTimeRemainingFromEndDate, formatTimeRemaining, getTimeRemainingColor } from '../utils/countdown.js';
 
 // Dashboard Scene
 export default class DashboardScene extends Phaser.Scene {
@@ -550,7 +550,7 @@ export default class DashboardScene extends Phaser.Scene {
         this.contentGroup.add(codeText);
         
         // Create countdown timer display - move it more to the left
-        const timeRemaining = calculateTimeRemaining(game.created_at, game.duration_days || 30);
+        const timeRemaining = calculateTimeRemainingFromEndDate(game.ends_at);
         const timeColor = getTimeRemainingColor(timeRemaining.totalSeconds, game.duration_days || 30);
         const countdownText = this.add.text(200, y, formatTimeRemaining(timeRemaining), {
             fontSize: '14px',
@@ -563,7 +563,7 @@ export default class DashboardScene extends Phaser.Scene {
         // Store countdown text object for updates
         this.countdownTimers.set(game.id, {
             textObject: countdownText,
-            createdAt: game.created_at,
+            endsAt: game.ends_at,
             durationDays: game.duration_days || 30
         });
         
@@ -657,7 +657,7 @@ export default class DashboardScene extends Phaser.Scene {
             }
             
             // Position indicator - pushed more left
-            const positionText = this.add.text(340, y, `${position}/${totalParticipants}`, {
+            const positionText = this.add.text(370, y, `${position}/${totalParticipants}`, {
                 fontSize: '14px',
                 color: position <= 3 ? '#ffd700' : '#888888',
                 fontFamily: 'Arial Black'
@@ -1296,7 +1296,7 @@ export default class DashboardScene extends Phaser.Scene {
             this.countdownTimers.forEach((timerData, gameId) => {
                 // Check if text object still exists and hasn't been destroyed
                 if (timerData.textObject && timerData.textObject.scene) {
-                    const timeRemaining = calculateTimeRemaining(timerData.createdAt, timerData.durationDays);
+                    const timeRemaining = calculateTimeRemainingFromEndDate(timerData.endsAt);
                     const formattedTime = formatTimeRemaining(timeRemaining);
                     const timeColor = getTimeRemainingColor(timeRemaining.totalSeconds, timerData.durationDays);
                     

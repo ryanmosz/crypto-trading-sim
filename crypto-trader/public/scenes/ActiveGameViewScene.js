@@ -316,14 +316,14 @@ export default class ActiveGameViewScene extends Phaser.Scene {
                 detailsViewElements.push(coinsText);
                 
                 // Starting price
-                const startPriceText = this.add.text(440, detailsYPos, `$${Number(startPrice).toFixed(2)}`, {
+                const startPriceText = this.add.text(440, detailsYPos, `$${Number(startPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
                     fontSize: '14px',
                     color: '#666666'
                 }).setOrigin(0.5);
                 detailsViewElements.push(startPriceText);
                 
                 // Current price
-                const currentPriceText = this.add.text(560, detailsYPos, `$${Number(currentPrice).toFixed(2)}`, {
+                const currentPriceText = this.add.text(560, detailsYPos, `$${Number(currentPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
                     fontSize: '14px',
                     color: '#00ffff'
                 }).setOrigin(0.5);
@@ -736,13 +736,13 @@ export default class ActiveGameViewScene extends Phaser.Scene {
                 }).setOrigin(0.5);
                 
                 // Starting price
-                this.add.text(440, yPos, `$${Number(startPrice).toFixed(2)}`, {
+                this.add.text(440, yPos, `$${Number(startPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
                     fontSize: '14px',
                     color: '#666666'
                 }).setOrigin(0.5);
                 
                 // Current price
-                this.add.text(560, yPos, `$${Number(currentPrice).toFixed(2)}`, {
+                this.add.text(560, yPos, `$${Number(currentPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
                     fontSize: '14px',
                     color: '#00ffff'
                 }).setOrigin(0.5);

@@ -64,10 +64,11 @@ export default class AllocationScene extends Phaser.Scene {
         }
         
         // Display duration for Now mode
-        if (this.isNowMode && this.durationDays) {
-            this.add.text(450, 68, `Duration: ${this.durationDays} days`, {
-                fontSize: '18px',
-                color: '#00ffff'
+        if (this.isNowMode && this.durationDays !== null && this.durationDays !== undefined) {
+            const durationText = this.durationDays === 0 ? 'Duration: 6 minutes' : `Duration: ${this.durationDays} days`;
+            this.add.text(450, 68, durationText, {
+                fontSize: '16px',
+                color: '#00ff00'
             }).setOrigin(0.5);
         }
         

@@ -59,8 +59,10 @@ export function isGameActive(endsAt) {
  */
 export function formatGameDuration(durationDays) {
     switch (durationDays) {
+        case 0:
+            return '6 minutes';
         case 30:
-            return '1 Month';
+            return '30 days';
         case 60:
             return '2 Months';
         case 90:
