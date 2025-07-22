@@ -138,18 +138,18 @@ export default class NowModeSetupScene extends Phaser.Scene {
             { days: 90, label: '90 DAYS', desc: 'Three month challenge' }
         ];
         
-        yPos = 370;
+        yPos = 380;
         durations.forEach(duration => {
             this.createDurationButton(duration.label, duration.desc, yPos, duration.days);
-            yPos += 60; // Add some space between options
+            yPos += 55; // Add some space between options
         });
         
         // Back button
-        const backButton = this.add.rectangle(100, 620, 120, 40, 0x333333)
+        const backButton = this.add.rectangle(100, 550, 120, 40, 0x333333)
             .setStrokeStyle(2, 0x666666)
             .setInteractive({ useHandCursor: true });
             
-        const backText = this.add.text(100, 620, 'BACK', {
+        const backText = this.add.text(100, 550, 'BACK', {
             fontSize: '18px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
