@@ -98,28 +98,28 @@ All scene integration tasks have been completed. The multiplayer functionality i
 Ready for full end-to-end testing!
 
 ### 8. Critical UI Fixes & Calculation Bugs 🔧
-- [ ] **Fix Details View Refresh Issue** (PRIORITY 1)
-  - [ ] Prevent details view from kicking back to leaderboard on refresh
-  - [ ] Store current view state to survive data updates
-  - [ ] Only call scene.restart() when user explicitly navigates
-- [ ] **Fix Percentage Calculation Bug** (PRIORITY 1)
+- [x] **Fix Details View Refresh Issue** (PRIORITY 1) ✅
+  - [x] Prevent details view from kicking back to leaderboard on refresh
+  - [x] Store current view state to survive data updates
+  - [x] Only call scene.restart() when user explicitly navigates
+- [ ] **Fix Percentage Calculation Bug** (PRIORITY 1) 
   - [ ] Beth shows 4.0% on leaderboard but 0.4% on details
   - [ ] Find the decimal/multiplication issue
   - [ ] Ensure consistent calculation across all views
-- [ ] **Fix Chart Data Issues**
-  - [ ] Chart using wrong/stale data (shows $9.8M vs actual $10.04M)
-  - [ ] Fix chart showing negative when player is positive
-  - [ ] Add cyan line connecting the dots
-  - [ ] Fix "since start" to show actual date/time
-  - [ ] Use participant's current_value for chart endpoint
-- [ ] **Add Missing Info to Details Page**
-  - [ ] Add game code (e.g., "S5DM") at top
-  - [ ] Add username (not "You") 
-  - [ ] Add total current value & change at bottom of holdings
-  - [ ] Remove "Detailed Portfolio Analysis" subtitle
-- [ ] **Fix Username Display**
-  - [ ] Change "You" to actual username in leaderboard
-  - [ ] Keep the cyan bold styling for current user
+- [x] **Fix Chart Data Issues** ✅
+  - [x] Chart using wrong/stale data (shows $9.8M vs actual $10.04M)
+  - [x] Fix chart showing negative when player is positive
+  - [x] Add cyan line connecting the dots
+  - [x] Fix "since start" to show actual date/time
+  - [x] Use participant's current_value for chart endpoint
+- [x] **Add Missing Info to Details Page** ✅
+  - [x] Add game code (e.g., "S5DM") at top
+  - [x] Add username (not "You") 
+  - [x] Add total current value & change at bottom of holdings
+  - [x] Remove "Detailed Portfolio Analysis" subtitle
+- [x] **Fix Username Display** ✅
+  - [x] Change "You" to actual username in leaderboard
+  - [x] Keep the cyan bold styling for current user
 - [ ] **Minimize Flicker** (if time permits)
   - [ ] Optimize data updates to reduce visual flicker
   - [ ] Only update changed DOM elements 

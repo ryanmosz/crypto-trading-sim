@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Critical UI Fixes - Test Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
+            padding: 20px;
+            margin: 0;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #00ffff;
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 30px;
+        }
+        .priority-section {
+            background: #220000;
+            border: 2px solid #ff0000;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .priority-section h2 {
+            color: #ff0000;
+            margin-top: 0;
+        }
+        .fix-section {
+            background: #111;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .fix-section h2 {
+            color: #ffff00;
+            margin-top: 0;
+        }
+        .fix-item {
+            background: #1a1a1a;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #00ffff;
+        }
+        .fix-item h3 {
+            color: #00ffff;
+            margin: 0 0 10px 0;
+        }
+        .fixed {
+            color: #00ff00;
+            font-weight: bold;
+        }
+        .pending {
+            color: #ffff00;
+            font-weight: bold;
+        }
+        .test-log {
+            background: #111;
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        button {
+            background: #00ffff;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #ffffff;
+        }
+        .issue {
+            background: #330000;
+            padding: 10px;
+            margin: 5px 0;
+            border-left: 3px solid #ff0066;
+        }
+        .solution {
+            background: #003300;
+            padding: 10px;
+            margin: 5px 0;
+            border-left: 3px solid #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Critical UI Fixes - Phase 4 Section 8</h1>
+    
+    <div class="priority-section">
+        <h2>🚨 PRIORITY 1 FIXES - COMPLETED!</h2>
+        
+        <div class="fix-item">
+            <h3 class="fixed">✅ FIXED: Details View Refresh Kick-Out</h3>
+            <div class="issue">Issue: When viewing player details, the 1-minute refresh would kick you back to leaderboard</div>
+            <div class="solution">Solution: Implemented view state persistence that survives scene restarts</div>
+            <ul>
+                <li>Added viewState tracking (leaderboard vs details + playerId)</li>
+                <li>Scene restart now passes viewState in data</li>
+                <li>showMultiplayerView checks and restores to details if needed</li>
+                <li>Back button properly resets state to leaderboard</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="fix-section">
+        <h2>✅ Details Page Improvements</h2>
+        
+        <div class="fix-item">
+            <h3 class="fixed">✅ Added Missing Information</h3>
+            <ul>
+                <li>Game code (e.g., "S5DM") now shown at top</li>
+                <li>Username displayed (e.g., "Game: S5DM - Beth")</li>
+                <li>Removed "Detailed Portfolio Analysis" subtitle</li>
+                <li>Added TOTAL row with separator line</li>
+                <li>Shows total current value and overall percentage</li>
+            </ul>
+        </div>
+        
+        <div class="fix-item">
+            <h3 class="fixed">✅ Fixed Chart Issues</h3>
+            <ul>
+                <li>Chart now uses correct participant current_value</li>
+                <li>Moved playerDetails assignment BEFORE chart creation</li>
+                <li>Fixed line drawing (draws line first, then dots)</li>
+                <li>Added actual start date/time (e.g., "Jan 22, 08:04 AM")</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="fix-section">
+        <h2>✅ Leaderboard Improvements</h2>
+        
+        <div class="fix-item">
+            <h3 class="fixed">✅ Username Display</h3>
+            <ul>
+                <li>Shows actual username instead of "You"</li>
+                <li>Current user still highlighted in cyan</li>
+                <li>Consistent naming across all views</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="fix-section">
+        <h2>⚠️ Still To Investigate</h2>
+        
+        <div class="fix-item">
+            <h3 class="pending">🔍 Percentage Calculation</h3>
+            <p>Need to verify if Beth's 4.0% vs 0.4% discrepancy is fixed</p>
+            <p>The calculation code looks correct - may have been a display issue</p>
+        </div>
+        
+        <div class="fix-item">
+            <h3 class="pending">🔍 Flicker on Updates</h3>
+            <p>The 1-minute updates still cause some flicker</p>
+            <p>Would require more complex DOM diffing to fix completely</p>
+        </div>
+    </div>
+    
+    <div class="test-log" id="testLog">=== CRITICAL UI FIXES TEST LOG ===
+Date: January 22, 2025
+Branch: phase-1-shared-state
+Commit: 491f779
+
+PRIORITY 1 FIXES:
+✅ Details view persists on refresh
+✅ View state management implemented
+
+DETAILS PAGE FIXES:
+✅ Added game code and username
+✅ Removed "Detailed Portfolio Analysis"
+✅ Added TOTAL row with value and percentage
+✅ Fixed chart data to use correct values
+✅ Fixed chart line drawing order
+✅ Added start date/time display
+
+LEADERBOARD FIXES:
+✅ Shows actual usernames (not "You")
+✅ Current user highlighted in cyan
+
+TECHNICAL IMPLEMENTATION:
+- ViewState object: { view: 'leaderboard'|'details', playerId: string|null }
+- State passed through scene.restart() data
+- Auto-refresh preserves current view
+- Chart now properly uses participant.current_value
+
+TEST INSTRUCTIONS:
+1. Go to Active Multiplayer Games
+2. Click on a player to view details
+3. Wait for 1-minute refresh
+4. Details view should persist!
+5. Check chart shows correct values
+6. Verify usernames display correctly
+
+STATUS: Ready for testing!</div>
+    
+    <button onclick="copyLog()">Copy Test Log</button>
+    
+    <script>
+        function copyLog() {
+            const log = document.getElementById('testLog').textContent;
+            navigator.clipboard.writeText(log).then(() => {
+                alert('Test log copied to clipboard!');
+            });
+        }
+    </script>
+</body>
+</html> 
