@@ -559,8 +559,8 @@ export default class DashboardScene extends Phaser.Scene {
         
         // Combined days display: "30/30 days" (days left/total days)
         const totalDays = game.duration_days || 30;
-        const daysText = daysRemaining <= 0 ? 'EXPIRED' : `${daysRemaining}/${totalDays} days`;
-        const daysDisplay = this.add.text(190, y, daysText, {
+        const daysText = daysRemaining <= 0 ? 'EXPIRED' : `${daysRemaining}/${totalDays} days remaining`;
+        const daysDisplay = this.add.text(220, y, daysText, {
             fontSize: '15px',
             color: timeColor,
             fontFamily: 'Arial Black'
@@ -603,7 +603,7 @@ export default class DashboardScene extends Phaser.Scene {
             });
         } else {
             // Current value - moved left since we combined the days display
-            const valueText = this.add.text(380, y, `$${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
+            const valueText = this.add.text(530, y, `$${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
                 fontSize: '17px',
                 color: '#ffffff',
                 fontFamily: 'Arial Black'
@@ -612,7 +612,7 @@ export default class DashboardScene extends Phaser.Scene {
             this.contentGroup.add(valueText);
             
             // Profit/Loss - moved left accordingly
-            const profitText = this.add.text(525, y, `${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
+            const profitText = this.add.text(680, y, `${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
                 fontSize: '15px',
                 color: profitColor,
                 fontFamily: 'Arial Black'
@@ -621,7 +621,7 @@ export default class DashboardScene extends Phaser.Scene {
             this.contentGroup.add(profitText);
                     
         // View button - moved left to match new spacing
-        const viewBtn = this.add.text(650, y, 'VIEW', {
+        const viewBtn = this.add.text(780, y, 'VIEW', {
             fontSize: '14px',
             color: '#00ffff',
             fontFamily: 'Arial Black'
