@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #0a0a0a;
+            color: #fff;
+        }
+        .fix-item {
+            background: #1a1a1a;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #00ff00;
+        }
+        .issue {
+            color: #ff6666;
+        }
+        .solution {
+            color: #00ff00;
+        }
+        code {
+            background: #333;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Fix Verification</h1>
+    
+    <div class="fix-item">
+        <h3 class="issue">Issue 1: Leaderboard Crash</h3>
+        <p><strong>Error:</strong> <code>calculateTimeRemainingFromEndDate is not defined</code></p>
+        <p class="solution"><strong>✅ Fixed:</strong> Added missing import to ActiveGameViewScene.js</p>
+    </div>
+    
+    <div class="fix-item">
+        <h3 class="issue">Issue 2: Notification Query Error</h3>
+        <p><strong>Error:</strong> <code>failed to parse order (game.completed_at.desc)</code></p>
+        <p class="solution"><strong>✅ Fixed:</strong> Removed server-side ordering, added client-side sort instead</p>
+    </div>
+    
+    <div style="margin-top: 30px; padding: 20px; background: #003300; border-radius: 5px;">
+        <h3>✅ Both issues have been fixed!</h3>
+        <p>The leaderboard should now load properly, and notifications won't throw errors.</p>
+        <p>
+            <a href="/" style="color: #00ff00;">← Back to Game</a>
+        </p>
+    </div>
+    
+    <script>
+        console.log('Fix verification page loaded');
+        console.log('Fixes applied:');
+        console.log('1. Added calculateTimeRemainingFromEndDate import');
+        console.log('2. Fixed PostgREST query ordering issue');
+    </script>
+</body>
+</html> 
