@@ -17,9 +17,15 @@ export default class ButtonMashScene extends Phaser.Scene {
     this.duelId     = data.duelId;
     this.userId     = data.userId;
     this.opponentId = data.opponentId;
+    this.isHost     = !!data.isHost;      // <<< new
+
     this.localCount   = 0;
     this.remoteCount  = 0;
     this.isMashing    = false;
+
+    // Guards
+    this.finishSent   = false;
+    this.matchComplete = false;
   }
 
   async create() {
@@ -38,8 +44,8 @@ export default class ButtonMashScene extends Phaser.Scene {
     this.channel.onIncrement(({ payload }) => this.handleIncrement(payload));
     this.channel.onFinish(({ payload }) => this.finishMatch(payload));
 
-    /* Only the host starts the countdown */
-    if (this.userId === this.opponentId /* temp host condition replacement */) {
+    /* Host starts the canonical countdown */
+    if (this.isHost) {
       this.time.delayedCall(500, () => this.broadcastStart());
     }
   }
@@ -54,12 +60,19 @@ export default class ButtonMashScene extends Phaser.Scene {
   }
 
   broadcastFinish() {
-    this.channel.send({ type: 'broadcast', event: 'finish', payload: {
-      duelId : this.duelId,
-      p1     : this.localCount,
-      p2     : this.remoteCount,
-      winnerId: (this.localCount >= this.remoteCount ? this.userId : this.opponentId)
-    }});
+    if (!this.isHost || this.finishSent) return;  // host-only, send once
+    this.finishSent = true;
+
+    this.channel.send({
+      type:    'broadcast',
+      event:   'finish',
+      payload: {
+        duelId   : this.duelId,
+        p1       : this.localCount,
+        p2       : this.remoteCount,
+        winnerId : (this.localCount >= this.remoteCount ? this.userId : this.opponentId)
+      }
+    });
   }
 
   /* ---------- Game flow ---------- */
@@ -119,6 +132,8 @@ export default class ButtonMashScene extends Phaser.Scene {
   }
 
   finishMatch({ winnerId, p1, p2 }) {
+    if (this.matchComplete) return;          // ignore duplicates
+    this.matchComplete = true;
     this.isMashing = false;
     this.localCount  = p1;
     this.remoteCount = p2;

@@ -17,9 +17,9 @@ CREATE POLICY "Row owner can select own duels"
   FOR SELECT
   USING (auth.uid() = winner_id OR auth.uid() = loser_id);
 
-CREATE POLICY "Service role inserts allowed"
+CREATE POLICY "Service role insert only"
   ON public.mini_game_duels
   FOR INSERT
-  WITH CHECK (true);
+  WITH CHECK (auth.role() = 'service_role');
 
 GRANT SELECT ON public.mini_game_duels TO authenticated;

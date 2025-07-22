@@ -105,21 +105,20 @@
     <h1>6-Minute Game Testing</h1>
     
     <div class="status-update">
-        <strong>✅ UPDATE (v13 - Prices Fixed!):</strong> Now fetches and stores starting_prices properly in active_games table!
+        <strong>✅ UPDATE (v14 - FINAL FIX!):</strong> Fixed prices_cache query - now fetches all rows and converts to object format!
     </div>
     
     <div class="info-box" style="background: #1a1a2e; border-color: #0066ff;">
-        <h3>🔧 Technical Fix Details (v13 - All Fixed!)</h3>
-        <p>Fixed ALL database constraints and requirements:</p>
+        <h3>🔧 Technical Fix Details (v14 - Final!)</h3>
+        <p>Fixed the prices_cache table query:</p>
         <ul>
-            <li>✅ Database constraint: <code>ends_at > started_at</code> (10 sec buffer)</li>
-            <li>✅ Allocations properly stored in database</li>
-            <li>✅ Starting prices fetched and stored (NOT NULL column)</li>
-            <li>✅ Creates participant record with $10M starting value</li>
-            <li>✅ Returns expected format with game_code</li>
-            <li>✅ Handles all multiplayer game requirements</li>
+            <li>✅ Removed <code>.single()</code> - prices_cache has multiple rows</li>
+            <li>✅ Fetch all price rows with <code>select('symbol, price')</code></li>
+            <li>✅ Convert array to object: <code>{BTC: 118208, ETH: 3641, ...}</code></li>
+            <li>✅ All database constraints satisfied</li>
+            <li>✅ Proper error handling and logging</li>
         </ul>
-        <p>6-minute games now work exactly like regular games!</p>
+        <p><strong>6-minute games are now fully functional!</strong> 🎮</p>
     </div>
 
     <div class="info-box">
