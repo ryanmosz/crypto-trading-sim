@@ -512,10 +512,29 @@ export default class ActiveGameViewScene extends Phaser.Scene {
         // Display participants
         let yPos = lineY + 30;
         const startValue = this.gameData.starting_money || 10000000;
+        const startingPrices = this.gameData.starting_prices;
+        const currentPrices = this.gameData.current_prices || startingPrices;
         
         participants.forEach((participant, index) => {
             const rank = index + 1;
-            const profit = participant.current_value - startValue;
+            
+            // Calculate actual value from allocations
+            let calculatedValue = 0;
+            const allocations = participant.allocations || {};
+            Object.entries(allocations).forEach(([crypto, amount]) => {
+                if (amount > 0) {
+                    const invested = amount * 1000000;
+                    const startPrice = startingPrices[crypto];
+                    const currentPrice = currentPrices[crypto];
+                    const coins = invested / startPrice;
+                    const currentCryptoValue = coins * currentPrice;
+                    calculatedValue += currentCryptoValue;
+                }
+            });
+            
+            // Use calculated value instead of stored value
+            const currentValue = calculatedValue || participant.current_value;
+            const profit = currentValue - startValue;
             const profitPercent = (profit / startValue) * 100;
             const profitColor = profit >= 0 ? '#00ff00' : '#ff0066';
             const isCurrentUser = participant.user_id === this.user.id;
@@ -559,7 +578,7 @@ export default class ActiveGameViewScene extends Phaser.Scene {
             }).setOrigin(0, 0.5);
             
             // Current value - centered with breathing room
-            this.add.text(550, yPos, `$${participant.current_value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
+            this.add.text(550, yPos, `$${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
                 fontSize: '18px',
                 color: '#ffffff',
                 fontFamily: 'Arial Black'

@@ -610,13 +610,35 @@ export default class DashboardScene extends Phaser.Scene {
                 // Get participant data for this user
                 const { data: participantData, error: pError } = await this.auth.supabase
                     .from('game_participants')
-                    .select('current_value')
+                    .select('current_value, allocations')
                     .eq('game_id', game.id)
                     .eq('user_id', this.user.id)
                     .single();
                     
                 if (!pError && participantData) {
-                    currentValue = participantData.current_value;
+                    // Calculate actual value from allocations
+                    if (participantData.allocations && game.starting_prices && game.current_prices) {
+                        let calculatedValue = 0;
+                        const allocations = participantData.allocations;
+                        const startingPrices = game.starting_prices;
+                        const currentPrices = game.current_prices;
+                        
+                        Object.entries(allocations).forEach(([crypto, amount]) => {
+                            if (amount > 0) {
+                                const invested = amount * 1000000;
+                                const startPrice = startingPrices[crypto];
+                                const currentPrice = currentPrices[crypto];
+                                const coins = invested / startPrice;
+                                const currentCryptoValue = coins * currentPrice;
+                                calculatedValue += currentCryptoValue;
+                            }
+                        });
+                        
+                        currentValue = calculatedValue;
+                    } else {
+                        // Fallback to stored value if we can't calculate
+                        currentValue = participantData.current_value;
+                    }
                 }
                 
                 // Get all participants to determine position
@@ -1252,7 +1274,7 @@ export default class DashboardScene extends Phaser.Scene {
         Object.keys(GAME_CONFIG.cryptos).forEach(symbol => {
             if (this[`${symbol}_priceText`] && this.currentPrices && this.currentPrices[symbol]) {
                 const displayPrice = this.currentPrices[symbol];
-                                    this[`${symbol}_priceText`].setText(`$${displayPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
+                this[`${symbol}_priceText`].setText(`$${displayPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
             }
         });
     }
@@ -1342,4 +1364,4 @@ export default class DashboardScene extends Phaser.Scene {
         this.currentPage = 0;
         this.allGames = [];
     }
-} 
+}
