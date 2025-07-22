@@ -412,8 +412,11 @@ export default class ActiveGameViewScene extends Phaser.Scene {
     }
     
     async showMultiplayerView() {
+        // Clean the game code - remove any spaces
+        const cleanGameCode = this.gameData.game_code ? this.gameData.game_code.replace(/\s/g, '') : '';
+        
         // Title at x=450, y=120 - move it up
-        const titleText = formatGameCode(this.gameData.game_code) + ' - Multiplayer Leaderboard';
+        const titleText = cleanGameCode + ' - Multiplayer Leaderboard';
         this.add.text(450, 100, titleText, {
             fontSize: '28px',
             color: '#00ffff',
@@ -510,9 +513,6 @@ export default class ActiveGameViewScene extends Phaser.Scene {
             
             // Rank with medal for top 3 - far left
             let rankDisplay = rank.toString();
-            if (rank === 1) rankDisplay = '🥇';
-            else if (rank === 2) rankDisplay = '🥈';
-            else if (rank === 3) rankDisplay = '🥉';
             
             this.add.text(100, yPos, rankDisplay, {
                 fontSize: '20px',

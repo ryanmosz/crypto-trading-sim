@@ -541,7 +541,8 @@ export default class DashboardScene extends Phaser.Scene {
         this.contentGroup.add(bg);
         
         // Show game code on the far left (always present for multiplayer games)
-        const codeText = this.add.text(95, y, `ID: ${game.game_code}`, {
+        const cleanCode = game.game_code ? game.game_code.replace(/\s/g, '') : '';
+        const codeText = this.add.text(95, y, `ID: ${cleanCode}`, {
             fontSize: '14px',
             color: '#00ffff',
             fontFamily: 'Arial Black'
@@ -1277,9 +1278,15 @@ export default class DashboardScene extends Phaser.Scene {
                     const formattedTime = formatTimeRemaining(timeRemaining);
                     const timeColor = getTimeRemainingColor(timeRemaining.totalSeconds, timerData.durationDays);
                     
-                    // Update text and color
-                    timerData.textObject.setText(formattedTime);
-                    timerData.textObject.setColor(timeColor);
+                    // Only update if text has changed
+                    if (timerData.textObject.text !== formattedTime) {
+                        timerData.textObject.setText(formattedTime);
+                    }
+                    
+                    // Only update color if it has changed
+                    if (timerData.textObject.style.color !== timeColor) {
+                        timerData.textObject.setColor(timeColor);
+                    }
                 }
             });
         }, 1000);
