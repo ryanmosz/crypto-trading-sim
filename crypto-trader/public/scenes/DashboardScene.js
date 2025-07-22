@@ -1,6 +1,7 @@
 // Import dependencies
 import { Auth } from '../auth.js';
 import { GAME_CONFIG, SCENARIOS } from '../shared/constants.js';
+import { calculateTimeRemaining, formatTimeRemaining, getTimeRemainingColor } from '../utils/countdown.js';
 
 // Dashboard Scene
 export default class DashboardScene extends Phaser.Scene {
@@ -11,6 +12,8 @@ export default class DashboardScene extends Phaser.Scene {
         this.gamesPerPage = 4;
         this.allGames = [];
         this.activeTab = 'new'; // 'new', 'active', or 'past'
+        this.countdownTimers = new Map(); // Track countdown text objects by game ID
+        this.countdownInterval = null; // Interval for updating countdowns
     }
     
     init(data) {
@@ -431,14 +434,19 @@ export default class DashboardScene extends Phaser.Scene {
             this.contentGroup.add(gamesHeader);
             yPos += 35;
             
-            allMultiplayerGames.forEach(game => {
+            // Use Promise.all to handle async createActiveGameDisplay calls
+            await Promise.all(allMultiplayerGames.map(async (game, index) => {
                 // Check if user has already joined this game
                 const hasJoined = userParticipations[game.id] || false;
                 const isCreator = game.user_id === this.user.id;
                 const isJoinable = !hasJoined && !isCreator;
-                this.createActiveGameDisplay(game, yPos, isJoinable, true); // all are multiplayer
-                yPos += 70;
-            });
+                // Calculate y position based on index
+                const gameYPos = yPos + (index * 70);
+                await this.createActiveGameDisplay(game, gameYPos, isJoinable, true); // all are multiplayer
+            }));
+            
+            // Start countdown timer updates
+            this.startCountdownUpdates();
             
         } catch (error) {
             console.error('Error loading active games:', error);
@@ -522,32 +530,15 @@ export default class DashboardScene extends Phaser.Scene {
         }
     }
     
-    createActiveGameDisplay(game, y, isJoinable = false, isMultiplayer = false) {
-        // Calculate days remaining
-        const now = new Date();
-        const endsAt = new Date(game.ends_at);
-        const daysRemaining = Math.ceil((endsAt - now) / (1000 * 60 * 60 * 24));
-        
-        // Determine urgency colors
-        const isExpiringSoon = daysRemaining <= 7;
-        const isExpiring = daysRemaining <= 3;
-        const borderColor = isJoinable ? 0x00ff00 : (isExpiring ? 0xff1493 : (isExpiringSoon ? 0xffff00 : 0x00ffff));
-        const timeColor = isExpiring ? '#ff1493' : (isExpiringSoon ? '#ffff00' : '#00ffff');
-        
-        // Background with urgency-based border
+    async createActiveGameDisplay(game, y, isJoinable = false, isMultiplayer = false) {
+        // Background with border
+        const borderColor = isJoinable ? 0x00ff00 : 0x00ffff;
         const bg = this.add.rectangle(450, y, 720, 50, 0x111111)
-            .setStrokeStyle(isJoinable ? 2 : (isExpiring ? 2 : 1), borderColor)
+            .setStrokeStyle(isJoinable ? 2 : 1, borderColor)
             .setInteractive({ useHandCursor: true });
         
         // Add to content group
         this.contentGroup.add(bg);
-        
-        // Calculate performance
-        const startValue = game.starting_money || 10000000;
-        const currentValue = game.current_value || startValue;
-        const profit = currentValue - startValue;
-        const profitPercent = (profit / startValue) * 100;
-        const profitColor = profit >= 0 ? '#00ff00' : '#ff0066';
         
         // Show game code on the far left (always present for multiplayer games)
         const codeText = this.add.text(95, y, `ID: ${game.game_code}`, {
@@ -557,28 +548,35 @@ export default class DashboardScene extends Phaser.Scene {
         }).setOrigin(0, 0.5);
         this.contentGroup.add(codeText);
         
-        // Combined days display: "30/30 days" (days left/total days)
-        const totalDays = game.duration_days || 30;
-        const daysText = daysRemaining <= 0 ? 'EXPIRED' : `${daysRemaining}/${totalDays} days remaining`;
-        const daysDisplay = this.add.text(220, y, daysText, {
+        // Create countdown timer display
+        const timeRemaining = calculateTimeRemaining(game.created_at, game.duration_days || 30);
+        const timeColor = getTimeRemainingColor(timeRemaining.totalSeconds, game.duration_days || 30);
+        const countdownText = this.add.text(190, y, formatTimeRemaining(timeRemaining), {
             fontSize: '15px',
             color: timeColor,
             fontFamily: 'Arial Black'
         }).setOrigin(0, 0.5);
         
-        this.contentGroup.add(daysDisplay);
+        this.contentGroup.add(countdownText);
+        
+        // Store countdown text object for updates
+        this.countdownTimers.set(game.id, {
+            textObject: countdownText,
+            createdAt: game.created_at,
+            durationDays: game.duration_days || 30
+        });
         
         if (isJoinable) {
             // For joinable games, show participant count
             const participantText = `${game.participant_count || 1} player${(game.participant_count || 1) > 1 ? 's' : ''}`;
-            const participantDisplay = this.add.text(600, y, participantText, {
+            const participantDisplay = this.add.text(480, y, participantText, {
                 fontSize: '16px',
                 color: '#ffffff'
             }).setOrigin(0.5);
             this.contentGroup.add(participantDisplay);
             
             // Show JOIN button
-            const joinBtn = this.add.text(750, y, 'JOIN', {
+            const joinBtn = this.add.text(650, y, 'JOIN', {
                 fontSize: '16px',
                 color: '#00ff00',
                 fontFamily: 'Arial Black'
@@ -602,8 +600,55 @@ export default class DashboardScene extends Phaser.Scene {
                 });
             });
         } else {
-            // Current value - moved left since we combined the days display
-            const valueText = this.add.text(530, y, `$${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
+            // Fetch participant data to get current value and position
+            let currentValue = game.starting_money || 10000000;
+            let position = 1;
+            let totalParticipants = 1;
+            
+            try {
+                // Get participant data for this user
+                const { data: participantData, error: pError } = await this.auth.supabase
+                    .from('game_participants')
+                    .select('current_value')
+                    .eq('game_id', game.id)
+                    .eq('user_id', this.user.id)
+                    .single();
+                    
+                if (!pError && participantData) {
+                    currentValue = participantData.current_value;
+                }
+                
+                // Get all participants to determine position
+                const { data: allParticipants, error: allError } = await this.auth.supabase
+                    .from('game_participants')
+                    .select('current_value')
+                    .eq('game_id', game.id)
+                    .order('current_value', { ascending: false });
+                    
+                if (!allError && allParticipants) {
+                    totalParticipants = allParticipants.length;
+                    position = allParticipants.findIndex(p => p.current_value === currentValue) + 1;
+                }
+            } catch (err) {
+                console.error('Error fetching participant data:', err);
+            }
+            
+            // Position indicator
+            const positionText = this.add.text(300, y, `Pos. ${position}/${totalParticipants}`, {
+                fontSize: '14px',
+                color: position <= 3 ? '#ffd700' : '#888888',
+                fontFamily: 'Arial Black'
+            }).setOrigin(0, 0.5);
+            this.contentGroup.add(positionText);
+            
+            // Calculate performance
+            const startValue = game.starting_money || 10000000;
+            const profit = currentValue - startValue;
+            const profitPercent = (profit / startValue) * 100;
+            const profitColor = profit >= 0 ? '#00ff00' : '#ff0066';
+            
+            // Current value
+            const valueText = this.add.text(430, y, `$${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
                 fontSize: '17px',
                 color: '#ffffff',
                 fontFamily: 'Arial Black'
@@ -611,8 +656,8 @@ export default class DashboardScene extends Phaser.Scene {
             
             this.contentGroup.add(valueText);
             
-            // Profit/Loss - moved left accordingly
-            const profitText = this.add.text(680, y, `${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
+            // Profit/Loss
+            const profitText = this.add.text(575, y, `${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
                 fontSize: '15px',
                 color: profitColor,
                 fontFamily: 'Arial Black'
@@ -620,14 +665,14 @@ export default class DashboardScene extends Phaser.Scene {
             
             this.contentGroup.add(profitText);
                     
-        // View button - moved left to match new spacing
-        const viewBtn = this.add.text(780, y, 'VIEW', {
-            fontSize: '14px',
-            color: '#00ffff',
-            fontFamily: 'Arial Black'
-        }).setOrigin(0.5);
-        
-        this.contentGroup.add(viewBtn);
+            // View button
+            const viewBtn = this.add.text(650, y, 'VIEW', {
+                fontSize: '14px',
+                color: '#00ffff',
+                fontFamily: 'Arial Black'
+            }).setOrigin(0.5);
+            
+            this.contentGroup.add(viewBtn);
             
             // Hover effects
             bg.on('pointerover', () => {
@@ -1211,7 +1256,39 @@ export default class DashboardScene extends Phaser.Scene {
         });
     }
     
+    startCountdownUpdates() {
+        // Clear any existing interval
+        if (this.countdownInterval) {
+            clearInterval(this.countdownInterval);
+        }
+        
+        // Update countdowns every second
+        this.countdownInterval = setInterval(() => {
+            this.countdownTimers.forEach((timerData, gameId) => {
+                const timeRemaining = calculateTimeRemaining(timerData.createdAt, timerData.durationDays);
+                const formattedTime = formatTimeRemaining(timeRemaining);
+                const timeColor = getTimeRemainingColor(timeRemaining.totalSeconds, timerData.durationDays);
+                
+                // Update text and color
+                timerData.textObject.setText(formattedTime);
+                timerData.textObject.setColor(timeColor);
+            });
+        }, 1000);
+    }
+    
+    stopCountdownUpdates() {
+        if (this.countdownInterval) {
+            clearInterval(this.countdownInterval);
+            this.countdownInterval = null;
+        }
+        // Clear the timers map
+        this.countdownTimers.clear();
+    }
+    
     shutdown() {
+        // Clean up countdown timers
+        this.stopCountdownUpdates();
+        
         // Clean up when leaving dashboard
         // Clear all groups with error handling
         if (this.tabGroup && this.tabGroup.children && this.tabGroup.children.size !== undefined) {

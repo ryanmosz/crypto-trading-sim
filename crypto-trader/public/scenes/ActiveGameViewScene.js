@@ -1,6 +1,7 @@
 // Import dependencies
 import { Auth } from '../auth.js';
 import { getGameParticipants } from '../services/nowGameApi.js';
+import { calculateTimeRemaining, formatTimeRemaining, getTimeRemainingColor } from '../utils/countdown.js';
 
 // Active Game View Scene
 export default class ActiveGameViewScene extends Phaser.Scene {
@@ -410,45 +411,72 @@ export default class ActiveGameViewScene extends Phaser.Scene {
     }
     
     async showMultiplayerView() {
-        // Title
-        this.add.text(450, 40, 'MULTIPLAYER GAME', {
-            fontSize: '36px',
-            fontFamily: 'Arial Black',
-            color: '#00ff00'
+        // Title at x=450, y=150
+        const formatGameCode = (code) => {
+            if (!code) return 'Game Code';
+            return `${code.slice(0, 2)} ${code.slice(2)}`;
+        };
+        const titleText = formatGameCode(this.gameData.game_code) + ' - Multiplayer Leaderboard';
+        this.add.text(450, 150, titleText, {
+            fontSize: '28px',
+            color: '#00ffff',
+            fontFamily: 'Arial Black'
         }).setOrigin(0.5);
         
-        // Game code
-        if (this.gameData.game_code) {
-            const codeText = this.gameData.game_code.slice(0, 2) + ' ' + this.gameData.game_code.slice(2);
-            this.add.text(450, 85, `Code: ${codeText}`, {
-                fontSize: '28px',
-                fontFamily: 'Arial Black',
-                color: '#00ffff'
-            }).setOrigin(0.5);
-        }
-        
-        // Game info
-        const daysRemaining = Math.ceil((new Date(this.gameData.ends_at) - new Date()) / (1000 * 60 * 60 * 24));
-        const timeColor = daysRemaining <= 7 ? '#ff1493' : 
-                         daysRemaining <= 14 ? '#ffff00' : '#00ff00';
-        
-        this.add.text(450, 120, `${this.gameData.duration_days}-Day Challenge | ${daysRemaining} days remaining`, {
+        // Add countdown timer
+        const timeRemaining = calculateTimeRemaining(this.gameData.created_at, this.gameData.duration_days || 30);
+        const timeColor = getTimeRemainingColor(timeRemaining.totalSeconds, this.gameData.duration_days || 30);
+        const countdownText = this.add.text(450, 180, formatTimeRemaining(timeRemaining), {
             fontSize: '20px',
-            color: timeColor
+            color: timeColor,
+            fontFamily: 'Arial Black'
         }).setOrigin(0.5);
         
-        // Loading indicator
-        const loadingText = this.add.text(450, 300, 'Loading leaderboard...', {
-            fontSize: '20px',
-            color: '#666666'
-        }).setOrigin(0.5);
+        // Update countdown every second
+        this.countdownTimer = this.time.addEvent({
+            delay: 1000,
+            callback: () => {
+                const newTimeRemaining = calculateTimeRemaining(this.gameData.created_at, this.gameData.duration_days || 30);
+                countdownText.setText(formatTimeRemaining(newTimeRemaining));
+                countdownText.setColor(getTimeRemainingColor(newTimeRemaining.totalSeconds, this.gameData.duration_days || 30));
+            },
+            loop: true
+        });
+        
+        // Headers (removed Alloc column)
+        this.add.text(100, 220, 'Rank', {
+            fontSize: '16px',
+            color: '#999999',
+            fontFamily: 'Arial Black'
+        }).setOrigin(0, 0.5);
+        
+        this.add.text(200, 220, 'Player', {
+            fontSize: '16px',
+            color: '#999999',
+            fontFamily: 'Arial Black'
+        }).setOrigin(0, 0.5);
+        
+        this.add.text(500, 220, 'Value', {
+            fontSize: '16px',
+            color: '#999999',
+            fontFamily: 'Arial Black'
+        }).setOrigin(0, 0.5);
+        
+        this.add.text(700, 220, 'Profit/Loss', {
+            fontSize: '16px',
+            color: '#999999',
+            fontFamily: 'Arial Black'
+        }).setOrigin(0, 0.5);
+        
+        // Draw header line
+        this.add.rectangle(450, 240, 750, 2, 0x333333);
         
         try {
             // Get all participants
             const participants = await getGameParticipants(this.gameData.id);
             
             // Hide loading text
-            loadingText.destroy();
+            // loadingText.destroy(); // This line was removed as per the new_code
             
             // Sort by current value (highest first)
             participants.sort((a, b) => b.current_value - a.current_value);
@@ -485,45 +513,53 @@ export default class ActiveGameViewScene extends Phaser.Scene {
                 fontFamily: 'Arial Black'
             }).setOrigin(0, 0.5);
             
-            this.add.text(800, 210, 'Alloc', {
-                fontSize: '16px',
-                color: '#999999',
-                fontFamily: 'Arial Black'
-            }).setOrigin(1, 0.5);
-            
             // Draw header line
             this.add.rectangle(450, 230, 750, 2, 0x333333);
             
             // Display participants
-            let yPos = 250;
+            let yPos = 260;
             participants.forEach((participant, index) => {
                 const rank = index + 1;
-                const value = participant.current_value || 10000000;
-                const startValue = participant.starting_value || 10000000;
-                const profit = value - startValue;
-                const profitPercent = (profit / startValue * 100).toFixed(2);
                 const isCurrentUser = participant.user_id === this.user.id;
                 
-                // Highlight current user
-                if (isCurrentUser) {
-                    this.add.rectangle(450, yPos, 750, 40, 0x111111);
-                    this.add.rectangle(450, yPos, 750, 40)
-                        .setStrokeStyle(2, 0x00ffff);
-                }
+                // Create clickable background for the row
+                const rowBg = this.add.rectangle(450, yPos, 750, 40, 0x111111, isCurrentUser ? 0.3 : 0.1)
+                    .setInteractive({ useHandCursor: true })
+                    .setStrokeStyle(isCurrentUser ? 2 : 0, 0x00ffff);
+                
+                // Hover effects
+                rowBg.on('pointerover', () => {
+                    rowBg.setFillStyle(0x222222, 0.5);
+                });
+                rowBg.on('pointerout', () => {
+                    rowBg.setFillStyle(0x111111, isCurrentUser ? 0.3 : 0.1);
+                });
+                rowBg.on('pointerdown', () => {
+                    // Navigate to individual player details view
+                    this.showPlayerDetails(participant);
+                });
                 
                 // Rank with medal for top 3
                 let rankDisplay = rank.toString();
-                if (rank === 1) rankDisplay = '🥇';
-                else if (rank === 2) rankDisplay = '🥈';
-                else if (rank === 3) rankDisplay = '🥉';
+                let rankColor = '#ffffff';
+                if (rank === 1) {
+                    rankDisplay = '🥇';
+                    rankColor = '#ffd700';
+                } else if (rank === 2) {
+                    rankDisplay = '🥈';
+                    rankColor = '#c0c0c0';
+                } else if (rank === 3) {
+                    rankDisplay = '🥉';
+                    rankColor = '#cd7f32';
+                }
                 
                 this.add.text(100, yPos, rankDisplay, {
-                    fontSize: rank <= 3 ? '24px' : '18px',
-                    color: '#ffffff',
+                    fontSize: rank <= 3 ? '24px' : '20px',
+                    color: rankColor,
                     fontFamily: 'Arial Black'
                 }).setOrigin(0, 0.5);
                 
-                // Player name (email or "You")
+                // Player name (email or username)
                 const playerName = isCurrentUser ? 'You' : 
                     (participant.username || 'Player ' + (index + 1));
                     
@@ -534,32 +570,27 @@ export default class ActiveGameViewScene extends Phaser.Scene {
                 }).setOrigin(0, 0.5);
                 
                 // Current value
-                this.add.text(500, yPos, `$${(value / 1000000).toFixed(2)}M`, {
+                const currentValue = participant.current_value || this.gameData.starting_money;
+                this.add.text(500, yPos, `$${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
                     fontSize: '18px',
                     color: '#ffffff',
                     fontFamily: 'Arial Black'
                 }).setOrigin(0, 0.5);
                 
+                // Calculate profit/loss
+                const startValue = this.gameData.starting_money || 10000000;
+                const profit = currentValue - startValue;
+                const profitPercent = ((profit / startValue) * 100).toFixed(1);
+                
                 // Profit/Loss
                 const profitColor = profit >= 0 ? '#00ff00' : '#ff0066';
                 const profitSign = profit >= 0 ? '+' : '';
                 
-                this.add.text(650, yPos, `${profitSign}${profitPercent}%`, {
+                this.add.text(700, yPos, `${profitSign}${profitPercent}%`, {
                     fontSize: '18px',
                     color: profitColor,
                     fontFamily: 'Arial Black'
                 }).setOrigin(0, 0.5);
-                
-                // Allocations (compact)
-                const allocText = Object.entries(participant.allocations || {})
-                    .filter(([_, value]) => value > 0)
-                    .map(([crypto, value]) => `${crypto}:${value}`)
-                    .join(' ');
-                    
-                this.add.text(800, yPos, allocText, {
-                    fontSize: '14px',
-                    color: '#666666'
-                }).setOrigin(1, 0.5);
                 
                 yPos += 45;
             });
@@ -587,8 +618,8 @@ export default class ActiveGameViewScene extends Phaser.Scene {
             
         } catch (error) {
             console.error('Error loading participants:', error);
-            loadingText.setText('Error loading leaderboard');
-            loadingText.setColor('#ff0000');
+            // loadingText.setText('Error loading leaderboard'); // This line was removed as per the new_code
+            // loadingText.setColor('#ff0000'); // This line was removed as per the new_code
         }
         
         // Back button
@@ -616,19 +647,136 @@ export default class ActiveGameViewScene extends Phaser.Scene {
             });
     }
     
-    showPortfolioDetail(participantData) {
-        // Clear the scene
+    async showPlayerDetails(participant) {
+        // Helper to format game code
+        const formatGameCode = (code) => {
+            if (!code) return 'Game Code';
+            return `${code.slice(0, 2)} ${code.slice(2)}`;
+        };
+        
+        // Clear current display
         this.children.removeAll();
         
-        // Show detailed portfolio view for multiplayer participant
-        this.add.text(450, 50, 'MY PORTFOLIO', {
+        // Black background
+        this.cameras.main.setBackgroundColor('#000000');
+        
+        // Back button
+        const backButton = this.add.text(50, 50, '← Back to Leaderboard', {
+            fontSize: '18px',
+            color: '#00ffff',
+            fontFamily: 'Arial Black'
+        }).setOrigin(0, 0.5)
+        .setInteractive({ useHandCursor: true })
+        .on('pointerover', () => backButton.setColor('#ffffff'))
+        .on('pointerout', () => backButton.setColor('#00ffff'))
+        .on('pointerdown', () => {
+            // Restart scene to go back to leaderboard
+            this.scene.restart();
+        });
+        
+        // Player name
+        const isCurrentUser = participant.user_id === this.user.id;
+        const playerName = isCurrentUser ? 'Your Portfolio' : 
+            `${participant.username || 'Player'}'s Portfolio`;
+            
+        this.add.text(450, 120, playerName, {
             fontSize: '32px',
             color: '#00ffff',
             fontFamily: 'Arial Black'
         }).setOrigin(0.5);
         
-        // Add more details about the participant's portfolio
-        // ...
+        // Game code
+        const codeText = formatGameCode(this.gameData.game_code);
+        this.add.text(450, 160, `Game: ${codeText}`, {
+            fontSize: '20px',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
+        // Performance summary
+        const currentValue = participant.current_value || this.gameData.starting_money;
+        const startValue = this.gameData.starting_money || 10000000;
+        const profit = currentValue - startValue;
+        const profitPercent = ((profit / startValue) * 100).toFixed(2);
+        const profitColor = profit >= 0 ? '#00ff00' : '#ff0066';
+        
+        // Current value
+        this.add.text(450, 220, 'Current Value', {
+            fontSize: '16px',
+            color: '#999999'
+        }).setOrigin(0.5);
+        
+        this.add.text(450, 250, `$${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
+            fontSize: '36px',
+            color: '#ffffff',
+            fontFamily: 'Arial Black'
+        }).setOrigin(0.5);
+        
+        // Profit/Loss
+        this.add.text(450, 290, `${profit >= 0 ? 'Profit' : 'Loss'}: ${profit >= 0 ? '+' : ''}$${Math.abs(profit).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${profit >= 0 ? '+' : ''}${profitPercent}%)`, {
+            fontSize: '20px',
+            color: profitColor,
+            fontFamily: 'Arial Black'
+        }).setOrigin(0.5);
+        
+        // Portfolio breakdown
+        this.add.text(450, 340, 'PORTFOLIO ALLOCATION', {
+            fontSize: '20px',
+            color: '#ffff00',
+            fontFamily: 'Arial Black'
+        }).setOrigin(0.5);
+        
+        // Draw allocation breakdown
+        const allocations = participant.allocations || {};
+        let yPos = 380;
+        
+        Object.entries(allocations).forEach(([crypto, allocation]) => {
+            if (allocation > 0) {
+                // Crypto name
+                this.add.text(250, yPos, crypto, {
+                    fontSize: '20px',
+                    color: '#00ffff',
+                    fontFamily: 'Arial Black'
+                }).setOrigin(0, 0.5);
+                
+                // Allocation percentage
+                this.add.text(350, yPos, `${allocation}%`, {
+                    fontSize: '20px',
+                    color: '#ffffff'
+                }).setOrigin(1, 0.5);
+                
+                // Calculate value for this crypto
+                const cryptoValue = (currentValue * allocation) / 100;
+                this.add.text(550, yPos, `$${cryptoValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
+                    fontSize: '20px',
+                    color: '#00ff00'
+                }).setOrigin(1, 0.5);
+                
+                yPos += 35;
+            }
+        });
+        
+        // Show rank
+        const { data: allParticipants } = await this.auth.supabase
+            .from('game_participants')
+            .select('user_id, current_value')
+            .eq('game_id', this.gameData.id)
+            .order('current_value', { ascending: false });
+            
+        if (allParticipants) {
+            const rank = allParticipants.findIndex(p => p.user_id === participant.user_id) + 1;
+            this.add.text(450, yPos + 40, `Rank: ${rank} of ${allParticipants.length}`, {
+                fontSize: '20px',
+                color: rank <= 3 ? '#ffd700' : '#999999',
+                fontFamily: 'Arial Black'
+            }).setOrigin(0.5);
+        }
+    }
+    
+    shutdown() {
+        // Clean up countdown timer
+        if (this.countdownTimer) {
+            this.countdownTimer.destroy();
+        }
     }
     
     createPerformanceChart(startY, detailsViewElements) {

@@ -100,3 +100,27 @@ No schema touch is required if we skip persistence.
 1. Leaderboard of fastest fingers (total CPM).
 2. Variant with alternating keys (A-S-A-S…) to prevent key-repeat spam.
 3. Cosmetic "laser race" visual instead of numbers.
+
+### 8. Complexity vs Existing Project
+
+If you were able to build the core (historical + Now-mode) multiplayer in roughly **4–5 days**, this mini-game is _very small_ in comparison.
+
+* **Estimated hands-on time:** 4 – 6 hours total
+  * 2 h – Phaser scene & UI
+  * 1 h – Supabase Realtime channel wiring
+  * 1 h – Invite/accept modal + dashboard hook-up
+  * 0.5 h – Polishing & bug-bash
+  * 0.5 h – (Optional) persisting duel results
+
+* **Why it’s lightweight**
+  1. **No schema coupling** – all state can live in a transient realtime channel.
+  2. **No price logic** – avoids the heavy crypto logic & cron workflow.
+  3. **Isolated scene** – can be dropped into `scenes/ButtonMashScene.js` without touching existing scenes.
+  4. **Reusable presence data** – you already query "players online" for dashboard; reuse that.
+
+* **Prerequisites / Gotchas**
+  - You need a basic Supabase Realtime channel helper (`realtime.js`) if one doesn’t exist.
+  - Both clients must be on the same Origin for Realtime auth to work.
+  - Remember to throttle key-events (<20 msg/s) to avoid hitting Realtime limits.
+
+Given the above, adding **Button-Mash Duel** is a *nice-to-have* polish feature that should fit comfortably into a single evening after core functionality is stable.
