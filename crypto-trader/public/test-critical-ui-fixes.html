@@ -155,13 +155,23 @@
     </div>
     
     <div class="fix-section">
-        <h2>⚠️ Still To Investigate</h2>
+        <h2>✅ NEW FIXES - 10x Calculation Bug</h2>
         
         <div class="fix-item">
-            <h3 class="pending">🔍 Percentage Calculation</h3>
-            <p>Need to verify if Beth's 4.0% vs 0.4% discrepancy is fixed</p>
-            <p>The calculation code looks correct - may have been a display issue</p>
+            <h3 class="fixed">✅ FIXED: Percentage Calculation (10x Bug)</h3>
+            <div class="issue">Issue: Beth showing 7% gain instead of 0.7% - values off by factor of 10</div>
+            <div class="solution">Solution: Calculate total from individual crypto holdings instead of using stored value</div>
+            <ul>
+                <li>Now sums up individual crypto values for accurate total</li>
+                <li>Debug logging added to compare calculated vs stored values</li>
+                <li>Chart now uses calculated value to prevent extreme scaling</li>
+                <li>Fixed total row font size to match other rows (16px)</li>
+            </ul>
         </div>
+    </div>
+    
+    <div class="fix-section">
+        <h2>⚠️ Still To Investigate</h2>
         
         <div class="fix-item">
             <h3 class="pending">🔍 Flicker on Updates</h3>
@@ -173,7 +183,7 @@
     <div class="test-log" id="testLog">=== CRITICAL UI FIXES TEST LOG ===
 Date: January 22, 2025
 Branch: phase-1-shared-state
-Commit: 491f779
+Commit: 1738d94
 
 PRIORITY 1 FIXES:
 ✅ Details view persists on refresh
@@ -191,19 +201,30 @@ LEADERBOARD FIXES:
 ✅ Shows actual usernames (not "You")
 ✅ Current user highlighted in cyan
 
+NEW FIXES - 10x CALCULATION BUG:
+✅ Fixed Beth showing 7% instead of 0.7%
+✅ Total now calculated from individual holdings
+✅ Chart uses calculated value (no more extreme scaling)
+✅ Total row font size matches other rows
+
+DEBUG INFO:
+- Check console for calculated vs stored value comparison
+- participant.current_value may be 10x actual value in DB
+
 TECHNICAL IMPLEMENTATION:
 - ViewState object: { view: 'leaderboard'|'details', playerId: string|null }
 - State passed through scene.restart() data
 - Auto-refresh preserves current view
-- Chart now properly uses participant.current_value
+- calculatedTotal sums individual crypto values
+- Chart uses playerDetails.calculatedValue
 
 TEST INSTRUCTIONS:
 1. Go to Active Multiplayer Games
 2. Click on a player to view details
-3. Wait for 1-minute refresh
-4. Details view should persist!
-5. Check chart shows correct values
-6. Verify usernames display correctly
+3. Check console for debug output
+4. Verify percentages match actual gains
+5. Confirm chart looks reasonable (not extreme)
+6. Wait for 1-minute refresh - view persists!
 
 STATUS: Ready for testing!</div>
     
