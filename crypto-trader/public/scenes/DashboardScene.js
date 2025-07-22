@@ -551,8 +551,8 @@ export default class DashboardScene extends Phaser.Scene {
         // Create countdown timer display
         const timeRemaining = calculateTimeRemaining(game.created_at, game.duration_days || 30);
         const timeColor = getTimeRemainingColor(timeRemaining.totalSeconds, game.duration_days || 30);
-        const countdownText = this.add.text(190, y, formatTimeRemaining(timeRemaining), {
-            fontSize: '15px',
+        const countdownText = this.add.text(170, y, formatTimeRemaining(timeRemaining), {
+            fontSize: '13px',
             color: timeColor,
             fontFamily: 'Arial Black'
         }).setOrigin(0, 0.5);
@@ -633,8 +633,8 @@ export default class DashboardScene extends Phaser.Scene {
                 console.error('Error fetching participant data:', err);
             }
             
-            // Position indicator
-            const positionText = this.add.text(300, y, `Pos. ${position}/${totalParticipants}`, {
+            // Position indicator - adjusted spacing
+            const positionText = this.add.text(280, y, `${position}/${totalParticipants}`, {
                 fontSize: '14px',
                 color: position <= 3 ? '#ffd700' : '#888888',
                 fontFamily: 'Arial Black'
@@ -647,18 +647,18 @@ export default class DashboardScene extends Phaser.Scene {
             const profitPercent = (profit / startValue) * 100;
             const profitColor = profit >= 0 ? '#00ff00' : '#ff0066';
             
-            // Current value
-            const valueText = this.add.text(430, y, `$${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
-                fontSize: '17px',
+            // Current value - adjusted position
+            const valueText = this.add.text(450, y, `$${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
+                fontSize: '16px',
                 color: '#ffffff',
                 fontFamily: 'Arial Black'
             }).setOrigin(0.5);
             
             this.contentGroup.add(valueText);
             
-            // Profit/Loss
-            const profitText = this.add.text(575, y, `${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
-                fontSize: '15px',
+            // Profit/Loss - adjusted position
+            const profitText = this.add.text(580, y, `${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
+                fontSize: '14px',
                 color: profitColor,
                 fontFamily: 'Arial Black'
             }).setOrigin(0.5);
@@ -666,7 +666,7 @@ export default class DashboardScene extends Phaser.Scene {
             this.contentGroup.add(profitText);
                     
             // View button
-            const viewBtn = this.add.text(650, y, 'VIEW', {
+            const viewBtn = this.add.text(680, y, 'VIEW', {
                 fontSize: '14px',
                 color: '#00ffff',
                 fontFamily: 'Arial Black'
@@ -1264,14 +1264,23 @@ export default class DashboardScene extends Phaser.Scene {
         
         // Update countdowns every second
         this.countdownInterval = setInterval(() => {
+            // Check if scene is still active
+            if (!this.scene || !this.scene.isActive()) {
+                this.stopCountdownUpdates();
+                return;
+            }
+            
             this.countdownTimers.forEach((timerData, gameId) => {
-                const timeRemaining = calculateTimeRemaining(timerData.createdAt, timerData.durationDays);
-                const formattedTime = formatTimeRemaining(timeRemaining);
-                const timeColor = getTimeRemainingColor(timeRemaining.totalSeconds, timerData.durationDays);
-                
-                // Update text and color
-                timerData.textObject.setText(formattedTime);
-                timerData.textObject.setColor(timeColor);
+                // Check if text object still exists and hasn't been destroyed
+                if (timerData.textObject && timerData.textObject.scene) {
+                    const timeRemaining = calculateTimeRemaining(timerData.createdAt, timerData.durationDays);
+                    const formattedTime = formatTimeRemaining(timeRemaining);
+                    const timeColor = getTimeRemainingColor(timeRemaining.totalSeconds, timerData.durationDays);
+                    
+                    // Update text and color
+                    timerData.textObject.setText(formattedTime);
+                    timerData.textObject.setColor(timeColor);
+                }
             });
         }, 1000);
     }

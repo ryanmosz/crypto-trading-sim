@@ -11,11 +11,7 @@ export function formatGameCode(code) {
     // Remove any existing spaces and convert to uppercase
     const cleaned = code.replace(/\s/g, '').toUpperCase();
     
-    // Add space in the middle for 4-char codes
-    if (cleaned.length === 4) {
-        return cleaned.slice(0, 2) + ' ' + cleaned.slice(2);
-    }
-    
+    // Return without spaces
     return cleaned;
 }
 
