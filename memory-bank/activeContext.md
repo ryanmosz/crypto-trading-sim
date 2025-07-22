@@ -2,6 +2,14 @@
 
 ## Current Work Focus
 
+### Cron Job Configured! (Just Set Up)
+- Successfully set up pg_cron via MCP tools
+- Job runs every minute (* * * * *)
+- Calls fetch-prices Edge Function
+- Prices updating automatically every minute
+- Game completion checking active
+- Job ID: 8, verified working at 10:18, 10:19, 10:20 UTC
+
 ### Win/Loss Notifications (Just Added!)
 - Created `GameNotifications` system that shows visual notifications when games complete
 - Players see trophy/medal icons based on final position (1st, 2nd, 3rd, etc)
@@ -35,6 +43,7 @@ We've successfully implemented and tested all core multiplayer features:
 3. **Edge Function v15**: Fixed response format
 4. **Database Triggers**: Auto-update participant count
 5. **Game Completion**: Automatic completion and history saving
+6. **Cron Job**: Configured to run every minute for price updates
 
 ## Next Steps
 
@@ -42,6 +51,7 @@ We've successfully implemented and tested all core multiplayer features:
 1. Test the notification system with actual 6-minute games
 2. Verify notifications appear correctly for all positions
 3. Test with multiple completed games
+4. Monitor cron job execution for stability
 
 ### Future Enhancements
 1. Add sound effects for win/loss
@@ -62,4 +72,5 @@ We've successfully implemented and tested all core multiplayer features:
 - Using localStorage to track shown notifications
 - Only querying games from last hour for performance
 - Notifications integrated into DashboardScene
-- Game completion redirects to dashboard automatically 
+- Game completion redirects to dashboard automatically
+- Cron job running every minute for real-time updates 
