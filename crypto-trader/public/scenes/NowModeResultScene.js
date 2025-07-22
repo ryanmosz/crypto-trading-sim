@@ -176,7 +176,7 @@ export default class NowModeResultScene extends Phaser.Scene {
                         current_prices: this.startingPrices,
                         current_value: GAME_CONFIG.startingMoney,
                         last_updated: new Date().toISOString(),
-                        is_multiplayer: false,
+                        is_multiplayer: this.isMultiplayer,
                         participant_count: 1
                     })
                     .select()
