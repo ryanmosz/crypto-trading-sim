@@ -151,6 +151,27 @@
         // Store auth in window for easy access
         window.auth = auth;
         
+        // Create a separate anonymous Supabase client for testing
+        const anonSupabase = window.supabase.createClient(
+            window.SUPABASE_URL,
+            window.SUPABASE_ANON_KEY,
+            {
+                auth: {
+                    persistSession: false,
+                    autoRefreshToken: false
+                }
+            }
+        );
+        
+        // Helper to get authenticated Supabase client
+        function getAuthSupabase() {
+            if (!auth || !auth.supabase) {
+                log('Auth module or supabase client not available', 'error');
+                throw new Error('Authentication not properly initialized');
+            }
+            return auth.supabase;
+        }
+        
         // Initialize log
         const logEntries = [];
         
@@ -233,12 +254,11 @@
             log('Test 1: Anonymous access - Starting', 'info');
             
             try {
-                // Sign out first to ensure anonymous
-                await auth.signOut();
-                log('Signed out for anonymous test', 'debug');
+                // Use anonymous client - no need to sign out
+                log('Using anonymous Supabase client', 'debug');
                 
                 // Try to query multiplayer games
-                const { data, error } = await auth.supabase
+                const { data, error } = await anonSupabase
                     .from('active_games')
                     .select('id, game_code, user_id, participant_count, duration_days, created_at')
                     .eq('is_multiplayer', true)
@@ -277,7 +297,7 @@
                 log(`Running authenticated query as ${user.email}`, 'debug');
                 
                 // Query all games (should see own + multiplayer)
-                const { data, error } = await auth.supabase
+                const { data, error } = await getAuthSupabase()
                     .from('active_games')
                     .select('id, game_code, user_id, is_multiplayer, participant_count')
                     .eq('is_complete', false);
@@ -314,7 +334,7 @@
             try {
                 // Get any multiplayer game
                 log('Looking for multiplayer games...', 'debug');
-                const { data: games } = await auth.supabase
+                const { data: games } = await getAuthSupabase()
                     .from('active_games')
                     .select('id, game_code')
                     .eq('is_multiplayer', true)
@@ -329,7 +349,7 @@
                 log(`Found game ${games[0].game_code}, checking participants...`, 'debug');
                 
                 // Try to read participants
-                const { data, error } = await auth.supabase
+                const { data, error } = await getAuthSupabase()
                     .from('game_participants')
                     .select('*, profiles:user_id(email)')
                     .eq('game_id', games[0].id);
@@ -365,7 +385,7 @@
             resultEl.innerHTML = '<span class="info">Searching...</span>';
             
             try {
-                const { data, error } = await auth.supabase
+                const { data, error } = await getAuthSupabase()
                     .from('active_games')
                     .select('*')
                     .eq('game_code', gameCode)
@@ -400,10 +420,14 @@
         checkAuthStatus();
         
         // Listen for auth state changes
-        auth.supabase.auth.onAuthStateChange((event, session) => {
-            log(`Auth state changed: ${event}`, 'info');
-            checkAuthStatus();
-        });
+        if (auth && auth.supabase && auth.supabase.auth) {
+            auth.supabase.auth.onAuthStateChange((event, session) => {
+                log(`Auth state changed: ${event}`, 'info');
+                checkAuthStatus();
+            });
+        } else {
+            log('Warning: Cannot set up auth state listener - auth module not fully initialized', 'error');
+        }
     </script>
 </body>
 </html>
