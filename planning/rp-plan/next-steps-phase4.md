@@ -40,12 +40,12 @@ Now that the frontend service layer is complete and tested, we need to integrate
 - [x] Handle "game not found" errors
 - [x] Format code display with space
 
-### 6. Update ActiveGameViewScene
-- [ ] Import `getGameParticipants` from `/services/nowGameApi.js`
-- [ ] Show multiplayer leaderboard
-- [ ] Display all participants with their current values
-- [ ] Highlight current user
-- [ ] Auto-refresh participant data
+### 6. Update ActiveGameViewScene ✅
+- [x] Import `getGameParticipants` from `/services/nowGameApi.js`
+- [x] Show multiplayer leaderboard
+- [x] Display all participants with their current values
+- [x] Highlight current user
+- [x] Auto-refresh participant data every minute
 
 ## Testing Checklist
 - [ ] Create a game and verify code is displayed
@@ -53,4 +53,21 @@ Now that the frontend service layer is complete and tested, we need to integrate
 - [ ] Verify case mismatch fails (e.g., "Q92U" vs "q92u")
 - [ ] Check that only 5 cryptos show in price data
 - [ ] Verify multiplayer leaderboard updates
-- [ ] Test error handling for all API calls 
+- [ ] Test error handling for all API calls
+
+## Phase 4 Complete! 🎉
+
+All scene integration tasks have been completed. The multiplayer functionality is now fully integrated into the game:
+
+1. **Game Creation** - Multiplayer games are created via the API and receive unique case-sensitive codes
+2. **Game Code Display** - Codes are displayed with formatting (e.g., "Q9 2U") and copy-to-clipboard
+3. **Join Flow** - Players can join games by entering the exact code (case-sensitive)
+4. **Leaderboard** - Real-time multiplayer leaderboard with:
+   - Rank display with medals for top 3
+   - Player names and current values
+   - Profit/loss percentages
+   - Allocation breakdown
+   - Current user highlighting
+   - Auto-refresh every 60 seconds
+
+Ready for full end-to-end testing! 
