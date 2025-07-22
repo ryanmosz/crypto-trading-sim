@@ -548,11 +548,11 @@ export default class DashboardScene extends Phaser.Scene {
         }).setOrigin(0, 0.5);
         this.contentGroup.add(codeText);
         
-        // Create countdown timer display
+        // Create countdown timer display - move it more to the left
         const timeRemaining = calculateTimeRemaining(game.created_at, game.duration_days || 30);
         const timeColor = getTimeRemainingColor(timeRemaining.totalSeconds, game.duration_days || 30);
-        const countdownText = this.add.text(170, y, formatTimeRemaining(timeRemaining), {
-            fontSize: '13px',
+        const countdownText = this.add.text(200, y, formatTimeRemaining(timeRemaining), {
+            fontSize: '14px',
             color: timeColor,
             fontFamily: 'Arial Black'
         }).setOrigin(0, 0.5);
@@ -575,8 +575,8 @@ export default class DashboardScene extends Phaser.Scene {
             }).setOrigin(0.5);
             this.contentGroup.add(participantDisplay);
             
-            // Show JOIN button
-            const joinBtn = this.add.text(650, y, 'JOIN', {
+            // Show JOIN button pushed to the right
+            const joinBtn = this.add.text(750, y, 'JOIN', {
                 fontSize: '16px',
                 color: '#00ff00',
                 fontFamily: 'Arial Black'
@@ -633,8 +633,8 @@ export default class DashboardScene extends Phaser.Scene {
                 console.error('Error fetching participant data:', err);
             }
             
-            // Position indicator - adjusted spacing
-            const positionText = this.add.text(280, y, `${position}/${totalParticipants}`, {
+            // Position indicator - pushed more left
+            const positionText = this.add.text(340, y, `${position}/${totalParticipants}`, {
                 fontSize: '14px',
                 color: position <= 3 ? '#ffd700' : '#888888',
                 fontFamily: 'Arial Black'
@@ -647,8 +647,8 @@ export default class DashboardScene extends Phaser.Scene {
             const profitPercent = (profit / startValue) * 100;
             const profitColor = profit >= 0 ? '#00ff00' : '#ff0066';
             
-            // Current value - adjusted position
-            const valueText = this.add.text(450, y, `$${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
+            // Current value - centered with more breathing room
+            const valueText = this.add.text(500, y, `$${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
                 fontSize: '16px',
                 color: '#ffffff',
                 fontFamily: 'Arial Black'
@@ -656,8 +656,8 @@ export default class DashboardScene extends Phaser.Scene {
             
             this.contentGroup.add(valueText);
             
-            // Profit/Loss - adjusted position
-            const profitText = this.add.text(580, y, `${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
+            // Profit/Loss - between value and VIEW button
+            const profitText = this.add.text(640, y, `${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
                 fontSize: '14px',
                 color: profitColor,
                 fontFamily: 'Arial Black'
@@ -665,8 +665,8 @@ export default class DashboardScene extends Phaser.Scene {
             
             this.contentGroup.add(profitText);
                     
-            // View button
-            const viewBtn = this.add.text(680, y, 'VIEW', {
+            // View button - pushed to far right
+            const viewBtn = this.add.text(750, y, 'VIEW', {
                 fontSize: '14px',
                 color: '#00ffff',
                 fontFamily: 'Arial Black'

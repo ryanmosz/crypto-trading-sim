@@ -412,236 +412,194 @@ export default class ActiveGameViewScene extends Phaser.Scene {
     }
     
     async showMultiplayerView() {
-        // Title at x=450, y=150
+        // Title at x=450, y=120 - move it up
         const titleText = formatGameCode(this.gameData.game_code) + ' - Multiplayer Leaderboard';
-        this.add.text(450, 150, titleText, {
+        this.add.text(450, 100, titleText, {
             fontSize: '28px',
             color: '#00ffff',
             fontFamily: 'Arial Black'
         }).setOrigin(0.5);
         
-        // Add countdown timer
+        // Countdown timer at y=130 - separated from title
         const timeRemaining = calculateTimeRemaining(this.gameData.created_at, this.gameData.duration_days || 30);
         const timeColor = getTimeRemainingColor(timeRemaining.totalSeconds, this.gameData.duration_days || 30);
-        const countdownText = this.add.text(450, 180, formatTimeRemaining(timeRemaining), {
-            fontSize: '20px',
+        
+        // Show "LEADERBOARD" text with countdown below it
+        this.add.text(450, 140, 'LEADERBOARD', {
+            fontSize: '36px',
+            color: '#ffff00',
+            fontFamily: 'Arial Black'
+        }).setOrigin(0.5);
+        
+        this.countdownText = this.add.text(450, 175, formatTimeRemaining(timeRemaining), {
+            fontSize: '18px',
             color: timeColor,
             fontFamily: 'Arial Black'
         }).setOrigin(0.5);
         
-        // Update countdown every second
+        // Start countdown timer
         this.countdownTimer = this.time.addEvent({
             delay: 1000,
             callback: () => {
                 const newTimeRemaining = calculateTimeRemaining(this.gameData.created_at, this.gameData.duration_days || 30);
-                countdownText.setText(formatTimeRemaining(newTimeRemaining));
-                countdownText.setColor(getTimeRemainingColor(newTimeRemaining.totalSeconds, this.gameData.duration_days || 30));
+                const newTimeColor = getTimeRemainingColor(newTimeRemaining.totalSeconds, this.gameData.duration_days || 30);
+                this.countdownText.setText(formatTimeRemaining(newTimeRemaining));
+                this.countdownText.setColor(newTimeColor);
             },
             loop: true
         });
         
-        // Headers (removed Alloc column)
-        this.add.text(100, 220, 'Rank', {
-            fontSize: '16px',
+        // Column headers - push to edges
+        const headerY = 220;
+        const lineY = headerY + 20;
+        
+        // Headers pushed to edges
+        this.add.text(100, headerY, 'Rank', {
+            fontSize: '18px',
             color: '#999999',
             fontFamily: 'Arial Black'
         }).setOrigin(0, 0.5);
         
-        this.add.text(200, 220, 'Player', {
-            fontSize: '16px',
+        this.add.text(250, headerY, 'Player', {
+            fontSize: '18px',
             color: '#999999',
             fontFamily: 'Arial Black'
         }).setOrigin(0, 0.5);
         
-        this.add.text(500, 220, 'Value', {
-            fontSize: '16px',
+        this.add.text(550, headerY, 'Value', {
+            fontSize: '18px',
             color: '#999999',
             fontFamily: 'Arial Black'
-        }).setOrigin(0, 0.5);
+        }).setOrigin(0.5);
         
-        this.add.text(700, 220, 'Profit/Loss', {
-            fontSize: '16px',
+        this.add.text(750, headerY, 'Profit/Loss', {
+            fontSize: '18px',
             color: '#999999',
             fontFamily: 'Arial Black'
-        }).setOrigin(0, 0.5);
+        }).setOrigin(1, 0.5);
         
-        // Draw header line
-        this.add.rectangle(450, 240, 750, 2, 0x333333);
+        // Horizontal line
+        this.add.rectangle(450, lineY, 700, 2, 0x333333);
         
-        try {
-            // Get all participants
-            const participants = await getGameParticipants(this.gameData.id);
-            
-            // Hide loading text
-            // loadingText.destroy(); // This line was removed as per the new_code
-            
-            // Sort by current value (highest first)
-            participants.sort((a, b) => b.current_value - a.current_value);
-            
-            // Leaderboard title
-            this.add.text(450, 170, '🏆 LEADERBOARD', {
-                fontSize: '24px',
-                fontFamily: 'Arial Black',
-                color: '#ffff00'
-            }).setOrigin(0.5);
-            
-            // Headers
-            this.add.text(100, 210, 'Rank', {
-                fontSize: '16px',
-                color: '#999999',
-                fontFamily: 'Arial Black'
-            }).setOrigin(0, 0.5);
-            
-            this.add.text(200, 210, 'Player', {
-                fontSize: '16px',
-                color: '#999999',
-                fontFamily: 'Arial Black'
-            }).setOrigin(0, 0.5);
-            
-            this.add.text(500, 210, 'Value', {
-                fontSize: '16px',
-                color: '#999999',
-                fontFamily: 'Arial Black'
-            }).setOrigin(0, 0.5);
-            
-            this.add.text(650, 210, 'Profit/Loss', {
-                fontSize: '16px',
-                color: '#999999',
-                fontFamily: 'Arial Black'
-            }).setOrigin(0, 0.5);
-            
-            // Draw header line
-            this.add.rectangle(450, 230, 750, 2, 0x333333);
-            
-            // Display participants
-            let yPos = 260;
-            participants.forEach((participant, index) => {
-                const rank = index + 1;
-                const isCurrentUser = participant.user_id === this.user.id;
-                
-                // Create clickable background for the row
-                const rowBg = this.add.rectangle(450, yPos, 750, 40, 0x111111, isCurrentUser ? 0.3 : 0.1)
-                    .setInteractive({ useHandCursor: true })
-                    .setStrokeStyle(isCurrentUser ? 2 : 0, 0x00ffff);
-                
-                // Hover effects
-                rowBg.on('pointerover', () => {
-                    rowBg.setFillStyle(0x222222, 0.5);
-                });
-                rowBg.on('pointerout', () => {
-                    rowBg.setFillStyle(0x111111, isCurrentUser ? 0.3 : 0.1);
-                });
-                rowBg.on('pointerdown', () => {
-                    // Navigate to individual player details view
-                    this.showPlayerDetails(participant);
-                });
-                
-                // Rank with medal for top 3
-                let rankDisplay = rank.toString();
-                let rankColor = '#ffffff';
-                if (rank === 1) {
-                    rankDisplay = '🥇';
-                    rankColor = '#ffd700';
-                } else if (rank === 2) {
-                    rankDisplay = '🥈';
-                    rankColor = '#c0c0c0';
-                } else if (rank === 3) {
-                    rankDisplay = '🥉';
-                    rankColor = '#cd7f32';
-                }
-                
-                this.add.text(100, yPos, rankDisplay, {
-                    fontSize: rank <= 3 ? '24px' : '20px',
-                    color: rankColor,
-                    fontFamily: 'Arial Black'
-                }).setOrigin(0, 0.5);
-                
-                // Player name (email or username)
-                const playerName = isCurrentUser ? 'You' : 
-                    (participant.username || 'Player ' + (index + 1));
-                    
-                this.add.text(200, yPos, playerName, {
-                    fontSize: '18px',
-                    color: isCurrentUser ? '#00ffff' : '#ffffff',
-                    fontFamily: isCurrentUser ? 'Arial Black' : 'Arial'
-                }).setOrigin(0, 0.5);
-                
-                // Current value
-                const currentValue = participant.current_value || this.gameData.starting_money;
-                this.add.text(500, yPos, `$${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
-                    fontSize: '18px',
-                    color: '#ffffff',
-                    fontFamily: 'Arial Black'
-                }).setOrigin(0, 0.5);
-                
-                // Calculate profit/loss
-                const startValue = this.gameData.starting_money || 10000000;
-                const profit = currentValue - startValue;
-                const profitPercent = ((profit / startValue) * 100).toFixed(1);
-                
-                // Profit/Loss
-                const profitColor = profit >= 0 ? '#00ff00' : '#ff0066';
-                const profitSign = profit >= 0 ? '+' : '';
-                
-                this.add.text(700, yPos, `${profitSign}${profitPercent}%`, {
-                    fontSize: '18px',
-                    color: profitColor,
-                    fontFamily: 'Arial Black'
-                }).setOrigin(0, 0.5);
-                
-                yPos += 45;
-            });
-            
-            // Show participant count
-            this.add.text(450, yPos + 20, `${participants.length} player${participants.length !== 1 ? 's' : ''} competing`, {
-                fontSize: '16px',
+        // Get participants
+        const participants = await getGameParticipants(this.gameData.id);
+        if (!participants || participants.length === 0) {
+            this.add.text(450, 300, 'No participants yet', {
+                fontSize: '20px',
                 color: '#666666'
             }).setOrigin(0.5);
-            
-            // Auto-refresh notice
-            this.add.text(450, 540, 'Updates every minute', {
-                fontSize: '14px',
-                color: '#444444'
-            }).setOrigin(0.5);
-            
-            // Refresh timer
-            this.time.addEvent({
-                delay: 60000, // 60 seconds
-                callback: () => {
-                    this.scene.restart({ user: this.user, gameData: this.gameData });
-                },
-                loop: true
-            });
-            
-        } catch (error) {
-            console.error('Error loading participants:', error);
-            // loadingText.setText('Error loading leaderboard'); // This line was removed as per the new_code
-            // loadingText.setColor('#ff0000'); // This line was removed as per the new_code
+            return;
         }
         
+        // Display participants
+        let yPos = lineY + 30;
+        const startValue = this.gameData.starting_money || 10000000;
+        
+        participants.forEach((participant, index) => {
+            const rank = index + 1;
+            const profit = participant.current_value - startValue;
+            const profitPercent = (profit / startValue) * 100;
+            const profitColor = profit >= 0 ? '#00ff00' : '#ff0066';
+            const isCurrentUser = participant.user_id === this.user.id;
+            
+            // Highlight current user's row
+            if (isCurrentUser) {
+                const highlight = this.add.rectangle(450, yPos, 700, 35, 0x00ffff, 0.1)
+                    .setStrokeStyle(2, 0x00ffff);
+            }
+            
+            // Rank with medal for top 3 - far left
+            let rankDisplay = rank.toString();
+            if (rank === 1) rankDisplay = '🥇';
+            else if (rank === 2) rankDisplay = '🥈';
+            else if (rank === 3) rankDisplay = '🥉';
+            
+            this.add.text(100, yPos, rankDisplay, {
+                fontSize: '20px',
+                color: '#ffffff',
+                fontFamily: 'Arial Black'
+            }).setOrigin(0, 0.5);
+            
+            // Player name - left aligned
+            const displayName = isCurrentUser ? 'You' : (participant.username || 'Anonymous');
+            const nameText = this.add.text(250, yPos, displayName, {
+                fontSize: '18px',
+                color: isCurrentUser ? '#00ffff' : '#ffffff',
+                fontFamily: isCurrentUser ? 'Arial Black' : 'Arial'
+            }).setOrigin(0, 0.5);
+            
+            // Make clickable
+            if (!isCurrentUser) {
+                nameText.setInteractive({ useHandCursor: true })
+                    .on('pointerover', () => nameText.setColor('#ffff00'))
+                    .on('pointerout', () => nameText.setColor('#ffffff'))
+                    .on('pointerdown', () => this.showPlayerDetails(participant));
+            } else {
+                nameText.setInteractive({ useHandCursor: true })
+                    .on('pointerdown', () => this.showPlayerDetails(participant));
+            }
+            
+            // Current value - centered with breathing room
+            this.add.text(550, yPos, `$${participant.current_value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
+                fontSize: '18px',
+                color: '#ffffff',
+                fontFamily: 'Arial Black'
+            }).setOrigin(0.5);
+            
+            // Profit/Loss percentage - far right
+            this.add.text(750, yPos, `${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
+                fontSize: '18px',
+                color: profitColor,
+                fontFamily: 'Arial Black'
+            }).setOrigin(1, 0.5);
+            
+            yPos += 40;
+        });
+        
+        // Player count
+        this.add.text(450, yPos + 20, `${participants.length} players competing`, {
+            fontSize: '16px',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
         // Back button
-        const backBtn = this.add.rectangle(450, 500, 200, 50, 0x333333)
+        const backButton = this.add.rectangle(450, 500, 200, 40, 0x333333)
             .setStrokeStyle(2, 0x666666)
             .setInteractive({ useHandCursor: true });
             
         const backText = this.add.text(450, 500, 'BACK', {
-            fontSize: '20px',
+            fontSize: '18px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
         }).setOrigin(0.5);
         
-        backBtn
+        backButton
             .on('pointerover', () => {
-                backBtn.setStrokeStyle(2, 0xffffff);
+                backButton.setStrokeStyle(2, 0x00ffff);
                 backText.setColor('#00ffff');
             })
             .on('pointerout', () => {
-                backBtn.setStrokeStyle(2, 0x666666);
+                backButton.setStrokeStyle(2, 0x666666);
                 backText.setColor('#ffffff');
             })
             .on('pointerdown', () => {
                 this.scene.start('DashboardScene', { user: this.user });
             });
+        
+        // Update info
+        this.add.text(450, 530, 'Updates every minute', {
+            fontSize: '14px',
+            color: '#666666'
+        }).setOrigin(0.5);
+        
+        // Set up auto-refresh
+        this.time.addEvent({
+            delay: 60000, // 1 minute
+            callback: () => {
+                this.scene.restart();
+            },
+            loop: true
+        });
     }
     
     async showPlayerDetails(participant) {
