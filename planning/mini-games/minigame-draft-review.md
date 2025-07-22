@@ -24,12 +24,12 @@ merging into the main Crypto-Trader codebase or deploying to Supabase.
 
 ## 3. Key Issues & Gaps 🛠️
 
-1. **Duplicate / Conflicting Paths (UNRESOLVED)**
-   *Duplicate draft sources are **still** present in several places (e.g.
-   `public/services/planning/mini-games/draft/*`,
-   `planning/mini-games/draft/crypto-trader/public/*`, and
-   `planning/mini-games/draft/crypto-trader/supabase/*`).*
-   ➜ Keep one canonical copy under `public/mini-games/…` and delete the rest before integration.
+1. **Duplicate / Conflicting Paths (RESOLVED)**
+   The extraneous draft directory that lived under
+   `public/services/planning/mini-games/draft/…` has been removed, leaving a
+   single canonical copy of all Button-Mash Duel draft code under
+   `planning/mini-games/draft/crypto-trader/**`.
+   No further action needed on this item.
 
 2. **Host Determination Logic**
    * The current host check

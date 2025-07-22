@@ -105,7 +105,7 @@
     <h1>6-Minute Game Testing</h1>
     
     <div class="status-update">
-        <strong>✅ UPDATE (Just Fixed):</strong> Edge Function validation now accepts duration=0 for 6-minute games!
+        <strong>✅ UPDATE (Re-deployed v7):</strong> Edge Function validation now converts to Number and has debug logging!
     </div>
     
     <div class="info-box">
@@ -230,5 +230,22 @@ _________________________________</div>
             });
         }
     </script>
+
+    <div class="info-box">
+        <h3>🔵 After 6 Minutes:</h3>
+        <p>Check the game shows as "Completed" with final values</p>
+    </div>
+    
+    <div class="info-box">
+        <h2>🛠️ Troubleshooting</h2>
+        <p>If you still get "Invalid duration" error:</p>
+        <ol>
+            <li>Check browser console for the exact error</li>
+            <li>Wait 30 seconds for Edge Function cache to clear</li>
+            <li>Try a hard refresh (Cmd+Shift+R)</li>
+            <li>Clear browser cache and try again</li>
+        </ol>
+        <p>Edge Function is now at version 7 with improved validation!</p>
+    </div>
 </body>
 </html> 
