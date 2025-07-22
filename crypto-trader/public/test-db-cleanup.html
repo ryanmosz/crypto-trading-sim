@@ -146,6 +146,7 @@
         <button onclick="findExtraCryptos()">Find Non-Game Cryptos</button>
         <button onclick="cleanupExtraCryptos()">Remove Extra Cryptos</button>
         <button onclick="cleanupOldPriceHistory()">Clean Old Price History (>30 days)</button>
+        <button onclick="deepCleanPriceHistory()">Deep Clean ALL Price History</button>
         
         <h3>Orphaned Data</h3>
         <button onclick="findOrphanedParticipants()">Find Orphaned Participants</button>
@@ -373,6 +374,128 @@ Use with caution - these operations cannot be undone!</div>
             }
         }
         
+        // Find orphaned participants
+        async function findOrphanedParticipants() {
+            log('Finding orphaned participants...', 'info');
+            
+            try {
+                // Get all participants
+                const { data: participants } = await supabaseClient
+                    .from('game_participants')
+                    .select('id, game_id');
+                    
+                // Get all game IDs
+                const { data: games } = await supabaseClient
+                    .from('active_games')
+                    .select('id');
+                    
+                const gameIds = new Set(games?.map(g => g.id) || []);
+                const orphaned = participants?.filter(p => !gameIds.has(p.game_id)) || [];
+                
+                if (orphaned.length > 0) {
+                    log(`Found ${orphaned.length} orphaned participants`, 'warning');
+                } else {
+                    log('No orphaned participants found', 'success');
+                }
+            } catch (error) {
+                log(`Error finding orphans: ${error.message}`, 'error');
+            }
+        }
+        
+        // Clean orphaned records
+        async function cleanupOrphans() {
+            log('Cleaning orphaned records...', 'warning');
+            
+            try {
+                // Get all game IDs
+                const { data: games } = await supabaseClient
+                    .from('active_games')
+                    .select('id');
+                    
+                const gameIds = games?.map(g => g.id) || [];
+                
+                if (gameIds.length === 0) {
+                    log('No games found, skipping orphan cleanup', 'info');
+                    return;
+                }
+                
+                // Delete participants not in any game
+                const { error: participantError } = await supabaseClient
+                    .from('game_participants')
+                    .delete()
+                    .not('game_id', 'in', `(${gameIds.join(',')})`);
+                    
+                if (participantError) {
+                    log(`Error cleaning participants: ${participantError.message}`, 'error');
+                } else {
+                    log('Orphaned participants cleaned', 'success');
+                }
+                
+                // Delete price history not in any game
+                const { error: priceError } = await supabaseClient
+                    .from('price_history')
+                    .delete()
+                    .not('game_id', 'in', `(${gameIds.join(',')})`);
+                    
+                if (priceError) {
+                    log(`Error cleaning price history: ${priceError.message}`, 'error');
+                } else {
+                    log('Orphaned price history cleaned', 'success');
+                }
+                
+                loadStats();
+            } catch (error) {
+                log(`Error cleaning orphans: ${error.message}`, 'error');
+            }
+        }
+        
+        // Clean old price history
+        async function cleanupOldPriceHistory() {
+            log('Cleaning price history older than 30 days...', 'warning');
+            
+            try {
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                
+                const { error } = await supabaseClient
+                    .from('price_history')
+                    .delete()
+                    .lt('recorded_at', thirtyDaysAgo.toISOString());
+                    
+                if (error) {
+                    log(`Error cleaning old price history: ${error.message}`, 'error');
+                } else {
+                    log('Old price history cleaned', 'success');
+                    loadStats();
+                }
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Clean up expired games
+        async function cleanupExpiredGames() {
+            log('Cleaning up expired games...', 'warning');
+            
+            try {
+                // First mark expired games as complete
+                const { error: updateError } = await supabaseClient
+                    .from('active_games')
+                    .update({ is_complete: true })
+                    .lt('ends_at', new Date().toISOString())
+                    .eq('is_complete', false);
+                    
+                if (updateError) {
+                    log(`Error marking games complete: ${updateError.message}`, 'error');
+                } else {
+                    log('Expired games marked as complete', 'success');
+                    loadStats();
+                }
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+
         // Toggle nuclear buttons
         function toggleNuclearButtons() {
             const confirmed = document.getElementById('confirmDelete').checked;
@@ -445,15 +568,119 @@ Use with caution - these operations cannot be undone!</div>
             
             try {
                 // Delete in order to respect foreign keys
-                await deleteAllPriceHistory();
-                await deleteAllParticipants();
-                await deleteAllGames();
+                // First, delete ALL price history
+                log('Step 1: Deleting all price history...', 'info');
+                const { error: priceError } = await supabaseClient
+                    .from('price_history')
+                    .delete()
+                    .neq('id', '00000000-0000-0000-0000-000000000000');
+                    
+                if (priceError) {
+                    log(`Price history error: ${priceError.message}`, 'error');
+                } else {
+                    log('Price history deleted', 'success');
+                }
+                
+                // Second, delete all participants
+                log('Step 2: Deleting all participants...', 'info');
+                const { error: participantError } = await supabaseClient
+                    .from('game_participants')
+                    .delete()
+                    .neq('id', '00000000-0000-0000-0000-000000000000');
+                    
+                if (participantError) {
+                    log(`Participant error: ${participantError.message}`, 'error');
+                } else {
+                    log('Participants deleted', 'success');
+                }
+                
+                // Wait a moment to ensure deletions are processed
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Check if any price history remains
+                const { count: remainingPriceHistory } = await supabaseClient
+                    .from('price_history')
+                    .select('*', { count: 'exact', head: true });
+                    
+                if (remainingPriceHistory > 0) {
+                    log(`Warning: ${remainingPriceHistory} price history records remain`, 'warning');
+                    // Try to delete them again
+                    const { error: retryError } = await supabaseClient
+                        .from('price_history')
+                        .delete()
+                        .neq('id', '00000000-0000-0000-0000-000000000000');
+                    if (retryError) {
+                        log(`Retry error: ${retryError.message}`, 'error');
+                    }
+                }
+                
+                // Finally, delete all games
+                log('Step 3: Deleting all games...', 'info');
+                const { error: gamesError } = await supabaseClient
+                    .from('active_games')
+                    .delete()
+                    .neq('id', '00000000-0000-0000-0000-000000000000');
+                    
+                if (gamesError) {
+                    log(`Games error: ${gamesError.message}`, 'error');
+                    log('Tip: Try running individual cleanup operations first', 'warning');
+                    return;
+                } else {
+                    log('All games deleted', 'success');
+                }
                 
                 log('FULL RESET COMPLETE', 'success');
                 log('User accounts preserved', 'info');
                 log('Ready for fresh start!', 'success');
+                
+                // Reload stats after reset
+                loadStats();
             } catch (error) {
                 log(`Error during reset: ${error.message}`, 'error');
+            }
+        }
+        
+        // Add a more thorough cleanup function
+        async function deepCleanPriceHistory() {
+            log('Performing deep clean of price history...', 'warning');
+            
+            try {
+                // First, get all price history records
+                const { data: records, error: fetchError } = await supabaseClient
+                    .from('price_history')
+                    .select('id');
+                    
+                if (fetchError) {
+                    log(`Error fetching records: ${fetchError.message}`, 'error');
+                    return;
+                }
+                
+                log(`Found ${records?.length || 0} price history records`, 'info');
+                
+                // Delete in batches
+                if (records && records.length > 0) {
+                    const batchSize = 100;
+                    for (let i = 0; i < records.length; i += batchSize) {
+                        const batch = records.slice(i, i + batchSize);
+                        const ids = batch.map(r => r.id);
+                        
+                        const { error } = await supabaseClient
+                            .from('price_history')
+                            .delete()
+                            .in('id', ids);
+                            
+                        if (error) {
+                            log(`Batch delete error: ${error.message}`, 'error');
+                        } else {
+                            log(`Deleted batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(records.length/batchSize)}`, 'info');
+                        }
+                    }
+                }
+                
+                log('Deep clean complete', 'success');
+                loadStats();
+            } catch (error) {
+                log(`Deep clean error: ${error.message}`, 'error');
             }
         }
         
