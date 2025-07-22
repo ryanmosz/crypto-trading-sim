@@ -110,7 +110,7 @@
             <div id="storageStatus">Checking...</div>
             
             <div class="status-label">Port:</div>
-            <div id="portStatus">${window.location.port || '80'}</div>
+            <div id="portStatus">Checking...</div>
         </div>
     </div>
     
@@ -269,7 +269,7 @@
             log('Checking localStorage...', 'info');
             try {
                 const keys = Object.keys(localStorage);
-                const supabaseKeys = keys.filter(key => key.includes('supabase'));
+                const supabaseKeys = keys.filter(key => key.includes('sb-') || key.includes('supabase'));
                 
                 log(`Total localStorage keys: ${keys.length}`, 'debug');
                 log(`Supabase-related keys: ${supabaseKeys.length}`, 'info');
@@ -344,6 +344,10 @@
             log('Page loaded', 'info');
             log(`Current URL: ${window.location.href}`, 'debug');
             log(`Port: ${window.location.port || '80'}`, 'debug');
+            
+            // Update port display
+            document.getElementById('portStatus').textContent = window.location.port || '80';
+            
             runAllTests();
         });
     </script>
