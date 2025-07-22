@@ -174,6 +174,10 @@
 
     <div class="section">
         <h2>📝 Output Log</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span>Console Output</span>
+            <button class="safe-button" onclick="copyOutput()">📋 Copy Log</button>
+        </div>
         <div id="output">Database Cleanup Utility Ready
 Use with caution - these operations cannot be undone!</div>
     </div>
@@ -198,6 +202,18 @@ Use with caution - these operations cannot be undone!</div>
             
             output.textContent += `\n${timestamp} ${typeSymbol} - ${message}`;
             output.scrollTop = output.scrollHeight;
+        }
+        
+        // Copy output to clipboard
+        function copyOutput() {
+            const output = document.getElementById('output');
+            navigator.clipboard.writeText(output.textContent)
+                .then(() => {
+                    log('Output copied to clipboard!', 'success');
+                })
+                .catch(err => {
+                    log('Failed to copy: ' + err.message, 'error');
+                });
         }
         
         // Initialize Supabase
@@ -505,19 +521,115 @@ Use with caution - these operations cannot be undone!</div>
             document.getElementById('fullReset').disabled = !confirmed;
         }
         
-        // Nuclear options
+        // Add a more thorough cleanup function
+        async function deepCleanPriceHistory() {
+            log('Performing deep clean of price history...', 'warning');
+            
+            try {
+                // First, check current count
+                const { count: beforeCount } = await supabaseClient
+                    .from('price_history')
+                    .select('*', { count: 'exact', head: true });
+                    
+                log(`Current price history records: ${beforeCount || 0}`, 'info');
+                
+                if (!beforeCount || beforeCount === 0) {
+                    log('No price history to clean', 'success');
+                    return;
+                }
+                
+                // Method 1: Delete all with a more specific query
+                log('Attempting bulk delete...', 'info');
+                const { data: deleted1, error: error1 } = await supabaseClient
+                    .from('price_history')
+                    .delete()
+                    .gte('id', '00000000-0000-0000-0000-000000000000')
+                    .select();
+                    
+                if (error1) {
+                    log(`Bulk delete error: ${error1.message}`, 'error');
+                } else {
+                    log(`Bulk delete removed ${deleted1?.length || 0} records`, 'info');
+                }
+                
+                // Method 2: If that didn't work, try deleting by game_id
+                const { data: games } = await supabaseClient
+                    .from('active_games')
+                    .select('id');
+                    
+                if (games && games.length > 0) {
+                    log('Deleting by game_id...', 'info');
+                    for (const game of games) {
+                        const { data: gameDeleted, error: gameError } = await supabaseClient
+                            .from('price_history')
+                            .delete()
+                            .eq('game_id', game.id)
+                            .select();
+                            
+                        if (gameError) {
+                            log(`Error deleting for game ${game.id}: ${gameError.message}`, 'error');
+                        } else if (gameDeleted && gameDeleted.length > 0) {
+                            log(`Deleted ${gameDeleted.length} records for game ${game.id}`, 'info');
+                        }
+                    }
+                }
+                
+                // Method 3: If still not working, fetch and delete individually
+                const { data: remaining } = await supabaseClient
+                    .from('price_history')
+                    .select('id, game_id');
+                    
+                if (remaining && remaining.length > 0) {
+                    log(`Still ${remaining.length} records remaining, deleting individually...`, 'warning');
+                    
+                    for (const record of remaining) {
+                        const { error } = await supabaseClient
+                            .from('price_history')
+                            .delete()
+                            .eq('id', record.id);
+                            
+                        if (error) {
+                            log(`Failed to delete record ${record.id}: ${error.message}`, 'error');
+                        }
+                    }
+                }
+                
+                // Final check
+                const { count: afterCount } = await supabaseClient
+                    .from('price_history')
+                    .select('*', { count: 'exact', head: true });
+                    
+                if (afterCount === 0) {
+                    log('Deep clean complete - all price history removed!', 'success');
+                } else {
+                    log(`Warning: ${afterCount} records still remain after deep clean`, 'error');
+                    log('There may be RLS policies preventing deletion', 'warning');
+                }
+                
+                loadStats();
+            } catch (error) {
+                log(`Deep clean error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Nuclear options - updated delete methods
         async function deleteAllGames() {
             if (!confirm('Are you SURE you want to delete ALL games?')) return;
             
             log('DELETING ALL GAMES...', 'error');
             try {
-                const { error } = await supabaseClient
+                // More specific delete query
+                const { data, error } = await supabaseClient
                     .from('active_games')
                     .delete()
-                    .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
+                    .gte('id', '00000000-0000-0000-0000-000000000000')
+                    .select();
                     
-                if (error) throw error;
-                log('All games deleted', 'success');
+                if (error) {
+                    log(`Error deleting games: ${error.message}`, 'error');
+                } else {
+                    log(`All games deleted (${data?.length || 0} records)`, 'success');
+                }
                 loadStats();
             } catch (error) {
                 log(`Error deleting games: ${error.message}`, 'error');
@@ -529,13 +641,17 @@ Use with caution - these operations cannot be undone!</div>
             
             log('DELETING ALL PARTICIPANTS...', 'error');
             try {
-                const { error } = await supabaseClient
+                const { data, error } = await supabaseClient
                     .from('game_participants')
                     .delete()
-                    .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
+                    .gte('id', '00000000-0000-0000-0000-000000000000')
+                    .select();
                     
-                if (error) throw error;
-                log('All participants deleted', 'success');
+                if (error) {
+                    log(`Error deleting participants: ${error.message}`, 'error');
+                } else {
+                    log(`All participants deleted (${data?.length || 0} records)`, 'success');
+                }
                 loadStats();
             } catch (error) {
                 log(`Error deleting participants: ${error.message}`, 'error');
@@ -547,13 +663,17 @@ Use with caution - these operations cannot be undone!</div>
             
             log('DELETING ALL PRICE HISTORY...', 'error');
             try {
-                const { error } = await supabaseClient
+                const { data, error } = await supabaseClient
                     .from('price_history')
                     .delete()
-                    .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
+                    .gte('id', '00000000-0000-0000-0000-000000000000')
+                    .select();
                     
-                if (error) throw error;
-                log('All price history deleted', 'success');
+                if (error) {
+                    log(`Error deleting price history: ${error.message}`, 'error');
+                } else {
+                    log(`All price history deleted (${data?.length || 0} records)`, 'success');
+                }
                 loadStats();
             } catch (error) {
                 log(`Error deleting price history: ${error.message}`, 'error');
@@ -637,50 +757,6 @@ Use with caution - these operations cannot be undone!</div>
                 loadStats();
             } catch (error) {
                 log(`Error during reset: ${error.message}`, 'error');
-            }
-        }
-        
-        // Add a more thorough cleanup function
-        async function deepCleanPriceHistory() {
-            log('Performing deep clean of price history...', 'warning');
-            
-            try {
-                // First, get all price history records
-                const { data: records, error: fetchError } = await supabaseClient
-                    .from('price_history')
-                    .select('id');
-                    
-                if (fetchError) {
-                    log(`Error fetching records: ${fetchError.message}`, 'error');
-                    return;
-                }
-                
-                log(`Found ${records?.length || 0} price history records`, 'info');
-                
-                // Delete in batches
-                if (records && records.length > 0) {
-                    const batchSize = 100;
-                    for (let i = 0; i < records.length; i += batchSize) {
-                        const batch = records.slice(i, i + batchSize);
-                        const ids = batch.map(r => r.id);
-                        
-                        const { error } = await supabaseClient
-                            .from('price_history')
-                            .delete()
-                            .in('id', ids);
-                            
-                        if (error) {
-                            log(`Batch delete error: ${error.message}`, 'error');
-                        } else {
-                            log(`Deleted batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(records.length/batchSize)}`, 'info');
-                        }
-                    }
-                }
-                
-                log('Deep clean complete', 'success');
-                loadStats();
-            } catch (error) {
-                log(`Deep clean error: ${error.message}`, 'error');
             }
         }
         
