@@ -700,6 +700,7 @@ export default class ActiveGameViewScene extends Phaser.Scene {
         
         // Rows for each crypto
         let yPos = 180;
+        let calculatedTotal = 0; // Track sum of individual holdings
         Object.entries(allocations).forEach(([crypto, amount]) => {
             if (amount > 0) {
                 const invested = amount * 1000000;
@@ -710,6 +711,8 @@ export default class ActiveGameViewScene extends Phaser.Scene {
                 const cryptoProfit = currentCryptoValue - invested;
                 const cryptoProfitPercent = (cryptoProfit / invested) * 100;
                 const cryptoProfitColor = cryptoProfit >= 0 ? '#00ff00' : '#ff0066';
+                
+                calculatedTotal += currentCryptoValue; // Add to running total
                 
                 // Crypto name
                 this.add.text(100, yPos, crypto, {
@@ -764,28 +767,37 @@ export default class ActiveGameViewScene extends Phaser.Scene {
         
         // Add total row
         yPos += 30;
-        const currentTotal = participant.current_value || startValue;
+        
+        // Debug: Compare calculated vs stored value
+        console.log('Debug totals:', {
+            calculatedTotal,
+            participantValue: participant.current_value,
+            difference: participant.current_value - calculatedTotal
+        });
+        
+        // Use calculated total for now
+        const currentTotal = calculatedTotal;
         const totalProfit = currentTotal - startValue;
         const totalProfitPercent = (totalProfit / startValue) * 100;
         const totalProfitColor = totalProfit >= 0 ? '#00ff00' : '#ff0066';
         
         // Total label
         this.add.text(100, yPos, 'TOTAL', {
-            fontSize: '18px',
+            fontSize: '16px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
         }).setOrigin(0.5);
         
         // Total current value
         this.add.text(680, yPos, `$${currentTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
-            fontSize: '18px',
+            fontSize: '16px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
         }).setOrigin(0.5);
         
         // Total profit/loss percentage
         this.add.text(780, yPos, `${totalProfitPercent >= 0 ? '+' : ''}${totalProfitPercent.toFixed(1)}%`, {
-            fontSize: '18px',
+            fontSize: '16px',
             fontFamily: 'Arial Black',
             color: totalProfitColor
         }).setOrigin(0.5);
