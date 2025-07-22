@@ -645,6 +645,9 @@ export default class ActiveGameViewScene extends Phaser.Scene {
     }
     
     async showPlayerDetails(participant) {
+        // Store player details for chart generation
+        this.playerDetails = participant;
+        
         // Clear current display
         this.children.removeAll();
         
@@ -839,44 +842,38 @@ export default class ActiveGameViewScene extends Phaser.Scene {
             }
         });
         
-        // Last updated info
+        // Add performance chart after allocations
+        this.createPerformanceChart(yPos + 20);
+        
+        // Last updated info - move down to make room for chart
         if (this.gameData.last_updated) {
             const lastUpdated = new Date(this.gameData.last_updated);
             const now = new Date();
             const minutesAgo = Math.floor((now - lastUpdated) / 60000);
             
-            this.add.text(450, 550, `Prices updated ${minutesAgo} minute${minutesAgo !== 1 ? 's' : ''} ago`, {
+            this.add.text(450, 570, `Prices updated ${minutesAgo} minute${minutesAgo !== 1 ? 's' : ''} ago`, {
                 fontSize: '14px',
                 color: '#666666'
             }).setOrigin(0.5);
         }
     }
     
-    shutdown() {
-        // Clean up countdown timer
-        if (this.countdownTimer) {
-            this.countdownTimer.destroy();
-        }
-    }
-    
-    createPerformanceChart(startY, detailsViewElements) {
+    createPerformanceChart(startY) {
         // Chart title
-        const chartTitle = this.add.text(450, startY, 'Performance Trend', {
+        this.add.text(450, startY, 'Performance Trend', {
             fontSize: '18px',
             color: '#ffffff'
         }).setOrigin(0.5);
-        detailsViewElements.push(chartTitle);
         
         // Chart area
         const chartX = 200;
         const chartY = startY + 30;
         const chartWidth = 500;
-        const chartHeight = 100;
+        const chartHeight = 80;
         
         // Chart background
-        const chartBg = this.add.rectangle(chartX + chartWidth/2, chartY + chartHeight/2, chartWidth, chartHeight, 0x111111)
+        this.add.rectangle(chartX + chartWidth/2, chartY + chartHeight/2, chartWidth, chartHeight, 0x111111)
             .setStrokeStyle(1, 0x333333);
-        detailsViewElements.push(chartBg);
         
         // Generate sample data points (in real app, this would come from price_history table)
         const dataPoints = this.generateSampleData();
@@ -908,43 +905,36 @@ export default class ActiveGameViewScene extends Phaser.Scene {
         });
         graphics.strokePath();
         
-        detailsViewElements.push(graphics);
+        // Add value labels
+        const startValue = dataPoints[0];
+        const endValue = dataPoints[dataPoints.length - 1];
+        const percentChange = ((endValue - startValue) / startValue) * 100;
+        const changeColor = percentChange >= 0 ? '#00ff00' : '#ff0066';
         
-        // Add axis labels
-        const startDateTime = new Date(this.gameData.started_at);
-        const startDate = startDateTime.toLocaleDateString();
-        const startTime = startDateTime.toLocaleTimeString();
-        const startLabel = this.add.text(chartX, chartY + chartHeight + 10, `Start: ${startDate} ${startTime}`, {
+        // Start value
+        this.add.text(chartX - 10, chartY + chartHeight/2, `$${(startValue/1000000).toFixed(1)}M`, {
             fontSize: '12px',
             color: '#666666'
-        }).setOrigin(0, 0);
-        detailsViewElements.push(startLabel);
+        }).setOrigin(1, 0.5);
         
-        const endLabel = this.add.text(chartX + chartWidth, chartY + chartHeight + 10, 'Now', {
+        // End value
+        this.add.text(chartX + chartWidth + 10, chartY + chartHeight/2, `$${(endValue/1000000).toFixed(1)}M`, {
             fontSize: '12px',
-            color: '#666666'
-        }).setOrigin(1, 0);
-        detailsViewElements.push(endLabel);
+            color: changeColor
+        }).setOrigin(0, 0.5);
         
-        // Value labels
-        const maxLabel = this.add.text(chartX - 10, chartY, `$${maxValue.toLocaleString()}`, {
-            fontSize: '12px',
-            color: '#666666'
-        }).setOrigin(1, 0);
-        detailsViewElements.push(maxLabel);
-        
-        const minLabel = this.add.text(chartX - 10, chartY + chartHeight, `$${minValue.toLocaleString()}`, {
-            fontSize: '12px',
-            color: '#666666'
-        }).setOrigin(1, 1);
-        detailsViewElements.push(minLabel);
+        // Performance indicator
+        this.add.text(450, chartY + chartHeight + 15, `${percentChange >= 0 ? '+' : ''}${percentChange.toFixed(1)}% since start`, {
+            fontSize: '14px',
+            color: changeColor
+        }).setOrigin(0.5);
     }
     
     generateSampleData() {
         // Generate sample performance data
         // In real app, this would fetch from price_history table
         const startValue = this.gameData.starting_money || 10000000;
-        const currentValue = this.gameData.current_value || startValue;
+        const currentValue = this.playerDetails?.current_value || this.gameData.current_value || startValue;
         const numPoints = 10;
         const data = [startValue];
         
