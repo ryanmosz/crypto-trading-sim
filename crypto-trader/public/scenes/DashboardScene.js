@@ -115,7 +115,7 @@ export default class DashboardScene extends Phaser.Scene {
         }
         
         // Create sign out button
-        this.signOutButton = this.add.text(800, 550, 'Sign Out', {
+        this.signOutButton = this.add.text(880, 550, 'Sign Out', {
             fontSize: '16px',
             color: '#666666'
         }).setOrigin(1, 0.5)
