@@ -15,6 +15,9 @@ sequenceDiagram
   Note over caller,invitee: both start ButtonMashScene
 ```
 
+> 📝 **Host Rule:** The duel **host** is the player whose `auth.uid` sorts
+> first alphabetically; this decides who sends `start` / `finish`.
+
 ## Edge Cases
 - Invitee declines → toast to caller.
 - Invitee disappears → caller sees "player unavailable".

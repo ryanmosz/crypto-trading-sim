@@ -1,7 +1,7 @@
 # Mini-Game Task 3.0 – Build `ButtonMashScene`
 
 ## Scene Lifecycle
-1. **init(data)** – receives `duelId`, `channel`
+1. **init(data)** – now accepts `isHost` boolean.
 2. **create()** – countdown UI, event listeners
 3. **update(time, delta)** – not heavy; timer driven by Phaser events
 4. **shutdown()** – leave channel
@@ -12,6 +12,7 @@ startCountdown()         // 3-2-1-GO!
 onKeyDown(event)         // local ++, broadcast
 onIncrementMessage(msg)  // opponent ++
 onFinishMessage(msg)     // show result
+broadcastFinish()        // called once by host; guarded by this.finishSent
 ```
 
 ## Assets Needed
@@ -88,3 +89,9 @@ when the tab is backgrounded.
 | "GO!" splash | 1024×256 | `/assets/ui/go.png` |
 | Cyan counter box | 400×120 | `/assets/ui/counter-cyan.png` |
 | Magenta counter box | 400×120 | `/assets/ui/counter-magenta.png` |
+
+### Implementation Notes
+* Add `this.isHost` and `this.finishSent = false`.
+* Only `isHost` triggers `broadcastStart()` (after short delay) **and**
+  `broadcastFinish()` when the local mash timer ends.
+* Non-hosts ignore local timeout if a `finish` packet is received first.

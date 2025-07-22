@@ -18,6 +18,16 @@
 4. **Auth Test**
    Two incognito windows → channel join → presence list length === 2.
 
+**Deterministic Host:** channel members independently compute
+`isHost = myId === min(channel.presenceState().ids)`
+to avoid race conditions.
+
+Extend realtime helper with:
+
+```js
+channel.onFinish = (cb) => channel.on('broadcast', { event: 'finish' }, cb);
+```
+
 ## Success Criteria
 - Both clients receive authenticated presence events.
 - Increment messages propagate in under 150 ms round-trip.

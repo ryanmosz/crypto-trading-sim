@@ -12,6 +12,14 @@ CREATE TABLE IF NOT EXISTS public.mini_game_duels (
 ```
 
 ## Edge Function: `record-duel-result`
+
+The Edge Function resides at **`/supabase/functions/record-duel-result`**
+( **not** in any draft folder). Deploy with:
+
+```bash
+supabase functions deploy record-duel-result --env-file supabase/.env
+```
+
 Input payload:
 ```json
 { "duelId":"...", "winner":"...", "loser":"..." }
@@ -41,10 +49,10 @@ CREATE POLICY "Row owner can select"
   FOR SELECT
   USING (auth.uid() = winner_id OR auth.uid() = loser_id);
 
-CREATE POLICY "Service role insert"
+CREATE POLICY "Service role insert only"
   ON public.mini_game_duels
   FOR INSERT
-  WITH CHECK (true);
+  WITH CHECK (auth.role() = 'service_role');
 ```
 
 ### Edge Function Stub (`record-duel-result/index.ts`)

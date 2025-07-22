@@ -3,14 +3,20 @@
 ## Goal
 Lock down the precise game rules and the data contracts that all other tasks depend on.
 
+### Host Determination
+The **host** is the client with the lexicographically-smallest `playerId`
+(UUID). Only the host:
+1. Broadcasts the `start` message with canonical `startTs`.
+2. Sends the single authoritative `finish` payload.
+
 ### Sub-Tasks & Guidance
 1. **Confirm 5-Second Mash Rule**
    Validate with product owner that the mash phase lasts exactly 5 s after the "GO!" cue.
 2. **Decide Input-Throttling**
    Implement a debounce so that no more than 20 `increment` messages are emitted per player per second.
-3. **Victory Tie-Breaker**
-   • Option A: Whoever reaches the higher count wins.
-   • Option B (tie): earliest timestamp of final key-press wins.
+3. **Victory Tie-Breaker & Finish Broadcast**
+   Host transmits one `finish` packet; non-hosts ignore local timeout if the
+   `finish` has already been received.
 4. **Message Schema**
    Draft JSON contracts:
    ```json

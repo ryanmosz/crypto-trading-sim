@@ -15,6 +15,7 @@
 
 ## Tasks
 
+✅ 0.0 Duplicate draft paths removed (resolved)
 - [ ] 1.0 Define Game Design & Technical Spec
   - [ ] 1.1 Confirm 5-second mash rule & countdown UX
   - [ ] 1.2 Decide input-throttling limit (≤ 20 msgs/s)
@@ -57,3 +58,36 @@
   - [ ] 6.3 Confirm auth failure for anonymous users
   - [ ] 6.4 Regression: existing Now-mode flow unaffected
   - [ ] 6.5 End-to-end Cypress test for duel flow
+
+### Added after draft-review (2025-07-22)
+
+- [ ] 7.0 Host Determination & Start Logic
+  - [ ] 7.1 Decide deterministic host rule (lexicographic min userId)
+  - [ ] 7.2 Pass `isHost` flag into ButtonMashScene
+  - [ ] 7.3 Only host sends `start` & `finish` broadcasts
+
+- [ ] 8.0 Single-Finish Race Protection
+  - [ ] 8.1 Add `finishSent` guard in ButtonMashScene
+  - [ ] 8.2 Ignore duplicate finish payloads client-side
+
+- [ ] 9.0 Throttle & Rate-Limit Enforcement
+  - [ ] 9.1 Keep client throttle (MAX_MSGS_PER_SEC)
+  - [ ] 9.2 Document Realtime limits
+  - [ ] 9.3 (Stretch) Edge-function validation
+
+- [ ] 10.0 Supabase Paths & Env Keys
+  - [ ] 10.1 Move `record-duel-result` to `/supabase/functions/`
+  - [ ] 10.2 Add `.env` with SUPABASE_URL & SERVICE_ROLE_KEY
+
+- [ ] 11.0 Security / RLS Hardening
+  - [ ] 11.1 Restrict duel inserts to `service_role`
+  - [ ] 11.2 Verify select policy for row owners
+
+- [ ] 12.0 Integration with Main Game
+  - [ ] 12.1 Register ButtonMashScene in `public/index.js`
+  - [ ] 12.2 Add "Duel" button & modal in DashboardScene
+  - [ ] 12.3 Asset pre-load (countdown sprites, GO! graphic)
+
+- [ ] 13.0 Automated Tests
+  - [ ] 13.1 Jest unit tests for countdown & host selection
+  - [ ] 13.2 Cypress e2e invite→duel flow

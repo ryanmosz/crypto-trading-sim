@@ -105,14 +105,15 @@
     <h1>6-Minute Game Testing</h1>
     
     <div class="status-update">
-        <strong>✅ UPDATE (v8 - Database Fix):</strong> Fixed constraint issue by explicitly setting started_at timestamp!
+        <strong>✅ UPDATE (v9 - Buffer Fix):</strong> Added 1 second buffer to ensure constraint passes + debug logging!
     </div>
     
     <div class="info-box" style="background: #1a1a2e; border-color: #0066ff;">
-        <h3>🔧 Technical Fix Details</h3>
+        <h3>🔧 Technical Fix Details (v9)</h3>
         <p>The database has a constraint: <code>ends_at > started_at</code></p>
-        <p>Issue: When <code>started_at</code> defaults to <code>now()</code>, timing issues could make <code>ends_at</code> appear earlier.</p>
-        <p>Solution: Explicitly set both timestamps to ensure 6 minutes difference.</p>
+        <p>Issue: Millisecond precision can cause <code>ends_at</code> to equal <code>started_at</code></p>
+        <p>Solution: Add 1 second buffer to 6-minute games (6 min 1 sec total)</p>
+        <p>Also added debug logging to see exact timestamps generated</p>
     </div>
 
     <div class="info-box">
@@ -126,37 +127,17 @@
     </div>
 
     <div class="info-box">
-        <h2>📅 Timeline of a 6-Minute Game</h2>
-        <div class="timeline">
-            <div class="minute">
-                <span class="time">0:00</span>
-                <span class="event">Game starts with initial prices</span>
-            </div>
-            <div class="minute">
-                <span class="time">1:00</span>
-                <span class="event update">Price update #1 - UI refreshes</span>
-            </div>
-            <div class="minute">
-                <span class="time">2:00</span>
-                <span class="event update">Price update #2 - UI refreshes</span>
-            </div>
-            <div class="minute">
-                <span class="time">3:00</span>
-                <span class="event update">Price update #3 - UI refreshes</span>
-            </div>
-            <div class="minute">
-                <span class="time">4:00</span>
-                <span class="event update">Price update #4 - UI refreshes</span>
-            </div>
-            <div class="minute">
-                <span class="time">5:00</span>
-                <span class="event update">Price update #5 - UI refreshes</span>
-            </div>
-            <div class="minute">
-                <span class="time">6:00</span>
-                <span class="event end">Game ends - marked as complete</span>
-            </div>
-        </div>
+        <h2>Expected Timeline</h2>
+        <h3>🔵 Minute 0: Game Created</h3>
+        <p>Dashboard shows "5:59 remaining" countdown (actually 6:01 with buffer)</p>
+        
+        <h3>🔵 Minutes 1-5: Price Updates</h3>
+        <p>Prices update each minute via cron job</p>
+        <p>Portfolio values change accordingly</p>
+        
+        <h3>🔵 After 6 Minutes:</h3>
+        <p>Check the game shows as "Completed" with final values</p>
+        <p>(Actually completes at 6:01 due to constraint buffer)</p>
     </div>
 
     <div class="test-steps">

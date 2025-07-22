@@ -8,6 +8,10 @@
 ## Automated
 - **Jest** unit tests for `ButtonMashScene` timer & counter.
 - **Cypress** e2e: full duel flow happy-path.
+- **Host Logic**: unit test that `determineHost([idA,idB])` selects the same
+  host on both clients.
+- **Single Finish**: simulate both clients; ensure only one `finish` row is
+  recorded.
 
 ## Regression
 - Run core Now-mode smoke tests to ensure leaderboard & price polling unaffected.
