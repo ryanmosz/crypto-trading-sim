@@ -137,7 +137,7 @@ export default class NowModeSetupScene extends Phaser.Scene {
             { days: 90, label: '90 DAYS', desc: 'Three month challenge' }
         ];
         
-        let yPos = 400;
+        yPos = 400;
         durations.forEach(duration => {
             this.createDurationButton(duration.label, duration.desc, yPos, duration.days);
             yPos += 60; // Add some space between options
