@@ -48,29 +48,29 @@ Now that the frontend service layer is complete and tested, we need to integrate
 - [x] Auto-refresh participant data every minute
 
 ### 7. UI Improvements & Live Features 🚧
-- [ ] **Dashboard Active Games List**
-  - [ ] Fetch and display current user's updated value (not starting value)
-  - [ ] Add position indicator (e.g., "Pos. 2 of 2" or "2/2")
-  - [ ] Replace "X days left" with live countdown ("29d 23h 59m 45s")
+- [x] **Dashboard Active Games List**
+  - [x] Fetch and display current user's updated value (not starting value)
+  - [x] Add position indicator (e.g., "Pos. 2 of 2" or "2/2")
+  - [x] Replace "X days left" with live countdown ("29d 23h 59m 45s")
   - [ ] Ensure JOIN/VIEW button shows correctly based on participation
-- [ ] **Live Countdown Timer**
-  - [ ] Create countdown utility function
-  - [ ] Format as "29d 23h 59m 45s"
-  - [ ] Update every second
-  - [ ] Calculate from game created_at + duration_days
-  - [ ] Add to: Dashboard list, Leaderboard header, Details page
-- [ ] **Leaderboard Improvements**
-  - [ ] Remove Allocation column to fix overlap
-  - [ ] Make entire rows clickable (add hover effects)
-  - [ ] Add countdown timer at top of leaderboard
-- [ ] **Game Details Page**
-  - [ ] Check if GameDetailsScene exists (or recover from git)
-  - [ ] Show player name and current position
-  - [ ] Display current portfolio allocation
-  - [ ] Show performance metrics
+- [x] **Live Countdown Timer**
+  - [x] Create countdown utility function
+  - [x] Format as "29d 23h 59m 45s"
+  - [x] Update every second
+  - [x] Calculate from game created_at + duration_days
+  - [x] Add to: Dashboard list, Leaderboard header, Details page
+- [x] **Leaderboard Improvements**
+  - [x] Remove Allocation column to fix overlap
+  - [x] Make entire rows clickable (add hover effects)
+  - [x] Add countdown timer at top of leaderboard
+- [x] **Game Details Page**
+  - [x] Check if GameDetailsScene exists (or recover from git) - Used existing ActiveGameViewScene
+  - [x] Show player name and current position
+  - [x] Display current portfolio allocation
+  - [x] Show performance metrics
   - [ ] Display trade history (if available)
-  - [ ] Works for ANY player in the game (not just logged-in user)
-  - [ ] Navigate from leaderboard row clicks
+  - [x] Works for ANY player in the game (not just logged-in user)
+  - [x] Navigate from leaderboard row clicks
 
 ## Testing Checklist
 - [ ] Create a game and verify code is displayed
