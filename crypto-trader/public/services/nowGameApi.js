@@ -1,6 +1,7 @@
-// API wrapper for multiplayer game Edge Functions
+import { formatGameCode, validateGameCode, cleanGameCode } from '../utils/slug.js';
+import { auth } from '../auth.js';
 
-// Get config values lazily to avoid loading order issues
+// Helper function to get CONFIG values
 function getConfig() {
     if (!window.CONFIG) {
         throw new Error('CONFIG not loaded. Make sure config.js is loaded before using the API.');
@@ -17,7 +18,7 @@ function getConfig() {
  * @throws {Error} If no active session exists
  */
 async function getAuthToken() {
-    const supabase = window.supabase;
+    const supabase = auth.supabase;
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
         throw new Error('No active session');
@@ -87,7 +88,7 @@ export async function joinNowGame({ gameId, allocations }) {
  * @returns {Promise<Object>} - The game data
  */
 export async function findGameByCode(gameCode) {
-    const supabase = window.supabase;
+    const supabase = auth.supabase;
     
     const { data, error } = await supabase
         .from('active_games')
@@ -110,7 +111,7 @@ export async function findGameByCode(gameCode) {
  * @returns {Promise<Array>} - Array of participants with their data
  */
 export async function getGameParticipants(gameId) {
-    const supabase = window.supabase;
+    const supabase = auth.supabase;
     
     const { data, error } = await supabase
         .from('game_participants')
@@ -135,7 +136,7 @@ export async function getGameParticipants(gameId) {
  * @returns {Promise<boolean>} - True if user has joined
  */
 export async function hasUserJoinedGame(gameId, userId) {
-    const supabase = window.supabase;
+    const supabase = auth.supabase;
     
     const { data } = await supabase
         .from('game_participants')
