@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI Fixes Test Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #00ffff;
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            background: #222;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .test-section h2 {
+            color: #ffff00;
+            margin-top: 0;
+        }
+        .test-status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status-fixed {
+            background: #00ff00;
+            color: #000;
+        }
+        .status-testing {
+            background: #ffff00;
+            color: #000;
+        }
+        .fix-details {
+            margin: 15px 0;
+            padding: 15px;
+            background: #111;
+            border-left: 3px solid #00ffff;
+        }
+        .before-after {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 10px 0;
+        }
+        .before, .after {
+            padding: 10px;
+            background: #000;
+            border: 1px solid #444;
+        }
+        .before {
+            border-left: 3px solid #ff0066;
+        }
+        .after {
+            border-left: 3px solid #00ff00;
+        }
+        code {
+            background: #333;
+            padding: 2px 5px;
+            border-radius: 3px;
+            color: #00ffff;
+        }
+        .test-link {
+            display: inline-block;
+            background: #00ffff;
+            color: #000;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .test-link:hover {
+            background: #00ff00;
+        }
+        .log-box {
+            background: #000;
+            border: 1px solid #333;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+        .copy-button {
+            background: #666;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            float: right;
+        }
+        .copy-button:hover {
+            background: #888;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 UI Fixes Test Results</h1>
+    
+    <div class="test-section">
+        <h2>1. Game Code Display <span class="test-status status-fixed">FIXED</span></h2>
+        <div class="fix-details">
+            <div class="before-after">
+                <div class="before">
+                    <strong>❌ Before:</strong><br>
+                    Showed as <code>S5 DM</code> with space
+                </div>
+                <div class="after">
+                    <strong>✅ After:</strong><br>
+                    Shows as <code>S5DM</code> - no spaces!
+                </div>
+            </div>
+            <p><strong>Fix:</strong> Updated <code>formatGameCode()</code> in utils/slug.js to remove space insertion</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. JavaScript Errors <span class="test-status status-fixed">FIXED</span></h2>
+        <div class="fix-details">
+            <div class="before-after">
+                <div class="before">
+                    <strong>❌ Before:</strong><br>
+                    <code>Cannot read properties of null (reading 'drawImage')</code><br>
+                    Repeated errors in console
+                </div>
+                <div class="after">
+                    <strong>✅ After:</strong><br>
+                    No errors - countdown timer checks if objects exist before updating
+                </div>
+            </div>
+            <p><strong>Fix:</strong> Added null checks in <code>startCountdownUpdates()</code> to verify text objects and scene state</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Dashboard Spacing <span class="test-status status-fixed">FIXED</span></h2>
+        <div class="fix-details">
+            <div class="before-after">
+                <div class="before">
+                    <strong>❌ Before:</strong><br>
+                    • Text overlapping<br>
+                    • Cramped layout<br>
+                    • Misaligned columns
+                </div>
+                <div class="after">
+                    <strong>✅ After:</strong><br>
+                    • ID on far left<br>
+                    • Smaller countdown (13px)<br>
+                    • Proper spacing between columns<br>
+                    • VIEW button on far right
+                </div>
+            </div>
+            <p><strong>Fix:</strong> Adjusted x-positions and font sizes in <code>createActiveGameDisplay()</code></p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Performance Chart <span class="test-status status-fixed">FIXED</span></h2>
+        <div class="fix-details">
+            <div class="before-after">
+                <div class="before">
+                    <strong>❌ Before:</strong><br>
+                    No chart in player details view
+                </div>
+                <div class="after">
+                    <strong>✅ After:</strong><br>
+                    • Line chart showing portfolio trend<br>
+                    • Cyan line with data points<br>
+                    • Start/end values labeled<br>
+                    • Performance percentage shown
+                </div>
+            </div>
+            <p><strong>Fix:</strong> Restored <code>createPerformanceChart()</code> from commit b19e777 and added to player details view</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Player Details Layout <span class="test-status status-fixed">FIXED</span></h2>
+        <div class="fix-details">
+            <p><strong>Improvements:</strong></p>
+            <ul>
+                <li>Clean header with game info and countdown</li>
+                <li>Summary box with current value and profit/loss</li>
+                <li>Rank display with medals (🥇🥈🥉) for top 3</li>
+                <li>Better allocation table with headers</li>
+                <li>Row backgrounds for clarity</li>
+                <li>Price change percentages for each crypto</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test the Fixes</h2>
+        <a href="http://localhost:8001/" class="test-link" target="_blank">🎮 Launch Game</a>
+        <p>To test all fixes:</p>
+        <ol>
+            <li>Click "Active Games" tab in dashboard</li>
+            <li>Note game codes show without spaces (e.g., <code>S5DM</code>)</li>
+            <li>Check console - no repeated errors</li>
+            <li>Click "VIEW" on an active game to see leaderboard</li>
+            <li>Click any player name to see details with chart</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Log</h2>
+        <button class="copy-button" onclick="copyLog()">📋 Copy Log</button>
+        <div class="log-box" id="testLog">=== UI FIXES TEST LOG ===
+Date: January 22, 2025
+Branch: phase-1-shared-state
+
+FIXES APPLIED:
+✅ Game codes display without spaces
+✅ Countdown timer errors fixed  
+✅ Dashboard spacing improved
+✅ Performance chart restored
+✅ Player details view enhanced
+
+FILES MODIFIED:
+- crypto-trader/public/utils/slug.js
+- crypto-trader/public/scenes/DashboardScene.js
+- crypto-trader/public/scenes/ActiveGameViewScene.js
+
+COMMITS:
+- f4f12f5: Fix UI issues and remove spaces from game codes
+- 24f26bb: Add performance chart to player details view
+
+TEST STATUS: Ready for verification</div>
+    </div>
+
+    <script>
+        function copyLog() {
+            const logText = document.getElementById('testLog').innerText;
+            navigator.clipboard.writeText(logText).then(() => {
+                const btn = document.querySelector('.copy-button');
+                btn.textContent = '✅ Copied!';
+                setTimeout(() => {
+                    btn.textContent = '📋 Copy Log';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html> 
