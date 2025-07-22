@@ -73,39 +73,6 @@ export default class DashboardScene extends Phaser.Scene {
             console.error('Stack trace:', error.stack);
         }
         
-        // Test buttons (temporary for debugging) - hide them in corner
-        const testSaveBtn = this.add.text(50, 20, '[Test Save]', {
-            fontSize: '12px',
-            color: '#003300'
-        }).setOrigin(0, 0.5)
-        .setInteractive({ useHandCursor: true })
-        .on('pointerover', function() { this.setColor('#00ff00'); })
-        .on('pointerout', function() { this.setColor('#003300'); })
-        .on('pointerdown', async () => {
-            console.log('Testing save with user:', this.user);
-            try {
-                const testData = {
-                    user_id: this.user.id,
-                    scenario_key: 'march_2020',
-                    allocations: {BTC: 5, ETH: 3, BNB: 2},
-                    final_value: 12500000  // NOTE: This is fake test data! March 2020 was a crash
-                };
-                
-                const { data, error } = await this.auth.supabase
-                    .from('past_runs')
-                    .insert(testData)
-                    .select();
-                    
-                if (error) {
-                    console.error('Test save error:', error);
-                } else {
-                    console.log('Test save successful:', data);
-                }
-            } catch (e) {
-                console.error('Test save exception:', e);
-            }
-        });
-
     }
     
     createSignOutButton() {

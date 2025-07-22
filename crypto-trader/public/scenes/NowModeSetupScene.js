@@ -122,43 +122,26 @@ export default class NowModeSetupScene extends Phaser.Scene {
             yPos += 25;
         });
         
-        // Multiplayer toggle
-        this.isMultiplayer = false;
-        
-        const multiplayerToggle = this.add.rectangle(450, 310, 300, 40, 0x111111)
-            .setStrokeStyle(2, 0x333333)
-            .setInteractive({ useHandCursor: true });
-            
-        this.multiplayerText = this.add.text(450, 310, '🎮 ENABLE MULTIPLAYER', {
-            fontSize: '18px',
-            color: '#666666'
-        }).setOrigin(0.5);
-        
-        multiplayerToggle.on('pointerdown', () => {
-            this.isMultiplayer = !this.isMultiplayer;
-            if (this.isMultiplayer) {
-                multiplayerToggle.setFillStyle(0x00ff00);
-                multiplayerToggle.setStrokeStyle(2, 0x00ff00);
-                this.multiplayerText.setText('🎮 MULTIPLAYER ENABLED');
-                this.multiplayerText.setColor('#000000');
-            } else {
-                multiplayerToggle.setFillStyle(0x111111);
-                multiplayerToggle.setStrokeStyle(2, 0x333333);
-                this.multiplayerText.setText('🎮 ENABLE MULTIPLAYER');
-                this.multiplayerText.setColor('#666666');
-            }
-        });
+        // All Now games are multiplayer - no toggle needed
         
         // Duration selection header
-        this.add.text(450, 360, 'Choose Game Duration:', {
-            fontSize: '24px',
-            color: '#ffffff'
+        this.add.text(450, 350, 'SELECT DURATION', {
+            fontSize: '20px',
+            color: '#00ff00'
         }).setOrigin(0.5);
         
-        // Duration options
-        this.createDurationButton('30 DAYS', 'One month challenge', 420, 30);
-        this.createDurationButton('60 DAYS', 'Two month challenge', 480, 60);
-        this.createDurationButton('90 DAYS', 'Three month challenge', 540, 90);
+        // Create duration option boxes
+        const durations = [
+            { days: 30, label: '30 DAYS', desc: 'One month challenge' },
+            { days: 60, label: '60 DAYS', desc: 'Two month challenge' },
+            { days: 90, label: '90 DAYS', desc: 'Three month challenge' }
+        ];
+        
+        let yPos = 400;
+        durations.forEach(duration => {
+            this.createDurationButton(duration.label, duration.desc, yPos, duration.days);
+            yPos += 60; // Add some space between options
+        });
         
         // Back button
         const backButton = this.add.rectangle(100, 550, 120, 40, 0x333333)
@@ -217,7 +200,7 @@ export default class NowModeSetupScene extends Phaser.Scene {
                     scenario: 'now',
                     durationDays: days,
                     isNowMode: true,
-                    isMultiplayer: this.isMultiplayer
+                    isMultiplayer: true // All Now games are multiplayer
                 });
             });
     }

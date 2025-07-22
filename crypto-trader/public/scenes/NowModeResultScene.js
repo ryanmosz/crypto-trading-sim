@@ -145,8 +145,8 @@ export default class NowModeResultScene extends Phaser.Scene {
                     // Show error to user
                     this.showError(error.message);
                 }
-            } else if (this.isMultiplayer) {
-                // Use the API to create a multiplayer game
+            } else {
+                // All Now games are multiplayer - use the API to create a game
                 try {
                     const result = await createNowGame({
                         duration: this.durationDays,
@@ -158,34 +158,6 @@ export default class NowModeResultScene extends Phaser.Scene {
                 } catch (error) {
                     console.error('Error creating multiplayer game:', error);
                     this.showError(error.message);
-                }
-            } else {
-                // Single player game - save directly
-                const endsAt = new Date();
-                endsAt.setDate(endsAt.getDate() + this.durationDays);
-                
-                const { data: gameData, error } = await this.auth.supabase
-                    .from('active_games')
-                    .insert({
-                        user_id: user.id,
-                        duration_days: this.durationDays,
-                        ends_at: endsAt.toISOString(),
-                        allocations: this.allocations,
-                        starting_prices: this.startingPrices,
-                        starting_money: GAME_CONFIG.startingMoney,
-                        current_prices: this.startingPrices,
-                        current_value: GAME_CONFIG.startingMoney,
-                        last_updated: new Date().toISOString(),
-                        is_multiplayer: this.isMultiplayer,
-                        participant_count: 1
-                    })
-                    .select()
-                    .single();
-                    
-                if (error) {
-                    console.error('Error saving active game:', error);
-                } else {
-                    console.log('Single player game saved successfully', gameData);
                 }
             }
         } catch (error) {
