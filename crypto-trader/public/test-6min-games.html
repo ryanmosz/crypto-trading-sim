@@ -105,9 +105,16 @@
     <h1>6-Minute Game Testing</h1>
     
     <div class="status-update">
-        <strong>✅ UPDATE (Re-deployed v7):</strong> Edge Function validation now converts to Number and has debug logging!
+        <strong>✅ UPDATE (v8 - Database Fix):</strong> Fixed constraint issue by explicitly setting started_at timestamp!
     </div>
     
+    <div class="info-box" style="background: #1a1a2e; border-color: #0066ff;">
+        <h3>🔧 Technical Fix Details</h3>
+        <p>The database has a constraint: <code>ends_at > started_at</code></p>
+        <p>Issue: When <code>started_at</code> defaults to <code>now()</code>, timing issues could make <code>ends_at</code> appear earlier.</p>
+        <p>Solution: Explicitly set both timestamps to ensure 6 minutes difference.</p>
+    </div>
+
     <div class="info-box">
         <h2>What's New</h2>
         <ul>
