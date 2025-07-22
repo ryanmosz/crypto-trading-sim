@@ -49,8 +49,8 @@ serve(async (req) => {
     const { duration, allocations } = await req.json()
 
     // Validate input
-    if (!duration || ![30, 60, 90].includes(duration)) {
-      throw new Error('Invalid duration. Must be 30, 60, or 90 days')
+    if (duration === undefined || duration === null || ![0, 30, 60, 90].includes(duration)) {
+      throw new Error('Invalid duration. Must be 0 (6 min), 30, 60, or 90 days')
     }
 
     if (!allocations || typeof allocations !== 'object') {
@@ -108,7 +108,13 @@ serve(async (req) => {
 
     // Calculate end date
     const endsAt = new Date()
-    endsAt.setDate(endsAt.getDate() + duration)
+    if (duration === 0) {
+      // 6-minute game
+      endsAt.setMinutes(endsAt.getMinutes() + 6)
+    } else {
+      // Standard duration in days
+      endsAt.setDate(endsAt.getDate() + duration)
+    }
 
     // Start transaction by creating game
     const { data: gameData, error: gameError } = await supabase
