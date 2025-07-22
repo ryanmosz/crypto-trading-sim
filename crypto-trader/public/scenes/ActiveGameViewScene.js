@@ -439,7 +439,8 @@ export default class ActiveGameViewScene extends Phaser.Scene {
         }).setOrigin(0.5);
         
         // Countdown timer at y=130 - separated from title
-        const timeRemaining = calculateTimeRemaining(this.gameData.created_at, this.gameData.duration_days || 30);
+        // Use ends_at for accurate countdown (works for both regular and 6-minute games)
+        const timeRemaining = calculateTimeRemainingFromEndDate(this.gameData.ends_at);
         const timeColor = getTimeRemainingColor(timeRemaining.totalSeconds, this.gameData.duration_days || 30);
         
         // Show "LEADERBOARD" text with countdown below it
@@ -459,7 +460,7 @@ export default class ActiveGameViewScene extends Phaser.Scene {
         this.countdownTimer = this.time.addEvent({
             delay: 1000,
             callback: () => {
-                const newTimeRemaining = calculateTimeRemaining(this.gameData.created_at, this.gameData.duration_days || 30);
+                const newTimeRemaining = calculateTimeRemainingFromEndDate(this.gameData.ends_at);
                 const newTimeColor = getTimeRemainingColor(newTimeRemaining.totalSeconds, this.gameData.duration_days || 30);
                 this.countdownText.setText(formatTimeRemaining(newTimeRemaining));
                 this.countdownText.setColor(newTimeColor);
