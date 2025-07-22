@@ -78,20 +78,12 @@
         <div id="test4Result"></div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="module">
-        // Load config
-        await import('./config.js');
-        const config = window.CONFIG;
+        // Import the auth module which has the shared Supabase instance
+        import { auth } from './auth.js';
         
-        // Initialize Supabase with session persistence
-        window.supabase = supabase.createClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY, {
-            auth: {
-                persistSession: true,
-                detectSessionInUrl: true,
-                autoRefreshToken: true
-            }
-        });
+        // Use the same Supabase client as the main app
+        window.supabase = auth.supabase;
         
         // Check auth status
         async function checkAuthStatus() {
@@ -112,7 +104,7 @@
         
         // Sign out
         window.signOut = async function() {
-            await window.supabase.auth.signOut();
+            await auth.signOut();
             location.reload();
         }
         
