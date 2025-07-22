@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6-Minute Game Testing</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #00ffff;
+            text-align: center;
+            text-shadow: 0 0 10px #00ffff;
+        }
+        .info-box {
+            background: #1a1a1a;
+            border: 2px solid #00ff00;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .timeline {
+            background: #222;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .minute {
+            display: flex;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px solid #333;
+        }
+        .minute .time {
+            color: #00ffff;
+            width: 80px;
+        }
+        .minute .event {
+            color: #888;
+            flex: 1;
+        }
+        .minute .event.update {
+            color: #00ff00;
+        }
+        .minute .event.end {
+            color: #ff0066;
+        }
+        .test-steps {
+            background: #1a1a1a;
+            border: 2px solid #00ffff;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .step {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .code {
+            background: #000;
+            color: #00ff00;
+            padding: 2px 8px;
+            font-family: monospace;
+        }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #00ffff;
+        }
+        .test-log {
+            background: #000;
+            color: #00ff00;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 6-MINUTE GAME TESTING</h1>
+    
+    <div class="info-box">
+        <h2>🎯 What's New</h2>
+        <ul>
+            <li>6-minute NOW mode games for quick testing</li>
+            <li>Price updates every minute (instead of every 5 minutes)</li>
+            <li>Perfect for testing game completion logic</li>
+            <li>Great for demos and development</li>
+        </ul>
+    </div>
+
+    <div class="info-box">
+        <h2>📅 Timeline of a 6-Minute Game</h2>
+        <div class="timeline">
+            <div class="minute">
+                <span class="time">0:00</span>
+                <span class="event">Game starts with initial prices</span>
+            </div>
+            <div class="minute">
+                <span class="time">1:00</span>
+                <span class="event update">Price update #1 - UI refreshes</span>
+            </div>
+            <div class="minute">
+                <span class="time">2:00</span>
+                <span class="event update">Price update #2 - UI refreshes</span>
+            </div>
+            <div class="minute">
+                <span class="time">3:00</span>
+                <span class="event update">Price update #3 - UI refreshes</span>
+            </div>
+            <div class="minute">
+                <span class="time">4:00</span>
+                <span class="event update">Price update #4 - UI refreshes</span>
+            </div>
+            <div class="minute">
+                <span class="time">5:00</span>
+                <span class="event update">Price update #5 - UI refreshes</span>
+            </div>
+            <div class="minute">
+                <span class="time">6:00</span>
+                <span class="event end">Game ends - marked as complete</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-steps">
+        <h2>🧪 Test Steps</h2>
+        <div class="step">1. Go to <span class="code">http://localhost:8000/</span></div>
+        <div class="step">2. Login with your test account</div>
+        <div class="step">3. Click "NOW MODE"</div>
+        <div class="step">4. Select <strong>"6 MIN"</strong> duration (first option)</div>
+        <div class="step">5. Set your allocations and start the game</div>
+        <div class="step">6. Note the game code (e.g., <span class="code">Ab3x</span>)</div>
+        <div class="step">7. Watch the countdown timer - should show ~5:59 and counting down</div>
+        <div class="step">8. Open another browser/incognito window</div>
+        <div class="step">9. Login with a different account and join using the game code</div>
+        <div class="step">10. Watch both screens update every minute</div>
+        <div class="step">11. After 6 minutes, both games should show as completed</div>
+    </div>
+
+    <div class="info-box">
+        <h2>🔍 What to Look For</h2>
+        <ul>
+            <li><strong>Countdown Timer:</strong> Should show minutes:seconds (e.g., "5:47")</li>
+            <li><strong>Price Updates:</strong> Values should change every minute</li>
+            <li><strong>Leaderboard:</strong> Rankings update as prices change</li>
+            <li><strong>Game Completion:</strong> After 6 minutes, game should be marked complete</li>
+            <li><strong>Database Values:</strong> Check that <span class="code">duration_days = 0</span> in database</li>
+        </ul>
+    </div>
+
+    <div class="info-box">
+        <h2>⚙️ Technical Details</h2>
+        <ul>
+            <li><strong>Database:</strong> <span class="code">duration_days = 0</span> represents 6 minutes</li>
+            <li><strong>Edge Function:</strong> <span class="code">create-game</span> handles 0 as special case</li>
+            <li><strong>Countdown:</strong> Uses <span class="code">ends_at</span> directly (not calculated from duration)</li>
+            <li><strong>Cron Jobs:</strong> Run every minute (<span class="code">* * * * *</span>)</li>
+        </ul>
+    </div>
+
+    <div>
+        <button onclick="copyLog()">📋 Copy Test Log</button>
+        <button onclick="location.href='http://localhost:8000/'">🎮 Go to App</button>
+    </div>
+
+    <div class="test-log" id="testLog">=== 6-MINUTE GAME TEST LOG ===
+Date: ${new Date().toLocaleDateString()}
+Time: ${new Date().toLocaleTimeString()}
+Branch: phase-1-shared-state
+
+FEATURES IMPLEMENTED:
+✅ 6-minute game option in NOW mode
+✅ Updated Edge Functions to handle duration=0
+✅ Countdown timer uses ends_at directly
+✅ All UI properly displays "6 minutes"
+✅ Cron jobs run every minute
+
+PRICE UPDATE SCHEDULE:
+- Every minute (* * * * *)
+- Both fetch-prices and update-game-prices
+
+TEST RESULTS:
+[ ] Game creation successful
+[ ] Countdown timer displays correctly
+[ ] Price updates every minute
+[ ] Multiplayer join works
+[ ] Game completes after 6 minutes
+[ ] Database values correct
+
+NOTES:
+_________________________________
+_________________________________
+_________________________________</div>
+
+    <script>
+        function copyLog() {
+            const log = document.getElementById('testLog').innerText;
+            navigator.clipboard.writeText(log).then(() => {
+                alert('Test log copied to clipboard!');
+            });
+        }
+    </script>
+</body>
+</html> 
