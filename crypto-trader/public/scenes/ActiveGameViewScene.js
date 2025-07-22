@@ -518,22 +518,8 @@ export default class ActiveGameViewScene extends Phaser.Scene {
         participants.forEach((participant, index) => {
             const rank = index + 1;
             
-            // Calculate actual value from allocations
-            let calculatedValue = 0;
-            const allocations = participant.allocations || {};
-            Object.entries(allocations).forEach(([crypto, amount]) => {
-                if (amount > 0) {
-                    const invested = amount * 1000000;
-                    const startPrice = startingPrices[crypto];
-                    const currentPrice = currentPrices[crypto];
-                    const coins = invested / startPrice;
-                    const currentCryptoValue = coins * currentPrice;
-                    calculatedValue += currentCryptoValue;
-                }
-            });
-            
-            // Use calculated value instead of stored value
-            const currentValue = calculatedValue || participant.current_value;
+            // Use database value directly (now that it's fixed)
+            const currentValue = parseFloat(participant.current_value);
             const profit = currentValue - startValue;
             const profitPercent = (profit / startValue) * 100;
             const profitColor = profit >= 0 ? '#00ff00' : '#ff0066';
@@ -719,7 +705,6 @@ export default class ActiveGameViewScene extends Phaser.Scene {
         
         // Rows for each crypto
         let yPos = 180;
-        let calculatedTotal = 0; // Track sum of individual holdings
         Object.entries(allocations).forEach(([crypto, amount]) => {
             if (amount > 0) {
                 const invested = amount * 1000000;
@@ -730,8 +715,6 @@ export default class ActiveGameViewScene extends Phaser.Scene {
                 const cryptoProfit = currentCryptoValue - invested;
                 const cryptoProfitPercent = (cryptoProfit / invested) * 100;
                 const cryptoProfitColor = cryptoProfit >= 0 ? '#00ff00' : '#ff0066';
-                
-                calculatedTotal += currentCryptoValue; // Add to running total
                 
                 // Crypto name
                 this.add.text(100, yPos, crypto, {
@@ -787,15 +770,8 @@ export default class ActiveGameViewScene extends Phaser.Scene {
         // Add total row
         yPos += 30;
         
-        // Debug: Compare calculated vs stored value
-        console.log('Debug totals:', {
-            calculatedTotal,
-            participantValue: participant.current_value,
-            difference: participant.current_value - calculatedTotal
-        });
-        
-        // Use calculated total for now
-        const currentTotal = calculatedTotal;
+        // Use database value directly (now that it's fixed)
+        const currentTotal = parseFloat(participant.current_value);
         const totalProfit = currentTotal - startValue;
         const totalProfitPercent = (totalProfit / startValue) * 100;
         const totalProfitColor = totalProfit >= 0 ? '#00ff00' : '#ff0066';
@@ -823,8 +799,6 @@ export default class ActiveGameViewScene extends Phaser.Scene {
         
         // Store player details for chart BEFORE creating it
         this.playerDetails = participant;
-        // Override current_value with calculated total to fix chart scaling
-        this.playerDetails.calculatedValue = calculatedTotal;
         
         // Performance chart exactly like the original
         this.createPerformanceChart(yPos + 50);
@@ -961,8 +935,7 @@ export default class ActiveGameViewScene extends Phaser.Scene {
         // In real app, this would fetch from price_history table
         const startValue = this.gameData.starting_money || 10000000;
         // Use calculated value if available, otherwise fall back to current_value
-        const currentValue = this.playerDetails?.calculatedValue || 
-                           this.playerDetails?.current_value || 
+        const currentValue = this.playerDetails?.current_value || 
                            this.gameData.current_value || 
                            startValue;
         const numPoints = 10;
