@@ -21,6 +21,7 @@
 - **Auto-refresh**: Updates every 60 seconds
 - **Price Updates**: Shared prices for fair competition
 - **Security**: Proper RLS and authentication
+- **6-Minute Games**: Quick multiplayer games for testing/demos (NEW!)
 
 ### Technical Infrastructure ✅
 - Supabase backend with PostgreSQL
@@ -29,12 +30,25 @@
 - Row Level Security (RLS) policies
 - Responsive UI with Phaser.js
 - ES6 module architecture
+- Automated game completion system
+- Price update cron jobs (every minute)
+
+## Recent Fixes (January 2025)
+
+### 6-Minute Game Implementation ✅
+All issues resolved:
+- Fixed Edge Function response format (v15)
+- Added participant count auto-update trigger
+- Fixed countdown timer to show correct time
+- Created game completion function
+- Past games now properly saved
+- Ready for winner notifications
 
 ## What's Left to Build
 
 ### Testing & Deployment
 1. **Comprehensive Testing** (Current Phase)
-   - Two-player flow testing
+   - Two-player flow testing ✅
    - Edge case validation
    - Performance testing
    - Security verification
@@ -44,9 +58,9 @@
    - Configure production environment
    - Set up monitoring
 
-3. **Automated Updates**
-   - Cron job for price updates
-   - Automated game completion
+3. **Automated Updates** ✅
+   - Cron job for price updates (DONE - every minute)
+   - Automated game completion (DONE - complete_expired_games)
 
 ### Future Enhancements (Not Critical)
 1. **User Experience**
@@ -54,6 +68,7 @@
    - Game browsing/discovery
    - Push notifications
    - Chat between players
+   - Winner notifications/badges
 
 2. **Analytics**
    - Detailed performance charts
@@ -70,20 +85,23 @@
 ## Current Status
 
 **Multiplayer Implementation: 100% COMPLETE** 🎉
+**6-Minute Games: FULLY FUNCTIONAL** 🎮
 
-All core multiplayer features are implemented and working:
-- ✅ Backend API (Edge Functions)
-- ✅ Database schema
+All core features are implemented and working:
+- ✅ Backend API (Edge Functions v15)
+- ✅ Database schema with triggers
 - ✅ Frontend integration
 - ✅ Security (RLS)
 - ✅ Testing utilities
+- ✅ Quick game mode (6 minutes)
+- ✅ Automated completion
 
 The game is ready for comprehensive testing before production deployment!
 
 ## Known Issues
 
-1. **Price Updates**: Currently manual, needs automation
-2. **Username Display**: Shows emails instead of usernames
-3. **Game Discovery**: No browse feature, must share codes manually
+1. **Username Display**: Shows emails instead of usernames
+2. **Game Discovery**: No browse feature, must share codes manually
+3. **Winner Notifications**: Backend ready, needs UI implementation
 
-None of these issues block the core multiplayer functionality. 
+None of these issues block the core functionality. 
