@@ -2,6 +2,7 @@
 import { Auth } from '../auth.js';
 import { GAME_CONFIG, SCENARIOS } from '../shared/constants.js';
 import { calculateTimeRemaining, calculateTimeRemainingFromEndDate, formatTimeRemaining, getTimeRemainingColor } from '../utils/countdown.js';
+import { GameNotifications, checkCompletedGames } from '../shared/GameNotifications.js';
 
 // Dashboard Scene
 export default class DashboardScene extends Phaser.Scene {
@@ -60,6 +61,9 @@ export default class DashboardScene extends Phaser.Scene {
             // Initialize content group
             this.contentGroup = this.add.group();
             this.contentY = 280; // Starting Y position for content
+            
+            // Initialize notification system
+            this.notificationSystem = new GameNotifications(this);
             
             // Check and start tutorial for new users
             if (window.tutorialManager) {
@@ -447,6 +451,9 @@ export default class DashboardScene extends Phaser.Scene {
             
             // Start countdown timer updates
             this.startCountdownUpdates();
+            
+            // Check for completed games and show notifications
+            await checkCompletedGames(this.auth, this.user.id, this.notificationSystem);
             
         } catch (error) {
             console.error('Error loading active games:', error);
@@ -1326,6 +1333,11 @@ export default class DashboardScene extends Phaser.Scene {
     shutdown() {
         // Clean up countdown timers
         this.stopCountdownUpdates();
+        
+        // Clean up notification system
+        if (this.notificationSystem) {
+            this.notificationSystem.destroy();
+        }
         
         // Clean up when leaving dashboard
         // Clear all groups with error handling

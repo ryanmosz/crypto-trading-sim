@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Win/Loss Notifications Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #0a0a0a;
+            color: #fff;
+        }
+        .header {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 2px solid #00ff00;
+        }
+        h1 {
+            color: #00ff00;
+            margin: 0;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        .info-box {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #333;
+        }
+        .feature-box {
+            background: #0a0a1a;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #0066ff;
+        }
+        .test-button {
+            display: inline-block;
+            padding: 15px 30px;
+            background: #00ff00;
+            color: #000;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 10px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+        }
+        .test-button:hover {
+            background: #00ff66;
+            transform: scale(1.05);
+        }
+        .notification-preview {
+            background: #222;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .win {
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        .second {
+            color: #ffcc00;
+        }
+        .third {
+            color: #ff9933;
+        }
+        .lose {
+            color: #ff6600;
+        }
+        code {
+            background: #333;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #00ff00;
+        }
+        ul {
+            line-height: 1.8;
+        }
+        .screenshot {
+            background: #111;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+            border: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏆 Win/Loss Notification System</h1>
+        <p>Automatic notifications when multiplayer games complete!</p>
+    </div>
+
+    <div class="feature-box">
+        <h2>✨ What's New</h2>
+        <ul>
+            <li>🏆 <strong>Winner notification</strong> with trophy icon and green highlight</li>
+            <li>🥈 <strong>2nd place</strong> gets silver medal and yellow highlight</li>
+            <li>🥉 <strong>3rd place</strong> gets bronze medal and orange highlight</li>
+            <li>🎯 <strong>Other positions</strong> get target icon with position number</li>
+            <li>💰 Shows final portfolio value and profit/loss</li>
+            <li>⏱️ Auto-dismisses after 10 seconds</li>
+            <li>❌ Manual close button available</li>
+            <li>📊 Shows game code and total players</li>
+            <li>🔔 Only shows once per completed game</li>
+        </ul>
+    </div>
+
+    <div class="notification-preview">
+        <h3>Notification Examples</h3>
+        
+        <div class="screenshot">
+            <p class="win">🏆 <strong>WINNER!</strong></p>
+            <p>Game Ab3x • 4 players</p>
+            <p>$10.12M <span class="win">+$117,418</span></p>
+        </div>
+        
+        <div class="screenshot">
+            <p class="second">🥈 <strong>2nd PLACE</strong></p>
+            <p>Game Ab3x • 4 players</p>
+            <p>$10.06M <span class="win">+$57,992</span></p>
+        </div>
+        
+        <div class="screenshot">
+            <p class="lose">🎯 <strong>4th PLACE</strong></p>
+            <p>Game Ab3x • 4 players</p>
+            <p>$9.94M <span class="lose">-$62,315</span></p>
+        </div>
+    </div>
+
+    <div class="info-box">
+        <h2>📋 How It Works</h2>
+        <ol>
+            <li><strong>Automatic Detection:</strong> When you return to the dashboard, it checks for recently completed games</li>
+            <li><strong>Position Calculation:</strong> Determines your final ranking based on portfolio value</li>
+            <li><strong>Smart Display:</strong> Shows appropriate icon and color based on position</li>
+            <li><strong>Profit/Loss:</strong> Calculates and displays your gain or loss from the $10M starting value</li>
+            <li><strong>One-Time Show:</strong> Each game result is only shown once (tracked in localStorage)</li>
+            <li><strong>Last Hour:</strong> Only shows games completed in the last hour</li>
+        </ol>
+    </div>
+
+    <div class="info-box">
+        <h2>🧪 Testing Instructions</h2>
+        <ol>
+            <li>Start a 6-minute multiplayer game with 2+ players</li>
+            <li>Wait for the game to complete (6 minutes)</li>
+            <li>Return to the Dashboard (or refresh if already there)</li>
+            <li>See your notification appear with win/loss status!</li>
+        </ol>
+        
+        <p><strong>Tip:</strong> To test again, you can clear notification history:</p>
+        <code>localStorage.removeItem('crypto_trader_shown_notifications')</code>
+    </div>
+
+    <div class="feature-box">
+        <h2>🎨 Visual Design</h2>
+        <ul>
+            <li>Notifications appear at the top of the dashboard</li>
+            <li>Smooth fade-in animation with slight scale effect</li>
+            <li>Multiple notifications stack vertically</li>
+            <li>Semi-transparent background with colored border</li>
+            <li>High contrast text for readability</li>
+            <li>Responsive close button with hover effect</li>
+        </ul>
+    </div>
+
+    <div style="text-align: center; margin-top: 40px;">
+        <button class="test-button" onclick="window.location.href='/'">
+            🎮 Go to Game
+        </button>
+        <button class="test-button" onclick="clearHistory()">
+            🗑️ Clear Notification History
+        </button>
+    </div>
+
+    <div class="info-box" style="margin-top: 40px;">
+        <h3>🔧 Technical Details</h3>
+        <ul>
+            <li>File: <code>shared/GameNotifications.js</code></li>
+            <li>Integration: <code>DashboardScene.js</code></li>
+            <li>Database: Queries <code>game_participants</code> and <code>active_games</code></li>
+            <li>Storage: Uses localStorage to track shown notifications</li>
+            <li>Performance: Only queries games from last hour</li>
+        </ul>
+    </div>
+
+    <script>
+        function clearHistory() {
+            localStorage.removeItem('crypto_trader_shown_notifications');
+            alert('Notification history cleared! Next completed game will show a notification.');
+        }
+        
+        console.log('Win/Loss Notification System Test Page');
+        console.log('Current notification history:', 
+            localStorage.getItem('crypto_trader_shown_notifications') || 'None');
+    </script>
+</body>
+</html> 

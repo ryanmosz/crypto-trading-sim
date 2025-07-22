@@ -464,6 +464,30 @@ export default class ActiveGameViewScene extends Phaser.Scene {
                 const newTimeColor = getTimeRemainingColor(newTimeRemaining.totalSeconds, this.gameData.duration_days || 30);
                 this.countdownText.setText(formatTimeRemaining(newTimeRemaining));
                 this.countdownText.setColor(newTimeColor);
+                
+                // Check if game has expired
+                if (newTimeRemaining.isExpired) {
+                    // Stop the timer
+                    this.countdownTimer.remove();
+                    
+                    // Show game over message
+                    const gameOverBg = this.add.rectangle(450, 300, 800, 600, 0x000000, 0.8);
+                    const gameOverText = this.add.text(450, 280, 'GAME COMPLETE!', {
+                        fontSize: '48px',
+                        fontFamily: 'Arial Black',
+                        color: '#00ff00'
+                    }).setOrigin(0.5);
+                    
+                    const redirectText = this.add.text(450, 340, 'Returning to dashboard...', {
+                        fontSize: '24px',
+                        color: '#ffffff'
+                    }).setOrigin(0.5);
+                    
+                    // Redirect to dashboard after 2 seconds
+                    this.time.delayedCall(2000, () => {
+                        this.scene.start('DashboardScene', { user: this.user });
+                    });
+                }
             },
             loop: true
         });
