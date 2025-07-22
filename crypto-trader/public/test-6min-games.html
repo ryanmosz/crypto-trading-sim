@@ -105,16 +105,19 @@
     <h1>6-Minute Game Testing</h1>
     
     <div class="status-update">
-        <strong>✅ UPDATE (v10 - Extra Safe!):</strong> Added 10 second buffer using millisecond precision for maximum reliability!
+        <strong>✅ UPDATE (v11 - Allocations Fixed!):</strong> Added allocations handling + is_multiplayer flag to Edge Function!
     </div>
     
     <div class="info-box" style="background: #1a1a2e; border-color: #0066ff;">
-        <h3>🔧 Technical Fix Details (v10)</h3>
-        <p>The database has a constraint: <code>ends_at > started_at</code></p>
-        <p>Issue: Millisecond timing precision could cause constraint failures</p>
-        <p>Solution: Use millisecond-based calculations + 10 second buffer</p>
-        <p>6-minute games now run for exactly 6 minutes 10 seconds</p>
-        <p>Added extensive debug logging to track timestamps</p>
+        <h3>🔧 Technical Fix Details (v11)</h3>
+        <p>Fixed multiple issues:</p>
+        <ul>
+            <li>Database constraint: <code>ends_at > started_at</code> ✅</li>
+            <li>Missing allocations causing null constraint violation ✅</li>
+            <li>Added <code>is_multiplayer: true</code> flag to frontend ✅</li>
+            <li>Edge Function now validates and stores allocations ✅</li>
+        </ul>
+        <p>6-minute games run for 6:10 with allocations properly saved</p>
     </div>
 
     <div class="info-box">

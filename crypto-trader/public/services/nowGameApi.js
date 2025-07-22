@@ -65,7 +65,7 @@ async function makeAuthenticatedRequest(endpoint, options = {}) {
 export async function createNowGame({ duration, allocations }) {
     return makeAuthenticatedRequest('create-game', {
         method: 'POST',
-        body: JSON.stringify({ duration, allocations })
+        body: JSON.stringify({ duration, allocations, is_multiplayer: true })
     });
 }
 
