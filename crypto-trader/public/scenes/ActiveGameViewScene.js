@@ -505,10 +505,22 @@ export default class ActiveGameViewScene extends Phaser.Scene {
             const profitColor = profit >= 0 ? '#00ff00' : '#ff0066';
             const isCurrentUser = participant.user_id === this.user.id;
             
+            // Create invisible clickable area for entire row
+            const rowHitArea = this.add.rectangle(450, yPos, 700, 35, 0x000000, 0)
+                .setInteractive({ useHandCursor: true });
+            
             // Highlight current user's row
+            let rowHighlight = null;
             if (isCurrentUser) {
-                const highlight = this.add.rectangle(450, yPos, 700, 35, 0x00ffff, 0.1)
+                rowHighlight = this.add.rectangle(450, yPos, 700, 35, 0x00ffff, 0.1)
                     .setStrokeStyle(2, 0x00ffff);
+            }
+            
+            // Hover highlight for non-current users
+            let hoverHighlight = null;
+            if (!isCurrentUser) {
+                hoverHighlight = this.add.rectangle(450, yPos, 700, 35, 0xffffff, 0)
+                    .setVisible(false);
             }
             
             // Rank with medal for top 3 - far left
@@ -528,17 +540,6 @@ export default class ActiveGameViewScene extends Phaser.Scene {
                 fontFamily: isCurrentUser ? 'Arial Black' : 'Arial'
             }).setOrigin(0, 0.5);
             
-            // Make clickable
-            if (!isCurrentUser) {
-                nameText.setInteractive({ useHandCursor: true })
-                    .on('pointerover', () => nameText.setColor('#ffff00'))
-                    .on('pointerout', () => nameText.setColor('#ffffff'))
-                    .on('pointerdown', () => this.showPlayerDetails(participant));
-            } else {
-                nameText.setInteractive({ useHandCursor: true })
-                    .on('pointerdown', () => this.showPlayerDetails(participant));
-            }
-            
             // Current value - centered with breathing room
             this.add.text(550, yPos, `$${participant.current_value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
                 fontSize: '18px',
@@ -552,6 +553,24 @@ export default class ActiveGameViewScene extends Phaser.Scene {
                 color: profitColor,
                 fontFamily: 'Arial Black'
             }).setOrigin(1, 0.5);
+            
+            // Row interaction - apply to entire row hit area
+            rowHitArea
+                .on('pointerover', () => {
+                    if (!isCurrentUser) {
+                        hoverHighlight.setVisible(true).setFillStyle(0xffffff, 0.05);
+                        nameText.setColor('#ffff00');
+                    }
+                })
+                .on('pointerout', () => {
+                    if (!isCurrentUser) {
+                        hoverHighlight.setVisible(false);
+                        nameText.setColor('#ffffff');
+                    }
+                })
+                .on('pointerdown', () => {
+                    this.showPlayerDetails(participant);
+                });
             
             yPos += 40;
         });
@@ -612,220 +631,199 @@ export default class ActiveGameViewScene extends Phaser.Scene {
         // Black background
         this.cameras.main.setBackgroundColor('#000000');
         
-        // Back button
-        const backButton = this.add.text(50, 50, '← Back', {
-            fontSize: '18px',
-            color: '#00ffff',
-            fontFamily: 'Arial Black'
-        }).setOrigin(0, 0.5)
-        .setInteractive({ useHandCursor: true })
-        .on('pointerover', () => backButton.setColor('#ffffff'))
-        .on('pointerout', () => backButton.setColor('#00ffff'))
-        .on('pointerdown', () => {
-            // Restart scene to go back to leaderboard
-            this.scene.restart();
-        });
+        // Get fresh allocation data
+        const allocations = participant.allocations || {};
+        const numCryptos = Object.keys(allocations).filter(k => allocations[k] > 0).length;
         
-        // Header
-        const isCurrentUser = participant.user_id === this.user.id;
-        const playerName = isCurrentUser ? 'YOUR PORTFOLIO' : 
-            `${(participant.username || 'PLAYER').toUpperCase()}'S PORTFOLIO`;
-            
-        this.add.text(450, 40, playerName, {
-            fontSize: '36px',
-            color: '#00ffff',
-            fontFamily: 'Arial Black'
-        }).setOrigin(0.5);
+        // Dynamic spacing calculation
+        const headerHeight = 80;
+        const summaryHeight = 60;
+        const chartHeight = 120;
+        const backButtonHeight = 40;
+        const padding = 40;
+        const availableForAllocations = 600 - headerHeight - summaryHeight - chartHeight - backButtonHeight - padding;
+        const cryptoSpacing = Math.min(50, Math.floor(availableForAllocations / (numCryptos + 2))); // +2 for header and total
         
-        // Game info
-        const gameCode = formatGameCode(this.gameData.game_code);
-        const timeRemaining = calculateTimeRemaining(this.gameData.created_at, this.gameData.duration_days || 30);
-        const timeColor = getTimeRemainingColor(timeRemaining.totalSeconds, this.gameData.duration_days || 30);
-        
-        this.add.text(450, 90, `Game ${gameCode} • ${this.gameData.duration_days}-Day Challenge`, {
-            fontSize: '20px',
-            color: '#ffffff'
-        }).setOrigin(0.5);
-        
-        this.add.text(450, 120, formatTimeRemaining(timeRemaining), {
-            fontSize: '18px',
-            color: timeColor,
-            fontFamily: 'Arial Black'
-        }).setOrigin(0.5);
-        
-        // Performance summary box
-        const summaryBg = this.add.rectangle(450, 200, 700, 100, 0x111111)
-            .setStrokeStyle(2, 0x00ffff);
-            
-        const currentValue = participant.current_value || this.gameData.starting_money;
-        const startValue = this.gameData.starting_money || 10000000;
-        const profit = currentValue - startValue;
-        const profitPercent = ((profit / startValue) * 100).toFixed(2);
-        const profitColor = profit >= 0 ? '#00ff00' : '#ff0066';
-        
-        // Current value label
-        this.add.text(300, 180, 'CURRENT VALUE', {
-            fontSize: '14px',
-            color: '#666666'
-        }).setOrigin(0.5);
-        
-        this.add.text(300, 205, `$${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
-            fontSize: '28px',
+        // Header with player name and game code
+        const headerY = 60;
+        const displayName = participant.user_id === this.user.id ? 'Your Portfolio' : `${participant.username || 'Anonymous'}'s Portfolio`;
+        this.add.text(450, headerY, displayName, {
+            fontSize: '24px',
             color: '#ffffff',
             fontFamily: 'Arial Black'
         }).setOrigin(0.5);
         
-        // Profit/Loss label
-        this.add.text(600, 180, profit >= 0 ? 'PROFIT' : 'LOSS', {
+        // Game code and countdown on same line
+        const cleanCode = this.gameData.game_code ? this.gameData.game_code.replace(/\s/g, '') : '';
+        this.add.text(300, headerY + 30, `Game: ${cleanCode}`, {
             fontSize: '14px',
-            color: '#666666'
-        }).setOrigin(0.5);
+            color: '#00ffff'
+        }).setOrigin(0, 0.5);
         
-        this.add.text(600, 205, `${profit >= 0 ? '+' : ''}${profitPercent}%`, {
-            fontSize: '28px',
-            color: profitColor,
-            fontFamily: 'Arial Black'
-        }).setOrigin(0.5);
-        
-        // Get rank
-        let rank = 1;
-        let totalPlayers = 1;
-        try {
-            const { data: allParticipants } = await this.auth.supabase
-                .from('game_participants')
-                .select('user_id, current_value')
-                .eq('game_id', this.gameData.id)
-                .order('current_value', { ascending: false });
-                
-            if (allParticipants) {
-                totalPlayers = allParticipants.length;
-                rank = allParticipants.findIndex(p => p.user_id === participant.user_id) + 1;
-            }
-        } catch (err) {
-            console.error('Error fetching rank:', err);
-        }
-        
-        // Rank display
-        let rankDisplay = `RANK ${rank} OF ${totalPlayers}`;
-        if (rank === 1) rankDisplay = '🥇 1ST PLACE';
-        else if (rank === 2) rankDisplay = '🥈 2ND PLACE';
-        else if (rank === 3) rankDisplay = '🥉 3RD PLACE';
-        
-        this.add.text(450, 235, rankDisplay, {
-            fontSize: '16px',
-            color: rank <= 3 ? '#ffd700' : '#999999',
-            fontFamily: 'Arial Black'
-        }).setOrigin(0.5);
-        
-        // Allocations section
-        this.add.text(450, 290, 'PORTFOLIO ALLOCATION', {
-            fontSize: '20px',
-            color: '#ffff00',
-            fontFamily: 'Arial Black'
-        }).setOrigin(0.5);
-        
-        // Allocation headers
-        this.add.text(200, 320, 'CRYPTO', {
+        // Countdown timer
+        const timeRemaining = calculateTimeRemaining(this.gameData.created_at, this.gameData.duration_days || 30);
+        const timeColor = getTimeRemainingColor(timeRemaining.totalSeconds, this.gameData.duration_days || 30);
+        this.add.text(600, headerY + 30, formatTimeRemaining(timeRemaining), {
             fontSize: '14px',
-            color: '#666666',
+            color: timeColor
+        }).setOrigin(1, 0.5);
+        
+        // Summary box
+        const summaryY = headerY + 60;
+        const summaryBg = this.add.rectangle(450, summaryY, 600, 50, 0x111111)
+            .setStrokeStyle(2, 0x333333);
+            
+        // Current value
+        const currentValue = participant.current_value || this.gameData.starting_money;
+        const startValue = this.gameData.starting_money || 10000000;
+        const profit = currentValue - startValue;
+        const profitPercent = (profit / startValue) * 100;
+        const profitColor = profit >= 0 ? '#00ff00' : '#ff0066';
+        
+        this.add.text(250, summaryY, 'Current Value:', {
+            fontSize: '14px',
+            color: '#999999'
+        }).setOrigin(0, 0.5);
+        
+        this.add.text(350, summaryY, `$${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
+            fontSize: '18px',
+            color: '#ffffff',
             fontFamily: 'Arial Black'
         }).setOrigin(0, 0.5);
         
-        this.add.text(350, 320, 'ALLOCATION', {
-            fontSize: '14px',
-            color: '#666666',
+        this.add.text(550, summaryY, `${profit >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
+            fontSize: '18px',
+            color: profitColor,
             fontFamily: 'Arial Black'
+        }).setOrigin(0, 0.5);
+        
+        // Current rank
+        const participants = await getGameParticipants(this.gameData.id);
+        const rank = participants.findIndex(p => p.user_id === participant.user_id) + 1;
+        this.add.text(650, summaryY, `Rank: ${rank}`, {
+            fontSize: '14px',
+            color: '#ffff00'
+        }).setOrigin(1, 0.5);
+        
+        // Allocations section
+        let yPos = summaryY + 40;
+        this.add.text(450, yPos, 'Your Allocations', {
+            fontSize: '18px',
+            color: '#00ffff'
         }).setOrigin(0.5);
         
-        this.add.text(500, 320, 'VALUE', {
+        // Column headers (compact)
+        yPos += 25;
+        this.add.text(200, yPos, 'Asset', {
             fontSize: '14px',
-            color: '#666666',
-            fontFamily: 'Arial Black'
-        }).setOrigin(0.5);
+            color: '#999999'
+        }).setOrigin(0, 0.5);
         
-        this.add.text(650, 320, 'CHANGE', {
+        this.add.text(320, yPos, 'Invested', {
             fontSize: '14px',
-            color: '#666666',
-            fontFamily: 'Arial Black'
-        }).setOrigin(0.5);
+            color: '#999999'
+        }).setOrigin(0, 0.5);
         
-        // Draw allocation rows
-        const allocations = participant.allocations || {};
-        let yPos = 350;
+        this.add.text(480, yPos, 'Current', {
+            fontSize: '14px',
+            color: '#999999'
+        }).setOrigin(0, 0.5);
         
-        // Get current prices from the game data
-        const currentPrices = this.gameData.current_prices || this.gameData.starting_prices;
-        const startingPrices = this.gameData.starting_prices;
+        this.add.text(620, yPos, 'Change', {
+            fontSize: '14px',
+            color: '#999999'
+        }).setOrigin(0, 0.5);
         
-        Object.entries(allocations).forEach(([crypto, allocation]) => {
-            if (allocation > 0) {
-                // Calculate values
-                const cryptoValue = (currentValue * allocation) / 100;
-                const startPrice = startingPrices[crypto] || 1;
-                const currentPrice = currentPrices[crypto] || startPrice;
-                const priceChange = ((currentPrice - startPrice) / startPrice) * 100;
-                const changeColor = priceChange >= 0 ? '#00ff00' : '#ff0066';
-                
-                // Row background
-                const rowBg = this.add.rectangle(450, yPos, 700, 35, 0x111111, 0.3);
+        // Line under headers
+        yPos += 15;
+        this.add.rectangle(450, yPos, 500, 1, 0x333333);
+        
+        // Display each crypto allocation (compact)
+        yPos += 10;
+        const prices = this.gameData.starting_prices || {};
+        const currentPrices = this.gameData.current_prices || prices;
+        
+        Object.entries(allocations).forEach(([symbol, blocks]) => {
+            if (blocks > 0) {
+                const invested = blocks * 1000000;
+                const startPrice = prices[symbol] || 0;
+                const currentPrice = currentPrices[symbol] || startPrice;
+                const units = startPrice > 0 ? invested / startPrice : 0;
+                const currentVal = units * currentPrice;
+                const change = startPrice > 0 ? ((currentPrice - startPrice) / startPrice) * 100 : 0;
+                const changeColor = change >= 0 ? '#00ff00' : '#ff0066';
                 
                 // Crypto name
-                this.add.text(200, yPos, crypto, {
-                    fontSize: '20px',
-                    color: '#00ffff',
-                    fontFamily: 'Arial Black'
+                this.add.text(200, yPos, symbol, {
+                    fontSize: '14px',
+                    fontFamily: 'Arial Black',
+                    color: '#ffffff'
                 }).setOrigin(0, 0.5);
                 
-                // Allocation percentage
-                this.add.text(350, yPos, `${allocation}%`, {
-                    fontSize: '18px',
-                    color: '#ffffff'
-                }).setOrigin(0.5);
+                // Initial investment
+                this.add.text(320, yPos, `$${invested.toLocaleString()}`, {
+                    fontSize: '13px',
+                    color: '#999999'
+                }).setOrigin(0, 0.5);
                 
                 // Current value
-                this.add.text(500, yPos, `$${cryptoValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
-                    fontSize: '18px',
-                    color: '#ffffff',
-                    fontFamily: 'Arial Black'
-                }).setOrigin(0.5);
+                this.add.text(480, yPos, `$${Math.round(currentVal).toLocaleString()}`, {
+                    fontSize: '13px',
+                    color: changeColor
+                }).setOrigin(0, 0.5);
                 
-                // Price change
-                this.add.text(650, yPos, `${priceChange >= 0 ? '+' : ''}${priceChange.toFixed(1)}%`, {
-                    fontSize: '18px',
-                    color: changeColor,
-                    fontFamily: 'Arial Black'
-                }).setOrigin(0.5);
+                // Percentage change
+                this.add.text(620, yPos, `${change >= 0 ? '+' : ''}${change.toFixed(1)}%`, {
+                    fontSize: '13px',
+                    fontFamily: 'Arial Black',
+                    color: changeColor
+                }).setOrigin(0, 0.5);
                 
-                yPos += 40;
+                yPos += cryptoSpacing;
             }
         });
         
-        // Add performance chart after allocations
-        this.createPerformanceChart(yPos + 20);
+        // Add performance chart
+        const chartY = Math.max(yPos + 10, 600 - chartHeight - backButtonHeight - 20);
+        this.createPerformanceChart(chartY);
         
-        // Last updated info - move down to make room for chart
-        if (this.gameData.last_updated) {
-            const lastUpdated = new Date(this.gameData.last_updated);
-            const now = new Date();
-            const minutesAgo = Math.floor((now - lastUpdated) / 60000);
+        // Back button
+        const backY = 560;
+        const backButton = this.add.rectangle(450, backY, 100, 35, 0x333333)
+            .setStrokeStyle(2, 0x666666)
+            .setInteractive({ useHandCursor: true });
             
-            this.add.text(450, 570, `Prices updated ${minutesAgo} minute${minutesAgo !== 1 ? 's' : ''} ago`, {
-                fontSize: '14px',
-                color: '#666666'
-            }).setOrigin(0.5);
-        }
+        const backText = this.add.text(450, backY, 'BACK', {
+            fontSize: '16px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        backButton
+            .on('pointerover', () => {
+                backButton.setStrokeStyle(2, 0x00ffff);
+                backText.setColor('#00ffff');
+            })
+            .on('pointerout', () => {
+                backButton.setStrokeStyle(2, 0x666666);
+                backText.setColor('#ffffff');
+            })
+            .on('pointerdown', () => {
+                // Restart scene to go back to leaderboard
+                this.scene.restart();
+            });
     }
     
     createPerformanceChart(startY) {
         // Chart title
         this.add.text(450, startY, 'Performance Trend', {
-            fontSize: '18px',
+            fontSize: '16px',
             color: '#ffffff'
         }).setOrigin(0.5);
         
         // Chart area
         const chartX = 200;
-        const chartY = startY + 30;
+        const chartY = startY + 25;
         const chartWidth = 500;
         const chartHeight = 80;
         
@@ -871,19 +869,19 @@ export default class ActiveGameViewScene extends Phaser.Scene {
         
         // Start value
         this.add.text(chartX - 10, chartY + chartHeight/2, `$${(startValue/1000000).toFixed(1)}M`, {
-            fontSize: '12px',
+            fontSize: '11px',
             color: '#666666'
         }).setOrigin(1, 0.5);
         
         // End value
         this.add.text(chartX + chartWidth + 10, chartY + chartHeight/2, `$${(endValue/1000000).toFixed(1)}M`, {
-            fontSize: '12px',
+            fontSize: '11px',
             color: changeColor
         }).setOrigin(0, 0.5);
         
         // Performance indicator
-        this.add.text(450, chartY + chartHeight + 15, `${percentChange >= 0 ? '+' : ''}${percentChange.toFixed(1)}% since start`, {
-            fontSize: '14px',
+        this.add.text(450, chartY + chartHeight + 10, `${percentChange >= 0 ? '+' : ''}${percentChange.toFixed(1)}% since start`, {
+            fontSize: '12px',
             color: changeColor
         }).setOrigin(0.5);
     }
@@ -892,7 +890,7 @@ export default class ActiveGameViewScene extends Phaser.Scene {
         // Generate sample performance data
         // In real app, this would fetch from price_history table
         const startValue = this.gameData.starting_money || 10000000;
-        const currentValue = this.playerDetails?.current_value || this.gameData.current_value || startValue;
+        const currentValue = this.playerDetails ? this.playerDetails.current_value : (this.gameData.current_value || startValue);
         const numPoints = 10;
         const data = [startValue];
         
