@@ -557,24 +557,16 @@ export default class DashboardScene extends Phaser.Scene {
         }).setOrigin(0, 0.5);
         this.contentGroup.add(codeText);
         
-        // Game duration
-        const durationText = `${game.duration_days || 30} day game`;
-        const durationDisplay = this.add.text(190, y, durationText, {
+        // Combined days display: "30/30 days" (days left/total days)
+        const totalDays = game.duration_days || 30;
+        const daysText = daysRemaining <= 0 ? 'EXPIRED' : `${daysRemaining}/${totalDays} days`;
+        const daysDisplay = this.add.text(190, y, daysText, {
             fontSize: '15px',
-            color: timeColor
-        }).setOrigin(0, 0.5);
-        
-        this.contentGroup.add(durationDisplay);
-        
-        // Days remaining
-        const remainingText = daysRemaining <= 0 ? 'EXPIRED' : `${daysRemaining} days left`;
-        const remainingDisplay = this.add.text(305, y, remainingText, {
-            fontSize: '14px',
             color: timeColor,
             fontFamily: 'Arial Black'
         }).setOrigin(0, 0.5);
         
-        this.contentGroup.add(remainingDisplay);
+        this.contentGroup.add(daysDisplay);
         
         if (isJoinable) {
             // For joinable games, show participant count
@@ -610,8 +602,8 @@ export default class DashboardScene extends Phaser.Scene {
                 });
             });
         } else {
-            // Current value - moved right to avoid overlap with days remaining
-            const valueText = this.add.text(480, y, `$${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
+            // Current value - moved left since we combined the days display
+            const valueText = this.add.text(380, y, `$${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
                 fontSize: '17px',
                 color: '#ffffff',
                 fontFamily: 'Arial Black'
@@ -619,23 +611,23 @@ export default class DashboardScene extends Phaser.Scene {
             
             this.contentGroup.add(valueText);
             
-            // Profit/Loss - moved right accordingly
-            const profitText = this.add.text(625, y, `${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
+            // Profit/Loss - moved left accordingly
+            const profitText = this.add.text(525, y, `${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
                 fontSize: '15px',
                 color: profitColor,
                 fontFamily: 'Arial Black'
             }).setOrigin(0.5);
             
             this.contentGroup.add(profitText);
-            
-            // View button
-            const viewBtn = this.add.text(720, y, 'VIEW', {
-                fontSize: '14px',
-                color: '#00ffff',
-                fontFamily: 'Arial Black'
-            }).setOrigin(0.5);
-            
-            this.contentGroup.add(viewBtn);
+                    
+        // View button - moved left to match new spacing
+        const viewBtn = this.add.text(650, y, 'VIEW', {
+            fontSize: '14px',
+            color: '#00ffff',
+            fontFamily: 'Arial Black'
+        }).setOrigin(0.5);
+        
+        this.contentGroup.add(viewBtn);
             
             // Hover effects
             bg.on('pointerover', () => {
