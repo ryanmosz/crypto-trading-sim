@@ -78,12 +78,12 @@
 </head>
 <body>
     <div class="header">
-        <h1>🎮 6-Minute Game Testing - v15 (FINAL)</h1>
-        <p>All Issues Fixed and Ready for Production!</p>
+        <h1>🎮 6-Minute Game Testing - v16 (UPDATED)</h1>
+        <p>All Issues Fixed Including Leaderboard & Notifications!</p>
     </div>
 
     <div class="status-update">
-        <strong>✅ ALL SYSTEMS GO!</strong> 6-minute multiplayer games are now fully functional!
+        <strong>✅ FULLY OPERATIONAL!</strong> Additional fixes deployed for leaderboard crash and notification errors.
     </div>
 
     <div class="issues-fixed">
@@ -116,8 +116,18 @@
         </div>
 
         <div class="fix-item">
-            <h3>✅ 6. Game Completion Notifications (Ready)</h3>
-            <p>Function returns completed games for notification system</p>
+            <h3>✅ 6. Game Completion Notifications (Implemented)</h3>
+            <p>Win/loss notifications with trophy icons now show when games complete!</p>
+        </div>
+
+        <div class="fix-item" style="background: #001a00;">
+            <h3>✅ 7. Leaderboard Crash (Fixed in v16)</h3>
+            <p>Added missing <code>calculateTimeRemainingFromEndDate</code> import in ActiveGameViewScene</p>
+        </div>
+
+        <div class="fix-item" style="background: #001a00;">
+            <h3>✅ 8. Notification Query Error (Fixed in v16)</h3>
+            <p>Fixed PostgREST ordering issue - now uses client-side sorting instead</p>
         </div>
     </div>
 
@@ -173,11 +183,12 @@
     </div>
 
     <script>
-        console.log('6-Minute Game Testing Page - v15 (FINAL)');
-        console.log('All major issues have been resolved!');
+        console.log('6-Minute Game Testing Page - v16 (UPDATED)');
+        console.log('All issues resolved including leaderboard and notifications!');
         console.log('Edge Function: v15');
         console.log('Database: Triggers and functions updated');
-        console.log('Frontend: Countdown timer fixed');
+        console.log('Frontend: Countdown timer fixed + missing import added');
+        console.log('Notifications: Query error fixed');
     </script>
 </body>
 </html> 
