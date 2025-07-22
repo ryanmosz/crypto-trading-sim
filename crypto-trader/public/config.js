@@ -4,6 +4,12 @@
 window.SUPABASE_URL = 'https://yuobwpszomojorrjiwlp.supabase.co';
 window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1b2J3cHN6b21vam9ycmppd2xwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5ODI1MDQsImV4cCI6MjA2ODU1ODUwNH0.3ee0zwMXcl4-zlv5sn0gKyJ7BDjtKTVLbL73Qj6eNJs';
 
+// Create CONFIG object for compatibility with nowGameApi.js
+window.CONFIG = {
+  SUPABASE_URL: window.SUPABASE_URL,
+  SUPABASE_ANON_KEY: window.SUPABASE_ANON_KEY
+};
+
 // Feature Flags
 window.FEATURES = {
   // Enable real-time price updates from CoinGecko

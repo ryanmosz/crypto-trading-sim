@@ -23,10 +23,10 @@ serve(async (req) => {
   }
 
   try {
-    // Create Supabase client
+    // Create Supabase client with service role key to bypass RLS
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         persistSession: false
       }
@@ -72,10 +72,13 @@ serve(async (req) => {
       throw new Error('Failed to fetch current prices')
     }
 
-    // Convert prices array to object
+    // Convert prices array to object - only include the 5 cryptos we use
+    const allowedCryptos = ['BTC', 'ETH', 'BNB', 'SOL', 'XRP']
     const startingPrices: Record<string, number> = {}
     pricesData.forEach(p => {
-      startingPrices[p.symbol] = Number(p.price)
+      if (allowedCryptos.includes(p.symbol)) {
+        startingPrices[p.symbol] = Number(p.price)
+      }
     })
 
     // Generate unique game code with retry logic

@@ -1,55 +1,55 @@
 # Active Context
 
+Last updated: 2025-01-22
+
 ## Current Focus
-**Phase 0 COMPLETE! ✅** - The scene extraction refactor has been successfully completed and tested.
 
-### Achievements
-Successfully extracted all 12 Phaser scenes from the monolithic 5,109-line `game.js` file into individual ES6 modules:
-- 12 scene classes in `/scenes/` directory
-- Shared components in `/shared/` directory (TutorialOverlay, TutorialManager, constants, utils)
-- New `index.js` entry point managing all imports
-- Updated `index.html` to use ES6 modules
-- **All functionality tested and working correctly!**
+**Phase 4: Scene Integration (80% complete)**
 
-### Testing Results (July 21, 2025)
-User testing confirmed:
-- ✅ Login flow works perfectly
-- ✅ Single-player game flow functional (scenario → allocation → simulation → results)
-- ✅ Dashboard with all tabs operational
-- ✅ Now mode and multiplayer features intact
-- ✅ Tutorial system working
-- ✅ No console errors or module loading issues
-- ✅ All Supabase operations functioning
+Just completed:
+- Updated NowModeResultScene to use multiplayer API for game creation
+- Added game code display with copy-to-clipboard functionality
+- Updated DashboardScene with "Join Multiplayer" button
+- Enhanced JoinGameScene to allow entering game codes
+- Fixed CORS issue in update-active-games Edge Function
+
+Next task:
+- Update ActiveGameViewScene to show multiplayer leaderboard using getGameParticipants API
 
 ## Recent Changes
-- Completed Phase 0 scene extraction with surgical precision
-- Modularized codebase while preserving 100% functionality
-- Ran comprehensive testing - everything working as expected
-- Created git restore point before refactoring (as mentioned by user)
 
-## Key Decisions
-- Original game.js preserved as backup
-- Each scene is self-contained with proper ES6 imports
-- Shared utilities centralized for easy maintenance
-- Architecture now ready for Phase 1 multiplayer enhancements
+1. **NowModeResultScene**:
+   - Imports createNowGame/joinNowGame from services
+   - Uses API for multiplayer game creation
+   - Displays game code prominently with copy functionality
+   - Shows error messages on failure
 
-## Active Issues
-None! Phase 0 completed successfully with no outstanding issues.
+2. **DashboardScene**:
+   - Added "Join Multiplayer" button in new game section
+   - Shows game codes for multiplayer games
+   - Rearranged buttons for better layout
 
-## Next Actions
-**Phase 2 Complete - Ready for Phase 3!**
+3. **JoinGameScene**:
+   - Added code entry interface
+   - Case-sensitive 4-character input
+   - Real-time code validation
+   - Shows game details when found
 
-Phase 2 Backend Functions has been successfully completed:
-- ✅ create-game Edge Function deployed
-- ✅ join-game Edge Function deployed
-- ✅ update-active-games Edge Function deployed
-- ✅ Frontend API wrapper created (nowGameApi.js)
-- ✅ Utility functions implemented
+## Key Technical Details
 
-**Next: Phase 3 - Frontend Service Layer & Phase 4 - Scene Updates**
-1. Update NowModeSetupScene to call create_game API
-2. Update DashboardScene to show joinable multiplayer games
-3. Create/Update JoinGameScene for joining flow
-4. Update AllocationScene to handle joining games
-5. Update ActiveGameViewScene to show multiplayer leaderboard
-6. Configure cron schedule for price updates 
+- Game codes are case-sensitive (62^4 = 14.8M combinations)
+- Only 5 cryptos tracked: BTC, ETH, BNB, SOL, XRP
+- Multiplayer API is fully tested and working
+- Edge Functions use service role key for RLS bypass
+
+## Next Steps
+
+1. Update ActiveGameViewScene for multiplayer leaderboard
+2. Test full multiplayer flow end-to-end
+3. Deploy and verify Edge Functions are working in production
+
+## Important Notes
+
+- Case sensitivity is critical for game codes
+- Price updates are limited to 5 cryptos to conserve API usage
+- All multiplayer games use real-time prices from CoinGecko 

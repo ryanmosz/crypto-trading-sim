@@ -1,9 +1,21 @@
 // API wrapper for multiplayer game Edge Functions
 
-const SUPABASE_URL = window.CONFIG.SUPABASE_URL;
-const SUPABASE_ANON_KEY = window.CONFIG.SUPABASE_ANON_KEY;
+// Get config values lazily to avoid loading order issues
+function getConfig() {
+    if (!window.CONFIG) {
+        throw new Error('CONFIG not loaded. Make sure config.js is loaded before using the API.');
+    }
+    return {
+        SUPABASE_URL: window.CONFIG.SUPABASE_URL,
+        SUPABASE_ANON_KEY: window.CONFIG.SUPABASE_ANON_KEY
+    };
+}
 
-// Helper to get current auth token
+/**
+ * Get the current authentication token from Supabase session
+ * @returns {Promise<string>} The access token
+ * @throws {Error} If no active session exists
+ */
 async function getAuthToken() {
     const supabase = window.supabase;
     const { data: { session } } = await supabase.auth.getSession();
@@ -13,16 +25,23 @@ async function getAuthToken() {
     return session.access_token;
 }
 
-// Helper to make authenticated API calls
+/**
+ * Make an authenticated request to a Supabase Edge Function
+ * @param {string} endpoint - The function endpoint name
+ * @param {Object} options - Fetch options (method, body, headers, etc.)
+ * @returns {Promise<Object>} The response data
+ * @throws {Error} If the request fails or returns an error
+ */
 async function makeAuthenticatedRequest(endpoint, options = {}) {
     const token = await getAuthToken();
+    const config = getConfig();
     
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/${endpoint}`, {
+    const response = await fetch(`${config.SUPABASE_URL}/functions/v1/${endpoint}`, {
         ...options,
         headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
-            'apikey': SUPABASE_ANON_KEY,
+            'apikey': config.SUPABASE_ANON_KEY,
             ...options.headers
         }
     });
@@ -73,7 +92,7 @@ export async function findGameByCode(gameCode) {
     const { data, error } = await supabase
         .from('active_games')
         .select('*')
-        .eq('game_code', gameCode.toUpperCase())
+        .eq('game_code', gameCode)  // Remove .toUpperCase() to make it case-sensitive
         .eq('is_multiplayer', true)
         .eq('is_complete', false)
         .single();

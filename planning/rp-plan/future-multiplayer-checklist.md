@@ -23,8 +23,8 @@ _A concise roadmap of tasks (no code)_
   • every 5 min fetch prices, update games & participants, mark complete when due
 
 ## Phase 3 – Front-End Service Layer
-- [ ] Implement `services/nowGameApi.js` (wrapper around the above functions)
-- [ ] Add `utils/slug.js` for slug generation (client fallback/testing)
+- [x] Implement `services/nowGameApi.js` (wrapper around the above functions)
+- [x] Add `utils/slug.js` for slug generation (client fallback/testing)
 
 ## Phase 4 – Scene Updates
 - [ ] **NowModeSetupScene**

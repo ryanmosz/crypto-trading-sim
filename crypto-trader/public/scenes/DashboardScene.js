@@ -293,12 +293,38 @@ export default class DashboardScene extends Phaser.Scene {
         
         this.contentGroup.add(instructions);
         
+        // Join Game button
+        const joinGameBtn = this.add.rectangle(300, this.contentY + 250, 250, 50, 0x111111)
+            .setStrokeStyle(2, 0x00ff00)
+            .setInteractive({ useHandCursor: true });
+            
+        const joinGameText = this.add.text(300, this.contentY + 250, 'JOIN MULTIPLAYER', {
+            fontSize: '18px',
+            fontFamily: 'Arial Black',
+            color: '#00ff00'
+        }).setOrigin(0.5);
+        
+        this.contentGroup.addMultiple([joinGameBtn, joinGameText]);
+        
+        joinGameBtn
+            .on('pointerover', () => {
+                joinGameBtn.setStrokeStyle(2, 0x00ffff);
+                joinGameText.setColor('#00ffff');
+            })
+            .on('pointerout', () => {
+                joinGameBtn.setStrokeStyle(2, 0x00ff00);
+                joinGameText.setColor('#00ff00');
+            })
+            .on('pointerdown', () => {
+                this.scene.start('JoinGameScene', { user: this.user });
+            });
+        
         // Leaderboard button
-        const leaderboardBtn = this.add.rectangle(450, this.contentY + 250, 250, 50, 0x111111)
+        const leaderboardBtn = this.add.rectangle(600, this.contentY + 250, 250, 50, 0x111111)
             .setStrokeStyle(2, 0xffff00)
             .setInteractive({ useHandCursor: true });
             
-        const leaderboardText = this.add.text(450, this.contentY + 250, '🏆 VIEW LEADERBOARD', {
+        const leaderboardText = this.add.text(600, this.contentY + 250, '🏆 LEADERBOARD', {
             fontSize: '18px',
             fontFamily: 'Arial Black',
             color: '#ffff00'
@@ -575,17 +601,15 @@ export default class DashboardScene extends Phaser.Scene {
         
         this.contentGroup.add(remainingDisplay);
         
-        // Show creator for multiplayer games
-        // Disabled for now - need to fix profile join
-        /*
-        if (isMultiplayer && game.profiles?.username) {
-            const creatorText = this.add.text(430, y, `by ${game.profiles.username}`, {
-                fontSize: '12px',
-                color: '#888888'
+        // Show game code for multiplayer games
+        if (game.game_code) {
+            const codeText = this.add.text(430, y, `Code: ${game.game_code}`, {
+                fontSize: '14px',
+                color: '#00ffff',
+                fontFamily: 'Arial Black'
             }).setOrigin(0, 0.5);
-            this.contentGroup.add(creatorText);
+            this.contentGroup.add(codeText);
         }
-        */
         
         if (isJoinable) {
             // For joinable games, show participant count
