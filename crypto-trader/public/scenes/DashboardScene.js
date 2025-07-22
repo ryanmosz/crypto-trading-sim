@@ -429,7 +429,7 @@ export default class DashboardScene extends Phaser.Scene {
                 fontFamily: 'Arial Black'
             }).setOrigin(0.5);
             this.contentGroup.add(gamesHeader);
-            yPos += 30;
+            yPos += 35;
             
             allMultiplayerGames.forEach(game => {
                 // Check if user has already joined this game
@@ -549,10 +549,18 @@ export default class DashboardScene extends Phaser.Scene {
         const profitPercent = (profit / startValue) * 100;
         const profitColor = profit >= 0 ? '#00ff00' : '#ff0066';
         
+        // Show game code on the far left (always present for multiplayer games)
+        const codeText = this.add.text(95, y, `ID: ${game.game_code}`, {
+            fontSize: '14px',
+            color: '#00ffff',
+            fontFamily: 'Arial Black'
+        }).setOrigin(0, 0.5);
+        this.contentGroup.add(codeText);
+        
         // Game duration
         const durationText = `${game.duration_days || 30} day game`;
-        const durationDisplay = this.add.text(150, y, durationText, {
-            fontSize: '16px',
+        const durationDisplay = this.add.text(190, y, durationText, {
+            fontSize: '15px',
             color: timeColor
         }).setOrigin(0, 0.5);
         
@@ -560,27 +568,13 @@ export default class DashboardScene extends Phaser.Scene {
         
         // Days remaining
         const remainingText = daysRemaining <= 0 ? 'EXPIRED' : `${daysRemaining} days left`;
-        const remainingDisplay = this.add.text(300, y, remainingText, {
+        const remainingDisplay = this.add.text(305, y, remainingText, {
             fontSize: '14px',
             color: timeColor,
             fontFamily: 'Arial Black'
         }).setOrigin(0, 0.5);
         
         this.contentGroup.add(remainingDisplay);
-        
-        // Show game code for multiplayer games on the far left
-        if (game.game_code) {
-            const codeText = this.add.text(100, y, `ID: ${game.game_code}`, {
-                fontSize: '14px',
-                color: '#00ffff',
-                fontFamily: 'Arial Black'
-            }).setOrigin(0, 0.5);
-            this.contentGroup.add(codeText);
-            
-            // Adjust duration position when game code is present
-            durationDisplay.setX(220);
-            remainingDisplay.setX(370);
-        }
         
         if (isJoinable) {
             // For joinable games, show participant count
@@ -616,18 +610,18 @@ export default class DashboardScene extends Phaser.Scene {
                 });
             });
         } else {
-            // Current value
-            const valueText = this.add.text(500, y, `$${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
-                fontSize: '18px',
+            // Current value - moved right to avoid overlap with days remaining
+            const valueText = this.add.text(480, y, `$${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
+                fontSize: '17px',
                 color: '#ffffff',
                 fontFamily: 'Arial Black'
             }).setOrigin(0.5);
             
             this.contentGroup.add(valueText);
             
-            // Profit/Loss
-            const profitText = this.add.text(650, y, `${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
-                fontSize: '16px',
+            // Profit/Loss - moved right accordingly
+            const profitText = this.add.text(625, y, `${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
+                fontSize: '15px',
                 color: profitColor,
                 fontFamily: 'Arial Black'
             }).setOrigin(0.5);
@@ -635,7 +629,7 @@ export default class DashboardScene extends Phaser.Scene {
             this.contentGroup.add(profitText);
             
             // View button
-            const viewBtn = this.add.text(750, y, 'VIEW', {
+            const viewBtn = this.add.text(720, y, 'VIEW', {
                 fontSize: '14px',
                 color: '#00ffff',
                 fontFamily: 'Arial Black'
