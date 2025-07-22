@@ -102,10 +102,10 @@ Ready for full end-to-end testing!
   - [x] Prevent details view from kicking back to leaderboard on refresh
   - [x] Store current view state to survive data updates
   - [x] Only call scene.restart() when user explicitly navigates
-- [ ] **Fix Percentage Calculation Bug** (PRIORITY 1) 
-  - [ ] Beth shows 4.0% on leaderboard but 0.4% on details
-  - [ ] Find the decimal/multiplication issue
-  - [ ] Ensure consistent calculation across all views
+- [x] **Fix Percentage Calculation Bug** (PRIORITY 1) ✅
+  - [x] Beth shows 4.0% on leaderboard but 0.4% on details
+  - [x] Find the decimal/multiplication issue
+  - [x] Ensure consistent calculation across all views
 - [x] **Fix Chart Data Issues** ✅
   - [x] Chart using wrong/stale data (shows $9.8M vs actual $10.04M)
   - [x] Fix chart showing negative when player is positive
