@@ -804,6 +804,8 @@ export default class ActiveGameViewScene extends Phaser.Scene {
         
         // Store player details for chart BEFORE creating it
         this.playerDetails = participant;
+        // Override current_value with calculated total to fix chart scaling
+        this.playerDetails.calculatedValue = calculatedTotal;
         
         // Performance chart exactly like the original
         this.createPerformanceChart(yPos + 50);
@@ -939,7 +941,11 @@ export default class ActiveGameViewScene extends Phaser.Scene {
         // Generate sample performance data
         // In real app, this would fetch from price_history table
         const startValue = this.gameData.starting_money || 10000000;
-        const currentValue = this.playerDetails ? this.playerDetails.current_value : (this.gameData.current_value || startValue);
+        // Use calculated value if available, otherwise fall back to current_value
+        const currentValue = this.playerDetails?.calculatedValue || 
+                           this.playerDetails?.current_value || 
+                           this.gameData.current_value || 
+                           startValue;
         const numPoints = 10;
         const data = [startValue];
         
