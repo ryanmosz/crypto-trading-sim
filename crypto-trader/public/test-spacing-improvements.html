@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spacing Improvements</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 {
+            color: #00ffff;
+            text-align: center;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .view-example {
+            background: #111;
+            border: 2px solid #333;
+            margin: 20px 0;
+            padding: 20px;
+            position: relative;
+        }
+        .view-title {
+            color: #ffff00;
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        .spacing-guide {
+            display: flex;
+            align-items: center;
+            height: 40px;
+            background: #222;
+            border: 1px solid #444;
+            position: relative;
+            margin: 10px 0;
+        }
+        .left-edge {
+            position: absolute;
+            left: 10px;
+            color: #00ffff;
+            font-weight: bold;
+        }
+        .left-content {
+            position: absolute;
+            left: 100px;
+            color: #fff;
+        }
+        .center-buffer {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            padding: 5px 30px;
+            color: #00ff00;
+            font-weight: bold;
+            border: 1px dashed #666;
+        }
+        .right-content {
+            position: absolute;
+            right: 150px;
+            color: #ff0066;
+        }
+        .right-edge {
+            position: absolute;
+            right: 10px;
+            color: #00ffff;
+            font-weight: bold;
+        }
+        .improvement {
+            background: #001a00;
+            border-left: 3px solid #00ff00;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .issue {
+            background: #1a0000;
+            border-left: 3px solid #ff0066;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        code {
+            background: #333;
+            padding: 2px 5px;
+            border-radius: 3px;
+            color: #00ffff;
+        }
+        .test-link {
+            display: inline-block;
+            background: #00ffff;
+            color: #000;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Spacing Improvements</h1>
+        
+        <div class="view-example">
+            <div class="view-title">Active Multiplayer Games List - Spacing Strategy</div>
+            
+            <div class="spacing-guide">
+                <span class="left-edge">ID: S5DM</span>
+                <span class="left-content">29d 22h 31m</span>
+                <span class="center-buffer">$9,127,315.27</span>
+                <span class="right-content">-8.7%</span>
+                <span class="right-edge">VIEW</span>
+            </div>
+            
+            <div class="improvement">
+                <strong>✅ Improvements:</strong>
+                <ul>
+                    <li>Game ID pushed to far left (x=95)</li>
+                    <li>Countdown timer at x=200 (was 170)</li>
+                    <li>Dollar amount centered at x=500 with extra padding</li>
+                    <li>Percentage at x=640</li>
+                    <li>VIEW button pushed to far right (x=750)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="view-example">
+            <div class="view-title">Leaderboard View - Column Layout</div>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <div style="color: #00ffff; font-size: 24px;">S5DM - Multiplayer Leaderboard</div>
+                <div style="color: #ffff00; font-size: 30px; margin: 10px 0;">LEADERBOARD</div>
+                <div style="color: #ff1493; font-size: 16px;">29d 22h 30m 41s</div>
+            </div>
+            
+            <div class="spacing-guide" style="margin-top: 30px;">
+                <span class="left-edge">Rank</span>
+                <span class="left-content" style="left: 250px;">Player</span>
+                <span class="center-buffer">Value</span>
+                <span class="right-edge">Profit/Loss</span>
+            </div>
+            
+            <div class="improvement">
+                <strong>✅ Improvements:</strong>
+                <ul>
+                    <li>Title and LEADERBOARD text separated (no overlap)</li>
+                    <li>Countdown on its own line below LEADERBOARD</li>
+                    <li>Rank column at far left (x=100)</li>
+                    <li>Player names left-aligned (x=250)</li>
+                    <li>Values center-aligned (x=550)</li>
+                    <li>Profit/Loss right-aligned (x=750)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="view-example">
+            <div class="view-title">Spacing Philosophy</div>
+            <div class="improvement">
+                <strong>Key Principles Applied:</strong>
+                <ol>
+                    <li><strong>Edge Anchoring:</strong> Push static elements (ID, VIEW) to the far edges</li>
+                    <li><strong>Dollar Buffer:</strong> Give monetary values extra breathing room as they can vary in length</li>
+                    <li><strong>Even Distribution:</strong> Space middle elements evenly between anchored edges</li>
+                    <li><strong>Visual Hierarchy:</strong> Use font size and color to establish importance</li>
+                    <li><strong>No Overlaps:</strong> Ensure all text elements have their own clear space</li>
+                </ol>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: 40px 0;">
+            <a href="http://localhost:8001/" class="test-link">🎮 Test the Improvements</a>
+        </div>
+    </div>
+</body>
+</html> 
