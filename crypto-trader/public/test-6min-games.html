@@ -105,15 +105,16 @@
     <h1>6-Minute Game Testing</h1>
     
     <div class="status-update">
-        <strong>✅ UPDATE (v9 - Buffer Fix):</strong> Added 1 second buffer to ensure constraint passes + debug logging!
+        <strong>✅ UPDATE (v10 - Extra Safe!):</strong> Added 10 second buffer using millisecond precision for maximum reliability!
     </div>
     
     <div class="info-box" style="background: #1a1a2e; border-color: #0066ff;">
-        <h3>🔧 Technical Fix Details (v9)</h3>
+        <h3>🔧 Technical Fix Details (v10)</h3>
         <p>The database has a constraint: <code>ends_at > started_at</code></p>
-        <p>Issue: Millisecond precision can cause <code>ends_at</code> to equal <code>started_at</code></p>
-        <p>Solution: Add 1 second buffer to 6-minute games (6 min 1 sec total)</p>
-        <p>Also added debug logging to see exact timestamps generated</p>
+        <p>Issue: Millisecond timing precision could cause constraint failures</p>
+        <p>Solution: Use millisecond-based calculations + 10 second buffer</p>
+        <p>6-minute games now run for exactly 6 minutes 10 seconds</p>
+        <p>Added extensive debug logging to track timestamps</p>
     </div>
 
     <div class="info-box">
@@ -129,15 +130,15 @@
     <div class="info-box">
         <h2>Expected Timeline</h2>
         <h3>🔵 Minute 0: Game Created</h3>
-        <p>Dashboard shows "5:59 remaining" countdown (actually 6:01 with buffer)</p>
+        <p>Dashboard shows "5:59" or "6:09" countdown (actually 6:10 with buffer)</p>
         
         <h3>🔵 Minutes 1-5: Price Updates</h3>
         <p>Prices update each minute via cron job</p>
         <p>Portfolio values change accordingly</p>
         
         <h3>🔵 After 6 Minutes:</h3>
-        <p>Check the game shows as "Completed" with final values</p>
-        <p>(Actually completes at 6:01 due to constraint buffer)</p>
+        <p>Game continues for 10 more seconds due to buffer</p>
+        <p>Completes at 6:10 showing final values</p>
     </div>
 
     <div class="test-steps">

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Timestamp Debug Test</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+        }
+        .test-result {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 15px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+        }
+        button {
+            background: #003300;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Timestamp Debug Test</h1>
+    <p>Testing date generation for 6-minute games</p>
+    
+    <button onclick="testTimestamps()">Test Timestamp Generation</button>
+    
+    <div id="results"></div>
+    
+    <script>
+        function testTimestamps() {
+            const results = document.getElementById('results');
+            results.innerHTML = '';
+            
+            // Test 1: Basic approach
+            const now1 = new Date();
+            const endsAt1 = new Date(now1);
+            endsAt1.setMinutes(endsAt1.getMinutes() + 6);
+            
+            addResult('Test 1: Basic setMinutes approach', {
+                started_at: now1.toISOString(),
+                ends_at: endsAt1.toISOString(),
+                diff_ms: endsAt1 - now1,
+                diff_seconds: (endsAt1 - now1) / 1000,
+                passes: endsAt1 > now1
+            });
+            
+            // Test 2: With 1 second buffer
+            const now2 = new Date();
+            const endsAt2 = new Date(now2);
+            endsAt2.setMinutes(endsAt2.getMinutes() + 6);
+            endsAt2.setSeconds(endsAt2.getSeconds() + 1);
+            
+            addResult('Test 2: With 1 second buffer', {
+                started_at: now2.toISOString(),
+                ends_at: endsAt2.toISOString(),
+                diff_ms: endsAt2 - now2,
+                diff_seconds: (endsAt2 - now2) / 1000,
+                passes: endsAt2 > now2
+            });
+            
+            // Test 3: Using getTime()
+            const now3 = new Date();
+            const endsAt3 = new Date(now3.getTime() + (6 * 60 * 1000) + 1000);
+            
+            addResult('Test 3: Using getTime() with buffer', {
+                started_at: now3.toISOString(),
+                ends_at: endsAt3.toISOString(),
+                diff_ms: endsAt3 - now3,
+                diff_seconds: (endsAt3 - now3) / 1000,
+                passes: endsAt3 > now3
+            });
+            
+            // Test 4: Explicit timestamp strings
+            const startedAt = new Date();
+            const endsAt = new Date(startedAt.getTime() + (6 * 60 * 1000) + 1000);
+            
+            addResult('Test 4: What we send to database', {
+                started_at: startedAt.toISOString(),
+                ends_at: endsAt.toISOString(),
+                sql_test: `SELECT '${endsAt.toISOString()}'::timestamp > '${startedAt.toISOString()}'::timestamp as passes_constraint;`,
+                diff_seconds: (endsAt - startedAt) / 1000
+            });
+        }
+        
+        function addResult(title, data) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = 'test-result';
+            div.textContent = title + '\n' + JSON.stringify(data, null, 2);
+            results.appendChild(div);
+        }
+    </script>
+</body>
+</html> 
