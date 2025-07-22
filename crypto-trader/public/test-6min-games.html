@@ -105,21 +105,21 @@
     <h1>6-Minute Game Testing</h1>
     
     <div class="status-update">
-        <strong>✅ UPDATE (v12 - Complete Fix!):</strong> Now creates participant record + returns expected format. Ready to test!
+        <strong>✅ UPDATE (v13 - Prices Fixed!):</strong> Now fetches and stores starting_prices properly in active_games table!
     </div>
     
     <div class="info-box" style="background: #1a1a2e; border-color: #0066ff;">
-        <h3>🔧 Technical Fix Details (v12 - Complete)</h3>
-        <p>Fixed ALL issues for 6-minute games:</p>
+        <h3>🔧 Technical Fix Details (v13 - All Fixed!)</h3>
+        <p>Fixed ALL database constraints and requirements:</p>
         <ul>
             <li>✅ Database constraint: <code>ends_at > started_at</code> (10 sec buffer)</li>
             <li>✅ Allocations properly stored in database</li>
-            <li>✅ Frontend sends <code>is_multiplayer: true</code></li>
+            <li>✅ Starting prices fetched and stored (NOT NULL column)</li>
             <li>✅ Creates participant record with $10M starting value</li>
             <li>✅ Returns expected format with game_code</li>
-            <li>✅ Fetches starting prices for response</li>
+            <li>✅ Handles all multiplayer game requirements</li>
         </ul>
-        <p>6-minute games run for 6:10 total with full multiplayer support!</p>
+        <p>6-minute games now work exactly like regular games!</p>
     </div>
 
     <div class="info-box">
