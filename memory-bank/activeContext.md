@@ -1,61 +1,65 @@
 # Active Context
 
-## Current Focus
-**Testing & Deployment Phase** - Multiplayer implementation is complete and ready for comprehensive testing.
+## Current Work Focus
 
-## Recent Achievements
-- ✅ Phase 4 (Scene Integration) - 100% COMPLETE
-- ✅ All multiplayer features implemented and integrated
-- ✅ Database cleaned and prepared for testing
-- ✅ Comprehensive testing utilities created
-- ✅ Second opinion document prepared for review
+### Win/Loss Notifications (Just Added!)
+- Created `GameNotifications` system that shows visual notifications when games complete
+- Players see trophy/medal icons based on final position (1st, 2nd, 3rd, etc)
+- Shows profit/loss amount and game details
+- Auto-dismisses after 10 seconds with manual close option
+- Only shows once per game (tracked in localStorage)
+- Added game completion detection in ActiveGameViewScene
+
+### 6-Minute Game Implementation (Completed)
+- All issues have been resolved:
+  - Fixed Edge Function response format (v15)
+  - Added participant count auto-update trigger
+  - Fixed countdown timer to use ends_at field
+  - Created complete_expired_games() function
+  - Past games now properly saved
+  - Win/loss notifications now implemented
+
+### Multiplayer Testing Phase
+We've successfully implemented and tested all core multiplayer features:
+- Game creation with unique codes
+- Joining games
+- Real-time leaderboards
+- Individual portfolio tracking
+- 6-minute quick games for testing
+
+## Recent Changes
+
+### January 2025 Updates
+1. **6-Minute Games**: Fully functional quick game mode
+2. **Win/Loss Notifications**: Visual feedback when games complete
+3. **Edge Function v15**: Fixed response format
+4. **Database Triggers**: Auto-update participant count
+5. **Game Completion**: Automatic completion and history saving
 
 ## Next Steps
 
-### 1. Testing Phase (CURRENT)
-The multiplayer system is ready for comprehensive testing:
+### Immediate Tasks
+1. Test the notification system with actual 6-minute games
+2. Verify notifications appear correctly for all positions
+3. Test with multiple completed games
 
-1. **Two-Browser Testing**
-   - Browser 1: Log in as adam@test.com
-   - Browser 2: Log in as beth@test.com (private/incognito)
-   - Use `test-multiplayer-comprehensive.html` for testing
+### Future Enhancements
+1. Add sound effects for win/loss
+2. Create achievement system
+3. Add rematch functionality
+4. Implement push notifications
+5. Add chat between players
 
-2. **Test Scenarios**
-   - Create game → Get code → Join game
-   - Verify case sensitivity (Q92U ≠ q92u)
-   - Test edge cases (join own game, duplicate joins)
-   - Check leaderboard updates
-   - Verify 60-second auto-refresh
+## Active Decisions
 
-3. **Performance Testing**
-   - Multiple concurrent games
-   - Rapid game creation
-   - Price update triggers
+### Notification Design
+- Using emoji icons (🏆🥈🥉🎯) for visual appeal
+- Color coding: Green for win, yellow/orange for podium, orange for others
+- 10-second auto-dismiss with manual close option
+- Stack multiple notifications vertically
 
-### 2. Deployment Preparation
-After successful testing:
-- Deploy Edge Functions to production
-- Update environment variables for production
-- Set up automated price updates (cron job)
-- Monitor initial usage
-
-## Technical Status
-- **Frontend**: All scenes updated with multiplayer features
-- **Backend**: All Edge Functions deployed and tested
-- **Database**: Schema supports all multiplayer features
-- **Security**: RLS policies in place, service role keys secured
-
-## Key Decisions Made
-- 4-character case-sensitive game codes (62^4 possibilities)
-- 60-second auto-refresh for leaderboards  
-- Email display (usernames for future iteration)
-- Manual price update triggers (cron job for future)
-- Only 5 cryptocurrencies tracked (BTC, ETH, BNB, SOL, XRP)
-
-## Active Questions
-- Should we implement automated price updates now?
-- Do we need a game browsing feature?
-- Should we add push notifications for ranking changes?
-
-## Implementation Complete ✅
-The multiplayer feature is functionally complete and ready for testing! 
+### Technical Considerations
+- Using localStorage to track shown notifications
+- Only querying games from last hour for performance
+- Notifications integrated into DashboardScene
+- Game completion redirects to dashboard automatically 
