@@ -237,26 +237,6 @@ export default class JoinGameScene extends Phaser.Scene {
                 multiplayerGame: this.game
             });
         });
-        
-        // Also show the original game creator if not in participants
-        if (!participants || !participants.find(p => p.is_original_creator)) {
-            // Get creator info
-            const { data: creator } = await this.auth.supabase
-                .from('profiles')
-                .select('email')
-                .eq('id', this.game.user_id)
-                .single();
-                
-            if (creator) {
-                const yPos = 250 + (participants ? participants.length * 30 : 30);
-                this.add.text(450, yPos, `Game created by: ${creator.email}`, {
-                    fontSize: '14px',
-                    color: '#666666',
-                    fontStyle: 'italic'
-                }).setOrigin(0.5);
-            }
-        }
-        
     }
     
     async loadParticipants(loadingText) {
