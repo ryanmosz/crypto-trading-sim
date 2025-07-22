@@ -166,30 +166,28 @@ export default class NowModeResultScene extends Phaser.Scene {
     }
     
     showGameCode() {
-        if (!this.gameCode) return;
+        // Remove the popup background - we'll integrate into the main display
         
-        // Add game code section
-        const codeContainer = this.add.rectangle(450, 350, 300, 100, 0x111111)
-            .setStrokeStyle(2, 0x00ffff);
-            
-        this.add.text(450, 330, 'GAME CODE', {
-            fontSize: '16px',
-            color: '#999999'
+        // Add game code section after allocations but before instructions
+        this.add.text(450, 370, 'GAME CODE', {
+            fontSize: '14px',
+            color: '#666666'
         }).setOrigin(0.5);
         
+        // Show the formatted game code
         const formattedCode = formatGameCode(this.gameCode);
-        const codeText = this.add.text(450, 355, formattedCode, {
+        const codeText = this.add.text(410, 395, formattedCode, {
             fontSize: '36px',
             fontFamily: 'Arial Black',
             color: '#00ffff'
         }).setOrigin(0.5);
         
-        // Copy button
-        const copyBtn = this.add.rectangle(450, 395, 100, 30, 0x00ffff)
+        // Copy button next to the code
+        const copyBtn = this.add.rectangle(490, 395, 60, 30, 0x00ffff)
             .setInteractive({ useHandCursor: true });
             
-        const copyText = this.add.text(450, 395, 'COPY', {
-            fontSize: '14px',
+        const copyText = this.add.text(490, 395, 'COPY', {
+            fontSize: '12px',
             fontFamily: 'Arial Black',
             color: '#000000'
         }).setOrigin(0.5);
@@ -213,11 +211,38 @@ export default class NowModeResultScene extends Phaser.Scene {
                 });
             });
             
-        // Share instruction
+        // Share instruction (move down to accommodate code)
         this.add.text(450, 435, 'Share this code with others to join!', {
             fontSize: '14px',
             color: '#666666'
         }).setOrigin(0.5);
+        
+        // Adjust the instructions and button positions
+        this.add.text(450, 470, 'Check your dashboard anytime to track performance!', {
+            fontSize: '18px',
+            color: '#00ffff'
+        }).setOrigin(0.5);
+        
+        // Dashboard button
+        const dashboardBtn = this.add.rectangle(450, 530, 250, 50, 0x00ffff)
+            .setInteractive({ useHandCursor: true });
+            
+        const dashboardText = this.add.text(450, 530, 'GO TO DASHBOARD', {
+            fontSize: '20px',
+            fontFamily: 'Arial Black',
+            color: '#000000'
+        }).setOrigin(0.5);
+        
+        dashboardBtn
+            .on('pointerover', () => {
+                dashboardBtn.setFillStyle(0x00cccc);
+            })
+            .on('pointerout', () => {
+                dashboardBtn.setFillStyle(0x00ffff);
+            })
+            .on('pointerdown', () => {
+                this.scene.start('DashboardScene', { user: this.user });
+            });
     }
     
     showError(message) {

@@ -568,14 +568,18 @@ export default class DashboardScene extends Phaser.Scene {
         
         this.contentGroup.add(remainingDisplay);
         
-        // Show game code for multiplayer games
+        // Show game code for multiplayer games on the far left
         if (game.game_code) {
-            const codeText = this.add.text(430, y, `Code: ${game.game_code}`, {
+            const codeText = this.add.text(100, y, `ID: ${game.game_code}`, {
                 fontSize: '14px',
                 color: '#00ffff',
                 fontFamily: 'Arial Black'
             }).setOrigin(0, 0.5);
             this.contentGroup.add(codeText);
+            
+            // Adjust duration position when game code is present
+            durationDisplay.setX(220);
+            remainingDisplay.setX(370);
         }
         
         if (isJoinable) {
