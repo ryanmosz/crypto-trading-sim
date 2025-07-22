@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RLS Policy Verification</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #0ff;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #0ff;
+        }
+        .success { color: #0f0; }
+        .error { color: #f00; }
+        .info { color: #ff0; }
+        button {
+            background: #0ff;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: inherit;
+            margin: 5px;
+        }
+        button:hover {
+            background: #fff;
+        }
+        pre {
+            background: #111;
+            padding: 10px;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔒 RLS Policy Verification</h1>
+    
+    <div class="section">
+        <h2>Current Auth Status</h2>
+        <div id="authStatus">Checking...</div>
+        <button onclick="signOut()">Sign Out</button>
+        <button onclick="location.reload()">Refresh</button>
+    </div>
+
+    <div class="section">
+        <h2>Test 1: Anonymous Access to Multiplayer Games</h2>
+        <p>This test verifies that unauthenticated users can view open multiplayer games.</p>
+        <button onclick="testAnonymousAccess()">Run Test</button>
+        <div id="test1Result"></div>
+    </div>
+
+    <div class="section">
+        <h2>Test 2: Authenticated User Queries</h2>
+        <p>This test verifies authenticated users can see all their games + open multiplayer games.</p>
+        <button onclick="testAuthenticatedAccess()">Run Test</button>
+        <div id="test2Result"></div>
+    </div>
+
+    <div class="section">
+        <h2>Test 3: Game Participants Access</h2>
+        <p>This test verifies that game participants are publicly readable.</p>
+        <button onclick="testParticipantsAccess()">Run Test</button>
+        <div id="test3Result"></div>
+    </div>
+
+    <div class="section">
+        <h2>Test 4: Find Game by Code</h2>
+        <p>This test verifies finding games by code works for both auth and anon users.</p>
+        <input type="text" id="gameCode" placeholder="Enter game code" maxlength="4" style="background: #000; color: #0ff; border: 1px solid #0ff; padding: 5px;">
+        <button onclick="testFindByCode()">Find Game</button>
+        <div id="test4Result"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module">
+        // Load config
+        await import('./config.js');
+        const config = window.CONFIG;
+        
+        // Initialize Supabase
+        window.supabase = supabase.createClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY);
+        
+        // Check auth status
+        async function checkAuthStatus() {
+            const { data: { user } } = await window.supabase.auth.getUser();
+            const statusEl = document.getElementById('authStatus');
+            if (user) {
+                statusEl.innerHTML = `<span class="success">✓ Authenticated as: ${user.email}</span>`;
+            } else {
+                statusEl.innerHTML = `<span class="info">○ Not authenticated (anonymous)</span>`;
+            }
+            return user;
+        }
+        
+        // Sign out
+        window.signOut = async function() {
+            await window.supabase.auth.signOut();
+            location.reload();
+        }
+        
+        // Test 1: Anonymous access
+        window.testAnonymousAccess = async function() {
+            const resultEl = document.getElementById('test1Result');
+            resultEl.innerHTML = '<span class="info">Running test...</span>';
+            
+            try {
+                // Sign out first to ensure anonymous
+                await window.supabase.auth.signOut();
+                
+                // Try to query multiplayer games
+                const { data, error } = await window.supabase
+                    .from('active_games')
+                    .select('id, game_code, user_id, participant_count, duration_days, created_at')
+                    .eq('is_multiplayer', true)
+                    .eq('is_complete', false);
+                
+                if (error) {
+                    resultEl.innerHTML = `<span class="error">✗ Error: ${error.message}</span>`;
+                } else {
+                    resultEl.innerHTML = `
+                        <span class="success">✓ Success! Found ${data.length} multiplayer games</span>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (e) {
+                resultEl.innerHTML = `<span class="error">✗ Exception: ${e.message}</span>`;
+            }
+        }
+        
+        // Test 2: Authenticated access
+        window.testAuthenticatedAccess = async function() {
+            const resultEl = document.getElementById('test2Result');
+            resultEl.innerHTML = '<span class="info">Running test...</span>';
+            
+            try {
+                const user = await checkAuthStatus();
+                if (!user) {
+                    resultEl.innerHTML = '<span class="error">✗ Must be authenticated for this test</span>';
+                    return;
+                }
+                
+                // Query all games (should see own + multiplayer)
+                const { data, error } = await window.supabase
+                    .from('active_games')
+                    .select('id, game_code, user_id, is_multiplayer, participant_count')
+                    .eq('is_complete', false);
+                
+                if (error) {
+                    resultEl.innerHTML = `<span class="error">✗ Error: ${error.message}</span>`;
+                } else {
+                    const ownGames = data.filter(g => g.user_id === user.id);
+                    const otherMultiplayer = data.filter(g => g.user_id !== user.id && g.is_multiplayer);
+                    
+                    resultEl.innerHTML = `
+                        <span class="success">✓ Success!</span>
+                        <br>Own games: ${ownGames.length}
+                        <br>Other multiplayer games: ${otherMultiplayer.length}
+                        <br>Total visible: ${data.length}
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (e) {
+                resultEl.innerHTML = `<span class="error">✗ Exception: ${e.message}</span>`;
+            }
+        }
+        
+        // Test 3: Game participants access
+        window.testParticipantsAccess = async function() {
+            const resultEl = document.getElementById('test3Result');
+            resultEl.innerHTML = '<span class="info">Running test...</span>';
+            
+            try {
+                // Get any multiplayer game
+                const { data: games } = await window.supabase
+                    .from('active_games')
+                    .select('id, game_code')
+                    .eq('is_multiplayer', true)
+                    .limit(1);
+                
+                if (!games || games.length === 0) {
+                    resultEl.innerHTML = '<span class="info">○ No multiplayer games found to test</span>';
+                    return;
+                }
+                
+                // Try to read participants
+                const { data, error } = await window.supabase
+                    .from('game_participants')
+                    .select('*, profiles:user_id(email)')
+                    .eq('game_id', games[0].id);
+                
+                if (error) {
+                    resultEl.innerHTML = `<span class="error">✗ Error: ${error.message}</span>`;
+                } else {
+                    resultEl.innerHTML = `
+                        <span class="success">✓ Success! Game ${games[0].game_code} has ${data.length} participants</span>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (e) {
+                resultEl.innerHTML = `<span class="error">✗ Exception: ${e.message}</span>`;
+            }
+        }
+        
+        // Test 4: Find by code
+        window.testFindByCode = async function() {
+            const resultEl = document.getElementById('test4Result');
+            const gameCode = document.getElementById('gameCode').value.trim();
+            
+            if (!gameCode) {
+                resultEl.innerHTML = '<span class="error">✗ Please enter a game code</span>';
+                return;
+            }
+            
+            resultEl.innerHTML = '<span class="info">Searching...</span>';
+            
+            try {
+                const { data, error } = await window.supabase
+                    .from('active_games')
+                    .select('*')
+                    .eq('game_code', gameCode)
+                    .eq('is_multiplayer', true)
+                    .eq('is_complete', false)
+                    .single();
+                
+                if (error) {
+                    if (error.code === 'PGRST116') {
+                        resultEl.innerHTML = `<span class="info">○ No game found with code: ${gameCode}</span>`;
+                    } else {
+                        resultEl.innerHTML = `<span class="error">✗ Error: ${error.message}</span>`;
+                    }
+                } else {
+                    resultEl.innerHTML = `
+                        <span class="success">✓ Found game!</span>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (e) {
+                resultEl.innerHTML = `<span class="error">✗ Exception: ${e.message}</span>`;
+            }
+        }
+        
+        // Initialize
+        checkAuthStatus();
+    </script>
+</body>
+</html> 
