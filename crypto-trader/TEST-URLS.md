@@ -13,6 +13,7 @@ The game runs on **http://localhost:8001/** - this is your Python server running
 - **RLS Verification**: http://localhost:8001/test-rls-verification.html
 
 ## Multiplayer Tests
+- **Two-Player Test** (side-by-side view): http://localhost:8001/test-multiplayer-two-player.html
 - **Comprehensive Multiplayer Test**: http://localhost:8001/test-multiplayer-comprehensive.html
 - **API Test**: http://localhost:8001/test-multiplayer-api.html
 - **Simple API Test**: http://localhost:8001/test-api-simple.html

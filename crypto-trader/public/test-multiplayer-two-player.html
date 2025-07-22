@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two-Player Multiplayer Test</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👥</text></svg>">
+    <style>
+        body {
+            font-family: monospace;
+            background: #000;
+            color: #0ff;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: 100vh;
+            margin: 0;
+        }
+        .player-section {
+            border: 2px solid #0ff;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .player-section h2 {
+            margin-top: 0;
+            color: #0f0;
+        }
+        .status { 
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #333;
+        }
+        .success { color: #0f0; }
+        .error { color: #f00; }
+        .info { color: #ff0; }
+        button {
+            background: #0ff;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin: 5px;
+            font-family: monospace;
+        }
+        button:hover {
+            background: #0f0;
+        }
+        .game-info {
+            background: #111;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #333;
+        }
+        .log {
+            background: #111;
+            padding: 10px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        .nav-links {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 10px;
+            border-bottom: 1px solid #0ff;
+        }
+        .nav-links a {
+            color: #0ff;
+            margin: 0 10px;
+        }
+        #copyBtn {
+            background: #0f0;
+            padding: 5px 10px;
+            font-size: 12px;
+            float: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-links">
+        <h1>Two-Player Multiplayer Test</h1>
+        <a href="/">Main Game</a>
+        <a href="/test-rls-verification.html">RLS Test</a>
+        <a href="/test-multiplayer-comprehensive.html">Comprehensive Test</a>
+        <a href="/TEST-URLS.md">All Test URLs</a>
+    </div>
+    
+    <div class="player-section">
+        <h2>🅰️ Adam's View</h2>
+        <div id="adamStatus" class="status">Checking...</div>
+        
+        <div class="game-info">
+            <h3>Create New Game</h3>
+            <button onclick="createGame('adam')">Create 30-Day Game</button>
+            <div id="adamGameCode"></div>
+        </div>
+        
+        <div class="game-info">
+            <h3>My Active Games</h3>
+            <button onclick="loadGames('adam')">Refresh</button>
+            <div id="adamGames"></div>
+        </div>
+        
+        <div class="log" id="adamLog">
+            <button id="copyAdamLog" onclick="copyLog('adam')">Copy Log</button>
+            <div style="clear:both"></div>
+        </div>
+    </div>
+    
+    <div class="player-section">
+        <h2>🅱️ Beth's View</h2>
+        <div id="bethStatus" class="status">Checking...</div>
+        
+        <div class="game-info">
+            <h3>Join Game</h3>
+            <input type="text" id="bethJoinCode" placeholder="Enter game code" maxlength="4" style="text-transform: uppercase;">
+            <button onclick="joinGame('beth')">Join Game</button>
+        </div>
+        
+        <div class="game-info">
+            <h3>Available Games</h3>
+            <button onclick="loadGames('beth')">Refresh</button>
+            <div id="bethGames"></div>
+        </div>
+        
+        <div class="log" id="bethLog">
+            <button id="copyBethLog" onclick="copyLog('beth')">Copy Log</button>
+            <div style="clear:both"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./config.js"></script>
+    <script type="module">
+        import { createNowGame, joinNowGame, findGameByCode } from './services/nowGameApi.js';
+        import { auth } from './auth.js';
+        
+        // Store log entries
+        const logs = {
+            adam: [],
+            beth: []
+        };
+        
+        window.log = function(player, message, type = 'info') {
+            const timestamp = new Date().toISOString().split('T')[1];
+            const entry = {
+                time: timestamp,
+                type: type,
+                message: message
+            };
+            logs[player].push(entry);
+            
+            const logEl = document.getElementById(`${player}Log`);
+            const entryEl = document.createElement('div');
+            entryEl.className = type;
+            entryEl.innerHTML = `${timestamp} [${type.toUpperCase()}] ${escapeHtml(message)}`;
+            logEl.appendChild(entryEl);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        window.copyLog = function(player) {
+            const logText = logs[player].map(entry => 
+                `${entry.time} [${entry.type.toUpperCase()}] ${entry.message}`
+            ).join('\n');
+            
+            navigator.clipboard.writeText(logText).then(() => {
+                const btn = document.getElementById(`copy${player.charAt(0).toUpperCase() + player.slice(1)}Log`);
+                btn.textContent = 'Copied!';
+                setTimeout(() => {
+                    btn.textContent = 'Copy Log';
+                }, 2000);
+            });
+        }
+        
+        // Check authentication status
+        async function checkAuth() {
+            try {
+                const user = await auth.getCurrentUser();
+                
+                // For Adam's view
+                if (user && user.email === 'adam@test.com') {
+                    document.getElementById('adamStatus').innerHTML = 
+                        `<span class="success">✅ Authenticated as Adam</span>`;
+                    log('adam', 'Authenticated as adam@test.com', 'success');
+                } else {
+                    document.getElementById('adamStatus').innerHTML = 
+                        `<span class="error">❌ Not authenticated as Adam</span>`;
+                    log('adam', 'Not authenticated as Adam', 'error');
+                }
+                
+                // For Beth's view (simulated)
+                document.getElementById('bethStatus').innerHTML = 
+                    `<span class="info">⚠️ Beth's view (simulated - open in different browser)</span>`;
+                log('beth', 'This is a simulation - open in Firefox as Beth', 'info');
+                
+            } catch (error) {
+                log('adam', `Auth error: ${error.message}`, 'error');
+                log('beth', `Auth error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Create a new game
+        window.createGame = async function(player) {
+            if (player !== 'adam') {
+                log(player, 'Only Adam can create in this view', 'error');
+                return;
+            }
+            
+            log(player, 'Creating new 30-day game...', 'info');
+            
+            try {
+                const allocations = {
+                    BTC: 40,
+                    ETH: 30,
+                    BNB: 20,
+                    SOL: 10,
+                    XRP: 0
+                };
+                
+                const result = await createNowGame({
+                    duration: 30,
+                    allocations: allocations
+                });
+                
+                log(player, `Game created! Code: ${result.game_code}`, 'success');
+                document.getElementById('adamGameCode').innerHTML = 
+                    `<h2 style="color: #0f0;">Game Code: ${result.game_code}</h2>
+                     <p>Share this code with Beth!</p>`;
+                
+                // Auto-refresh games list
+                await loadGames(player);
+                
+            } catch (error) {
+                log(player, `Failed to create game: ${error.message}`, 'error');
+            }
+        }
+        
+        // Join a game
+        window.joinGame = async function(player) {
+            const code = document.getElementById('bethJoinCode').value.toUpperCase();
+            if (!code || code.length !== 4) {
+                log(player, 'Please enter a 4-character game code', 'error');
+                return;
+            }
+            
+            log(player, `Joining game with code: ${code}`, 'info');
+            
+            try {
+                // First find the game
+                const game = await findGameByCode(code);
+                if (!game) {
+                    log(player, 'Game not found', 'error');
+                    return;
+                }
+                
+                log(player, `Found game: ${game.duration_days} days, ${game.participant_count} players`, 'info');
+                
+                // Note: In real usage, Beth would be authenticated and could join
+                log(player, 'To actually join, Beth needs to be logged in and allocate her portfolio', 'info');
+                log(player, 'This would redirect to the allocation scene in the real app', 'info');
+                
+            } catch (error) {
+                log(player, `Failed to join: ${error.message}`, 'error');
+            }
+        }
+        
+        // Load games for a player
+        window.loadGames = async function(player) {
+            log(player, 'Loading games...', 'info');
+            
+            try {
+                const supabase = auth.supabase;
+                
+                // Get all active multiplayer games
+                const { data: games, error } = await supabase
+                    .from('active_games')
+                    .select('*')
+                    .eq('is_multiplayer', true)
+                    .eq('is_complete', false)
+                    .order('created_at', { ascending: false });
+                    
+                if (error) throw error;
+                
+                const gamesEl = document.getElementById(`${player}Games`);
+                
+                if (!games || games.length === 0) {
+                    gamesEl.innerHTML = '<p>No active games found</p>';
+                    log(player, 'No active games found', 'info');
+                    return;
+                }
+                
+                log(player, `Found ${games.length} active games`, 'success');
+                
+                gamesEl.innerHTML = games.map(game => `
+                    <div style="border: 1px solid #333; padding: 10px; margin: 5px 0;">
+                        <strong>Code: ${game.game_code || 'N/A'}</strong><br>
+                        Duration: ${game.duration_days} days<br>
+                        Players: ${game.participant_count}<br>
+                        Created: ${new Date(game.created_at).toLocaleString()}
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                log(player, `Failed to load games: ${error.message}`, 'error');
+            }
+        }
+        
+        // Initialize on load
+        window.addEventListener('load', async () => {
+            await checkAuth();
+            await loadGames('adam');
+            await loadGames('beth');
+        });
+    </script>
+</body>
+</html>
