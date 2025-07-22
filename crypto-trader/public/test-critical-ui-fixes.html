@@ -160,12 +160,13 @@
         <div class="fix-item">
             <h3 class="fixed">✅ FIXED: Percentage Calculation (10x Bug)</h3>
             <div class="issue">Issue: Beth showing 7% gain instead of 0.7% - values off by factor of 10</div>
-            <div class="solution">Solution: Calculate total from individual crypto holdings instead of using stored value</div>
+            <div class="solution">Solution: Fixed BOTH frontend and database calculations</div>
             <ul>
-                <li>Now sums up individual crypto values for accurate total</li>
-                <li>Debug logging added to compare calculated vs stored values</li>
-                <li>Chart now uses calculated value to prevent extreme scaling</li>
-                <li>Fixed total row font size to match other rows (16px)</li>
+                <li>Frontend now sums up individual crypto values for accurate total</li>
+                <li>Database function fixed - allocations were 0-10 scale, not 0-1</li>
+                <li>Fixed update_multiplayer_game_values() function</li>
+                <li>Fixed update_active_game_values() function</li>
+                <li>Database values now correct: Beth $10,090,090 (0.9%), Adam $10,023,100 (0.23%)</li>
             </ul>
         </div>
     </div>
@@ -183,7 +184,7 @@
     <div class="test-log" id="testLog">=== CRITICAL UI FIXES TEST LOG ===
 Date: January 22, 2025
 Branch: phase-1-shared-state
-Commit: 1738d94
+Commit: 2a980f2
 
 PRIORITY 1 FIXES:
 ✅ Details view persists on refresh
@@ -201,32 +202,34 @@ LEADERBOARD FIXES:
 ✅ Shows actual usernames (not "You")
 ✅ Current user highlighted in cyan
 
-NEW FIXES - 10x CALCULATION BUG:
-✅ Fixed Beth showing 7% instead of 0.7%
-✅ Total now calculated from individual holdings
-✅ Chart uses calculated value (no more extreme scaling)
-✅ Total row font size matches other rows
+10x CALCULATION BUG - COMPLETELY FIXED:
+✅ Frontend calculates from individual holdings
+✅ Database function fixed (allocations were 0-10, not 0-1)
+✅ Both single-player and multiplayer functions updated
+✅ All values now correct in database
+✅ No more extreme chart scaling
 
-DEBUG INFO:
-- Check console for calculated vs stored value comparison
-- participant.current_value may be 10x actual value in DB
+DATABASE FIX DETAILS:
+- Allocations stored as integers 0-10 (e.g., 10 = 100%)
+- Function was multiplying by 10M directly (10 × 10M = 100M!)
+- Fixed by dividing allocations by 10 (10/10 = 1.0)
+- Beth: $10,090,090 (0.9%) ✓
+- Adam: $10,023,100 (0.23%) ✓
 
 TECHNICAL IMPLEMENTATION:
 - ViewState object: { view: 'leaderboard'|'details', playerId: string|null }
-- State passed through scene.restart() data
-- Auto-refresh preserves current view
-- calculatedTotal sums individual crypto values
-- Chart uses playerDetails.calculatedValue
+- Frontend calculates totals as backup/verification
+- Database functions: update_multiplayer_game_values(), update_active_game_values()
+- Allocation scale conversion: amount / 10.0
 
 TEST INSTRUCTIONS:
-1. Go to Active Multiplayer Games
-2. Click on a player to view details
-3. Check console for debug output
-4. Verify percentages match actual gains
-5. Confirm chart looks reasonable (not extreme)
-6. Wait for 1-minute refresh - view persists!
+1. Refresh the page - all values should be correct
+2. Check leaderboard - percentages match reality
+3. Check details page - totals are accurate
+4. Check Active Games - no more 10x values
+5. Database and frontend now in sync!
 
-STATUS: Ready for testing!</div>
+STATUS: Bug completely squashed! 🐛💥</div>
     
     <button onclick="copyLog()">Copy Test Log</button>
     
