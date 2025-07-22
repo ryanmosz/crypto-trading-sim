@@ -622,196 +622,145 @@ export default class ActiveGameViewScene extends Phaser.Scene {
     }
     
     async showPlayerDetails(participant) {
-        // Store player details for chart generation
-        this.playerDetails = participant;
-        
         // Clear current display
         this.children.removeAll();
         
         // Black background
         this.cameras.main.setBackgroundColor('#000000');
         
-        // Get fresh allocation data
-        const allocations = participant.allocations || {};
-        const numCryptos = Object.keys(allocations).filter(k => allocations[k] > 0).length;
+        // ACTIVE GAME title in cyan - exactly like the screenshot
+        this.add.text(450, 40, 'ACTIVE GAME', {
+            fontSize: '36px',
+            fontFamily: 'Arial Black',
+            color: '#00ffff'
+        }).setOrigin(0.5);
         
-        // Dynamic spacing calculation
-        const headerHeight = 80;
-        const summaryHeight = 60;
-        const chartHeight = 120;
-        const backButtonHeight = 40;
-        const padding = 40;
-        const availableForAllocations = 600 - headerHeight - summaryHeight - chartHeight - backButtonHeight - padding;
-        const cryptoSpacing = Math.min(50, Math.floor(availableForAllocations / (numCryptos + 2))); // +2 for header and total
-        
-        // Header with player name and game code
-        const headerY = 60;
-        const displayName = participant.user_id === this.user.id ? 'Your Portfolio' : `${participant.username || 'Anonymous'}'s Portfolio`;
-        this.add.text(450, headerY, displayName, {
+        // Detailed Portfolio Analysis subtitle
+        this.add.text(450, 90, 'Detailed Portfolio Analysis', {
             fontSize: '24px',
-            color: '#ffffff',
-            fontFamily: 'Arial Black'
+            color: '#ffffff'
         }).setOrigin(0.5);
         
-        // Game code and countdown on same line
-        const cleanCode = this.gameData.game_code ? this.gameData.game_code.replace(/\s/g, '') : '';
-        this.add.text(300, headerY + 30, `Game: ${cleanCode}`, {
-            fontSize: '14px',
-            color: '#00ffff'
-        }).setOrigin(0, 0.5);
+        // Holdings & Performance label
+        this.add.text(450, 130, 'Holdings & Performance:', {
+            fontSize: '20px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
         
-        // Countdown timer
-        const timeRemaining = calculateTimeRemaining(this.gameData.created_at, this.gameData.duration_days || 30);
-        const timeColor = getTimeRemainingColor(timeRemaining.totalSeconds, this.gameData.duration_days || 30);
-        this.add.text(600, headerY + 30, formatTimeRemaining(timeRemaining), {
-            fontSize: '14px',
-            color: timeColor
-        }).setOrigin(1, 0.5);
+        // Column headers - exact positions from single-player view
+        const colHeaders = [
+            { text: 'Crypto', x: 100 },
+            { text: 'Invested', x: 220 },
+            { text: 'Coins', x: 340 },
+            { text: 'Start Price', x: 440 },
+            { text: 'Current Price', x: 560 },
+            { text: 'Value', x: 680 },
+            { text: 'Gain/Loss', x: 780 }
+        ];
         
-        // Summary box
-        const summaryY = headerY + 60;
-        const summaryBg = this.add.rectangle(450, summaryY, 600, 50, 0x111111)
-            .setStrokeStyle(2, 0x333333);
-            
-        // Current value
-        const currentValue = participant.current_value || this.gameData.starting_money;
+        colHeaders.forEach(header => {
+            this.add.text(header.x, 160, header.text, {
+                fontSize: '14px',
+                color: '#666666'
+            }).setOrigin(0.5);
+        });
+        
+        // Get data
+        const allocations = participant.allocations || {};
+        const startingPrices = this.gameData.starting_prices;
+        const currentPrices = this.gameData.current_prices || startingPrices;
         const startValue = this.gameData.starting_money || 10000000;
-        const profit = currentValue - startValue;
-        const profitPercent = (profit / startValue) * 100;
-        const profitColor = profit >= 0 ? '#00ff00' : '#ff0066';
         
-        this.add.text(250, summaryY, 'Current Value:', {
-            fontSize: '14px',
-            color: '#999999'
-        }).setOrigin(0, 0.5);
-        
-        this.add.text(350, summaryY, `$${currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
-            fontSize: '18px',
-            color: '#ffffff',
-            fontFamily: 'Arial Black'
-        }).setOrigin(0, 0.5);
-        
-        this.add.text(550, summaryY, `${profit >= 0 ? '+' : ''}${profitPercent.toFixed(1)}%`, {
-            fontSize: '18px',
-            color: profitColor,
-            fontFamily: 'Arial Black'
-        }).setOrigin(0, 0.5);
-        
-        // Current rank
-        const participants = await getGameParticipants(this.gameData.id);
-        const rank = participants.findIndex(p => p.user_id === participant.user_id) + 1;
-        this.add.text(650, summaryY, `Rank: ${rank}`, {
-            fontSize: '14px',
-            color: '#ffff00'
-        }).setOrigin(1, 0.5);
-        
-        // Allocations section
-        let yPos = summaryY + 40;
-        this.add.text(450, yPos, 'Your Allocations', {
-            fontSize: '18px',
-            color: '#00ffff'
-        }).setOrigin(0.5);
-        
-        // Column headers (compact)
-        yPos += 25;
-        this.add.text(200, yPos, 'Asset', {
-            fontSize: '14px',
-            color: '#999999'
-        }).setOrigin(0, 0.5);
-        
-        this.add.text(320, yPos, 'Invested', {
-            fontSize: '14px',
-            color: '#999999'
-        }).setOrigin(0, 0.5);
-        
-        this.add.text(480, yPos, 'Current', {
-            fontSize: '14px',
-            color: '#999999'
-        }).setOrigin(0, 0.5);
-        
-        this.add.text(620, yPos, 'Change', {
-            fontSize: '14px',
-            color: '#999999'
-        }).setOrigin(0, 0.5);
-        
-        // Line under headers
-        yPos += 15;
-        this.add.rectangle(450, yPos, 500, 1, 0x333333);
-        
-        // Display each crypto allocation (compact)
-        yPos += 10;
-        const prices = this.gameData.starting_prices || {};
-        const currentPrices = this.gameData.current_prices || prices;
-        
-        Object.entries(allocations).forEach(([symbol, blocks]) => {
-            if (blocks > 0) {
-                const invested = blocks * 1000000;
-                const startPrice = prices[symbol] || 0;
-                const currentPrice = currentPrices[symbol] || startPrice;
-                const units = startPrice > 0 ? invested / startPrice : 0;
-                const currentVal = units * currentPrice;
-                const change = startPrice > 0 ? ((currentPrice - startPrice) / startPrice) * 100 : 0;
-                const changeColor = change >= 0 ? '#00ff00' : '#ff0066';
+        // Rows for each crypto
+        let yPos = 190;
+        Object.entries(allocations).forEach(([crypto, amount]) => {
+            if (amount > 0) {
+                const invested = amount * 1000000;
+                const startPrice = startingPrices[crypto];
+                const currentPrice = currentPrices[crypto];
+                const coins = invested / startPrice;
+                const currentCryptoValue = coins * currentPrice;
+                const cryptoProfit = currentCryptoValue - invested;
+                const cryptoProfitPercent = (cryptoProfit / invested) * 100;
+                const cryptoProfitColor = cryptoProfit >= 0 ? '#00ff00' : '#ff0066';
                 
                 // Crypto name
-                this.add.text(200, yPos, symbol, {
-                    fontSize: '14px',
+                this.add.text(100, yPos, crypto, {
+                    fontSize: '16px',
                     fontFamily: 'Arial Black',
                     color: '#ffffff'
-                }).setOrigin(0, 0.5);
+                }).setOrigin(0.5);
                 
-                // Initial investment
-                this.add.text(320, yPos, `$${invested.toLocaleString()}`, {
-                    fontSize: '13px',
-                    color: '#999999'
-                }).setOrigin(0, 0.5);
+                // Original investment
+                this.add.text(220, yPos, `$${invested.toLocaleString()}`, {
+                    fontSize: '14px',
+                    color: '#ffffff'
+                }).setOrigin(0.5);
+                
+                // Number of coins
+                this.add.text(340, yPos, coins.toFixed(2), {
+                    fontSize: '14px',
+                    color: '#666666'
+                }).setOrigin(0.5);
+                
+                // Starting price
+                this.add.text(440, yPos, `$${Number(startPrice).toFixed(2)}`, {
+                    fontSize: '14px',
+                    color: '#666666'
+                }).setOrigin(0.5);
+                
+                // Current price
+                this.add.text(560, yPos, `$${Number(currentPrice).toFixed(2)}`, {
+                    fontSize: '14px',
+                    color: '#00ffff'
+                }).setOrigin(0.5);
                 
                 // Current value
-                this.add.text(480, yPos, `$${Math.round(currentVal).toLocaleString()}`, {
-                    fontSize: '13px',
-                    color: changeColor
-                }).setOrigin(0, 0.5);
+                this.add.text(680, yPos, `$${currentCryptoValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
+                    fontSize: '14px',
+                    color: '#ffffff'
+                }).setOrigin(0.5);
                 
-                // Percentage change
-                this.add.text(620, yPos, `${change >= 0 ? '+' : ''}${change.toFixed(1)}%`, {
-                    fontSize: '13px',
+                // Profit/Loss
+                this.add.text(780, yPos, `${cryptoProfitPercent >= 0 ? '+' : ''}${cryptoProfitPercent.toFixed(1)}%`, {
+                    fontSize: '14px',
                     fontFamily: 'Arial Black',
-                    color: changeColor
-                }).setOrigin(0, 0.5);
+                    color: cryptoProfitColor
+                }).setOrigin(0.5);
                 
-                yPos += cryptoSpacing;
+                yPos += 25;
             }
         });
         
-        // Add performance chart
-        const chartY = Math.max(yPos + 10, 600 - chartHeight - backButtonHeight - 20);
-        this.createPerformanceChart(chartY);
+        // Performance chart exactly like the original
+        this.createPerformanceChart(yPos + 40);
         
-        // Back button
-        const backY = 560;
-        const backButton = this.add.rectangle(450, backY, 100, 35, 0x333333)
-            .setStrokeStyle(2, 0x666666)
-            .setInteractive({ useHandCursor: true });
+        // Store player details for chart
+        this.playerDetails = participant;
+        
+        // BACK TO SUMMARY button at bottom
+        const backBg = this.add.rectangle(450, 520, 250, 50, 0x333333)
+            .setInteractive({ useHandCursor: true })
+            .setStrokeStyle(2, 0x666666);
             
-        const backText = this.add.text(450, backY, 'BACK', {
-            fontSize: '16px',
+        const backText = this.add.text(450, 520, 'BACK TO SUMMARY', {
+            fontSize: '18px',
             fontFamily: 'Arial Black',
             color: '#ffffff'
         }).setOrigin(0.5);
         
-        backButton
-            .on('pointerover', () => {
-                backButton.setStrokeStyle(2, 0x00ffff);
-                backText.setColor('#00ffff');
-            })
-            .on('pointerout', () => {
-                backButton.setStrokeStyle(2, 0x666666);
-                backText.setColor('#ffffff');
-            })
-            .on('pointerdown', () => {
-                // Restart scene to go back to leaderboard
-                this.scene.restart();
-            });
+        backBg.on('pointerover', () => {
+            backBg.setFillStyle(0x555555);
+            backText.setColor('#00ffff');
+        })
+        .on('pointerout', () => {
+            backBg.setFillStyle(0x333333);
+            backText.setColor('#ffffff');
+        })
+        .on('pointerdown', () => {
+            // Restart scene to go back to leaderboard
+            this.scene.restart();
+        });
     }
     
     createPerformanceChart(startY) {
