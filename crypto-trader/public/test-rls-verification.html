@@ -79,28 +79,35 @@
         <div id="test4Result"></div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./config.js"></script>
     <script type="module">
-        // Import the auth module which has the shared Supabase instance
+        // Import auth module which will use the global supabase
         import { auth } from './auth.js';
         
-        // Use the same Supabase client as the main app
-        window.supabase = auth.supabase;
+        // Store auth in window for easy access
+        window.auth = auth;
         
         // Check auth status
         async function checkAuthStatus() {
-            // First try to get the session (which will restore from localStorage)
-            const { data: { session } } = await window.supabase.auth.getSession();
-            
-            // Then get the user from the session
-            const { data: { user } } = await window.supabase.auth.getUser();
-            
-            const statusEl = document.getElementById('authStatus');
-            if (user) {
-                statusEl.innerHTML = `<span class="success">✓ Authenticated as: ${user.email}</span>`;
-            } else {
-                statusEl.innerHTML = `<span class="info">○ Not authenticated (anonymous)</span>`;
+            try {
+                // Get the current user
+                const user = await auth.getCurrentUser();
+                
+                const statusEl = document.getElementById('authStatus');
+                if (user) {
+                    statusEl.innerHTML = `✅ Authenticated as: ${user.email}`;
+                    statusEl.className = 'success';
+                } else {
+                    statusEl.innerHTML = '⚠️ Not authenticated (anonymous)';
+                    statusEl.className = 'info';
+                }
+            } catch (error) {
+                console.error('Auth check error:', error);
+                const statusEl = document.getElementById('authStatus');
+                statusEl.innerHTML = `❌ Error checking auth: ${error.message}`;
+                statusEl.className = 'error';
             }
-            return user;
         }
         
         // Sign out
@@ -116,10 +123,10 @@
             
             try {
                 // Sign out first to ensure anonymous
-                await window.supabase.auth.signOut();
+                await auth.signOut();
                 
                 // Try to query multiplayer games
-                const { data, error } = await window.supabase
+                const { data, error } = await auth.supabase
                     .from('active_games')
                     .select('id, game_code, user_id, participant_count, duration_days, created_at')
                     .eq('is_multiplayer', true)
@@ -144,14 +151,14 @@
             resultEl.innerHTML = '<span class="info">Running test...</span>';
             
             try {
-                const user = await checkAuthStatus();
+                const user = await auth.getCurrentUser();
                 if (!user) {
                     resultEl.innerHTML = '<span class="error">✗ Must be authenticated for this test</span>';
                     return;
                 }
                 
                 // Query all games (should see own + multiplayer)
-                const { data, error } = await window.supabase
+                const { data, error } = await auth.supabase
                     .from('active_games')
                     .select('id, game_code, user_id, is_multiplayer, participant_count')
                     .eq('is_complete', false);
@@ -182,7 +189,7 @@
             
             try {
                 // Get any multiplayer game
-                const { data: games } = await window.supabase
+                const { data: games } = await auth.supabase
                     .from('active_games')
                     .select('id, game_code')
                     .eq('is_multiplayer', true)
@@ -194,7 +201,7 @@
                 }
                 
                 // Try to read participants
-                const { data, error } = await window.supabase
+                const { data, error } = await auth.supabase
                     .from('game_participants')
                     .select('*, profiles:user_id(email)')
                     .eq('game_id', games[0].id);
@@ -225,7 +232,7 @@
             resultEl.innerHTML = '<span class="info">Searching...</span>';
             
             try {
-                const { data, error } = await window.supabase
+                const { data, error } = await auth.supabase
                     .from('active_games')
                     .select('*')
                     .eq('game_code', gameCode)
@@ -254,7 +261,7 @@
         checkAuthStatus();
         
         // Listen for auth state changes
-        window.supabase.auth.onAuthStateChange((event, session) => {
+        auth.supabase.auth.onAuthStateChange((event, session) => {
             console.log('Auth state changed:', event);
             checkAuthStatus();
         });
