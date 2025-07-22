@@ -113,20 +113,44 @@ export async function findGameByCode(gameCode) {
 export async function getGameParticipants(gameId) {
     const supabase = auth.supabase;
     
-    const { data, error } = await supabase
+    // First get participants
+    const { data: participants, error: participantsError } = await supabase
         .from('game_participants')
-        .select(`
-            *,
-            profiles:user_id (username)
-        `)
+        .select('*')
         .eq('game_id', gameId)
         .order('current_value', { ascending: false });
         
-    if (error) {
+    if (participantsError) {
         throw new Error('Failed to fetch participants');
     }
     
-    return data;
+    // Then get usernames for all participants
+    const userIds = participants.map(p => p.user_id);
+    const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, username')
+        .in('id', userIds);
+        
+    if (profilesError) {
+        console.error('Failed to fetch profiles:', profilesError);
+        // Continue without usernames rather than failing completely
+    }
+    
+    // Map usernames to participants
+    const profileMap = {};
+    if (profiles) {
+        profiles.forEach(profile => {
+            profileMap[profile.id] = profile.username;
+        });
+    }
+    
+    // Add usernames to participants
+    const participantsWithUsernames = participants.map(participant => ({
+        ...participant,
+        username: profileMap[participant.user_id] || 'Anonymous'
+    }));
+    
+    return participantsWithUsernames;
 }
 
 /**

@@ -525,7 +525,7 @@ export default class ActiveGameViewScene extends Phaser.Scene {
                 
                 // Player name (email or "You")
                 const playerName = isCurrentUser ? 'You' : 
-                    (participant.profiles?.email || 'Player ' + (index + 1));
+                    (participant.username || 'Player ' + (index + 1));
                     
                 this.add.text(200, yPos, playerName, {
                     fontSize: '18px',
