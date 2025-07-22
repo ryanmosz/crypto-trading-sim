@@ -13,6 +13,9 @@ export default class ActiveGameViewScene extends Phaser.Scene {
     init(data) {
         this.user = data.user;
         this.gameData = data.gameData;
+        
+        // Restore view state if provided
+        this.viewState = data.viewState || { view: 'leaderboard', playerId: null };
     }
     
     async create() {
@@ -412,6 +415,18 @@ export default class ActiveGameViewScene extends Phaser.Scene {
     }
     
     async showMultiplayerView() {
+        // Check if we should restore to details view
+        if (this.viewState.view === 'details' && this.viewState.playerId) {
+            // Fetch the participant data first
+            const participants = await getGameParticipants(this.gameData.id);
+            const participant = participants.find(p => p.user_id === this.viewState.playerId);
+            if (participant) {
+                // Show details view directly
+                await this.showPlayerDetails(participant);
+                return;
+            }
+        }
+        
         // Clean the game code - remove any spaces
         const cleanGameCode = this.gameData.game_code ? this.gameData.game_code.replace(/\s/g, '') : '';
         
@@ -532,12 +547,15 @@ export default class ActiveGameViewScene extends Phaser.Scene {
                 fontFamily: 'Arial Black'
             }).setOrigin(0, 0.5);
             
-            // Player name - left aligned
-            const displayName = isCurrentUser ? 'You' : (participant.username || 'Anonymous');
+            // Player name - always show username, not "You"
+            const displayName = participant.username || 'Anonymous';
+            const nameColor = isCurrentUser ? '#00ffff' : '#ffffff';
+            const nameWeight = isCurrentUser ? 'bold' : 'normal';
             const nameText = this.add.text(250, yPos, displayName, {
-                fontSize: '18px',
-                color: isCurrentUser ? '#00ffff' : '#ffffff',
-                fontFamily: isCurrentUser ? 'Arial Black' : 'Arial'
+                fontSize: '16px',
+                color: nameColor,
+                fontFamily: 'Arial Black',
+                fontStyle: nameWeight
             }).setOrigin(0, 0.5);
             
             // Current value - centered with breathing room
@@ -569,6 +587,8 @@ export default class ActiveGameViewScene extends Phaser.Scene {
                     }
                 })
                 .on('pointerdown', () => {
+                    // Store view state
+                    this.viewState = { view: 'details', playerId: participant.user_id };
                     this.showPlayerDetails(participant);
                 });
             
@@ -615,7 +635,12 @@ export default class ActiveGameViewScene extends Phaser.Scene {
         this.time.addEvent({
             delay: 60000, // 1 minute
             callback: () => {
-                this.scene.restart();
+                // Restart scene but preserve view state
+                this.scene.restart({ 
+                    user: this.user, 
+                    gameData: this.gameData,
+                    viewState: this.viewState 
+                });
             },
             loop: true
         });
@@ -635,14 +660,16 @@ export default class ActiveGameViewScene extends Phaser.Scene {
             color: '#00ffff'
         }).setOrigin(0.5);
         
-        // Detailed Portfolio Analysis subtitle
-        this.add.text(450, 90, 'Detailed Portfolio Analysis', {
-            fontSize: '24px',
-            color: '#ffffff'
+        // Add game code and username
+        const cleanCode = this.gameData.game_code ? this.gameData.game_code.replace(/\s/g, '') : '';
+        this.add.text(450, 85, `Game: ${cleanCode} - ${participant.username || 'Anonymous'}`, {
+            fontSize: '20px',
+            color: '#ffffff',
+            fontFamily: 'Arial Black'
         }).setOrigin(0.5);
         
         // Holdings & Performance label
-        this.add.text(450, 130, 'Holdings & Performance:', {
+        this.add.text(450, 120, 'Holdings & Performance:', {
             fontSize: '20px',
             color: '#ffffff'
         }).setOrigin(0.5);
@@ -659,7 +686,7 @@ export default class ActiveGameViewScene extends Phaser.Scene {
         ];
         
         colHeaders.forEach(header => {
-            this.add.text(header.x, 160, header.text, {
+            this.add.text(header.x, 150, header.text, {
                 fontSize: '14px',
                 color: '#666666'
             }).setOrigin(0.5);
@@ -672,7 +699,7 @@ export default class ActiveGameViewScene extends Phaser.Scene {
         const startValue = this.gameData.starting_money || 10000000;
         
         // Rows for each crypto
-        let yPos = 190;
+        let yPos = 180;
         Object.entries(allocations).forEach(([crypto, amount]) => {
             if (amount > 0) {
                 const invested = amount * 1000000;
@@ -732,11 +759,42 @@ export default class ActiveGameViewScene extends Phaser.Scene {
             }
         });
         
-        // Performance chart exactly like the original
-        this.createPerformanceChart(yPos + 40);
+        // Add separator line
+        this.add.rectangle(450, yPos + 10, 700, 1, 0x333333);
         
-        // Store player details for chart
+        // Add total row
+        yPos += 30;
+        const currentTotal = participant.current_value || startValue;
+        const totalProfit = currentTotal - startValue;
+        const totalProfitPercent = (totalProfit / startValue) * 100;
+        const totalProfitColor = totalProfit >= 0 ? '#00ff00' : '#ff0066';
+        
+        // Total label
+        this.add.text(100, yPos, 'TOTAL', {
+            fontSize: '18px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        // Total current value
+        this.add.text(680, yPos, `$${currentTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, {
+            fontSize: '18px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        
+        // Total profit/loss percentage
+        this.add.text(780, yPos, `${totalProfitPercent >= 0 ? '+' : ''}${totalProfitPercent.toFixed(1)}%`, {
+            fontSize: '18px',
+            fontFamily: 'Arial Black',
+            color: totalProfitColor
+        }).setOrigin(0.5);
+        
+        // Store player details for chart BEFORE creating it
         this.playerDetails = participant;
+        
+        // Performance chart exactly like the original
+        this.createPerformanceChart(yPos + 50);
         
         // BACK TO SUMMARY button at bottom
         const backBg = this.add.rectangle(450, 520, 250, 50, 0x333333)
@@ -758,9 +816,30 @@ export default class ActiveGameViewScene extends Phaser.Scene {
             backText.setColor('#ffffff');
         })
         .on('pointerdown', () => {
+            // Reset view state to leaderboard
+            this.viewState = { view: 'leaderboard', playerId: null };
             // Restart scene to go back to leaderboard
-            this.scene.restart();
+            this.scene.restart({
+                user: this.user,
+                gameData: this.gameData,
+                viewState: this.viewState
+            });
         });
+    }
+    
+    // Add auto-refresh for details view
+    this.time.addEvent({
+        delay: 60000, // 1 minute
+        callback: () => {
+            // Restart scene but preserve view state
+            this.scene.restart({ 
+                user: this.user, 
+                gameData: this.gameData,
+                viewState: this.viewState 
+            });
+        },
+        loop: true
+    });
     }
     
     createPerformanceChart(startY) {
@@ -785,14 +864,14 @@ export default class ActiveGameViewScene extends Phaser.Scene {
         
         // Draw the line chart
         const graphics = this.add.graphics();
-        graphics.lineStyle(2, 0x00ffff);
         
         // Scale the data to fit the chart
         const minValue = Math.min(...dataPoints);
         const maxValue = Math.max(...dataPoints);
         const valueRange = maxValue - minValue || 1;
         
-        // Draw the line
+        // Draw the line first
+        graphics.lineStyle(2, 0x00ffff);
         graphics.beginPath();
         dataPoints.forEach((value, index) => {
             const x = chartX + (index / (dataPoints.length - 1)) * chartWidth;
@@ -803,12 +882,16 @@ export default class ActiveGameViewScene extends Phaser.Scene {
             } else {
                 graphics.lineTo(x, y);
             }
-            
-            // Add dots at data points
-            graphics.fillStyle(0x00ffff);
-            graphics.fillCircle(x, y, 3);
         });
         graphics.strokePath();
+        
+        // Then draw dots on top
+        graphics.fillStyle(0x00ffff);
+        dataPoints.forEach((value, index) => {
+            const x = chartX + (index / (dataPoints.length - 1)) * chartWidth;
+            const y = chartY + chartHeight - ((value - minValue) / valueRange) * chartHeight;
+            graphics.fillCircle(x, y, 3);
+        });
         
         // Add value labels
         const startValue = dataPoints[0];
@@ -828,8 +911,14 @@ export default class ActiveGameViewScene extends Phaser.Scene {
             color: changeColor
         }).setOrigin(0, 0.5);
         
-        // Performance indicator
-        this.add.text(450, chartY + chartHeight + 10, `${percentChange >= 0 ? '+' : ''}${percentChange.toFixed(1)}% since start`, {
+        // Performance indicator with start date
+        const startDate = new Date(this.gameData.created_at).toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+        this.add.text(450, chartY + chartHeight + 10, `${percentChange >= 0 ? '+' : ''}${percentChange.toFixed(1)}% since start: ${startDate}`, {
             fontSize: '12px',
             color: changeColor
         }).setOrigin(0.5);
